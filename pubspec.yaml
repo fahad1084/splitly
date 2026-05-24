@@ -1,0 +1,49 @@
+name: splitly
+description: Your Circle. Your Hisaab.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  supabase_flutter: ^2.8.0
+  firebase_core: ^3.6.0
+  firebase_messaging: ^15.1.3
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.7
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  google_mlkit_text_recognition: ^0.13.0
+  image_picker: ^1.1.2
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  csv: ^6.0.0
+  share_plus: ^10.0.2
+  local_auth: ^2.3.0
+  flutter_local_notifications: ^17.2.2
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.4.2
+  timeago: ^3.7.0
+  google_sign_in: ^6.2.1
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/images/
+    - assets/icons/
