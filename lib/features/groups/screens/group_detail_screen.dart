@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../balances/controllers/balances_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/screens/add_expense_sheet.dart';
+import '../../expenses/screens/expense_detail_sheet.dart';
+import '../../expenses/screens/expense_history_screen.dart';
 import '../../expenses/screens/expense_tile.dart';
 import '../controllers/groups_controller.dart';
 import '../models/group_model.dart';
-import '../../balances/controllers/balances_controller.dart';
-import 'package:flutter/services.dart';
+import '../../reports/screens/reports_screen.dart';
+
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -18,17 +22,16 @@ class GroupDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dark = isDark(context);
-    final headingColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final headingColor =
+    dark ? AppColors.primaryTint : AppColors.primaryDark;
 
-    // ── Watch data ──────────────────────────────────────────────────────────
     final membersAsync = ref.watch(groupMembersProvider(group.id));
     final expensesAsync = ref.watch(expensesProvider(group.id));
-    final currentUserId = ref.watch(currentUserProvider)?.id ?? '';
+    final currentUserId =
+        ref.watch(currentUserProvider)?.id ?? '';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-
-      // ── App Bar ─────────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
@@ -86,12 +89,12 @@ class GroupDetailScreen extends ConsumerWidget {
               parent: BouncingScrollPhysics()),
           slivers: [
 
-            // ── Balance summary card ──────────────────────────────────────
+            // ── Balance summary ───────────────────────────────────────
             SliverToBoxAdapter(
               child: _BalanceSummaryCard(group: group),
             ),
 
-            // ── Members header ────────────────────────────────────────────
+            // ── Members header ────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
@@ -125,7 +128,7 @@ class GroupDetailScreen extends ConsumerWidget {
               ),
             ),
 
-            // ── Members list ──────────────────────────────────────────────
+            // ── Members list ──────────────────────────────────────────
             membersAsync.when(
               data: (members) => SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -150,7 +153,7 @@ class GroupDetailScreen extends ConsumerWidget {
               ),
             ),
 
-            // ── Expenses header ───────────────────────────────────────────
+            // ── Expenses header — with History + Add buttons ──────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
@@ -162,25 +165,52 @@ class GroupDetailScreen extends ConsumerWidget {
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                             color: headingColor)),
-                    TextButton.icon(
-                      onPressed: () =>
-                          showAddExpenseSheet(context, group),
-                      icon: Icon(Icons.add,
-                          size: 16, color: AppColors.primary),
-                      label: Text('Add',
-                          style: TextStyle(
-                              fontSize: 13, color: AppColors.primary)),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                      ),
+                    Row(
+                      children: [
+                        // ✅ History button
+                        TextButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ExpenseHistoryScreen(
+                                  group: group),
+                            ),
+                          ),
+                          icon: Icon(Icons.history_rounded,
+                              size: 16,
+                              color: AppColors.primaryLight),
+                          label: Text('History',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.primaryLight)),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                          ),
+                        ),
+                        // Add button
+                        TextButton.icon(
+                          onPressed: () =>
+                              showAddExpenseSheet(context, group),
+                          icon: Icon(Icons.add,
+                              size: 16, color: AppColors.primary),
+                          label: Text('Add',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.primary)),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
 
-            // ── Expenses list or empty state ──────────────────────────────
+            // ── Expenses list or empty state ──────────────────────────
             expensesAsync.when(
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
@@ -204,12 +234,17 @@ class GroupDetailScreen extends ConsumerWidget {
               )
                   : SliverList(
                 delegate: SliverChildBuilderDelegate(
-                      (_, i) => ExpenseTile(
-                    expense: expenses[i],
-                    currentUserId: currentUserId,
-                    onDelete: () => ref
-                        .read(expensesProvider(group.id).notifier)
-                        .deleteExpense(expenses[i].id),
+                      (_, i) => GestureDetector(
+                    onTap: () => showExpenseDetailSheet(
+                        context, expenses[i], group),
+                    child: ExpenseTile(
+                      expense: expenses[i],
+                      currentUserId: currentUserId,
+                      onDelete: () => ref
+                          .read(expensesProvider(group.id)
+                          .notifier)
+                          .deleteExpense(expenses[i].id),
+                    ),
                   ),
                   childCount: expenses.length,
                 ),
@@ -221,7 +256,6 @@ class GroupDetailScreen extends ConsumerWidget {
         ),
       ),
 
-      // ── FAB ──────────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAddExpenseSheet(context, group),
         backgroundColor: AppColors.accent,
@@ -248,10 +282,10 @@ class GroupDetailScreen extends ConsumerWidget {
               style: TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 16),
-            // Invite code box with copy button
             GestureDetector(
               onTap: () {
-                Clipboard.setData(ClipboardData(text: group.inviteCode));
+                Clipboard.setData(
+                    ClipboardData(text: group.inviteCode));
                 Navigator.pop(ctx);
                 showSuccessSnack(context, 'Invite code copied!');
               },
@@ -276,22 +310,18 @@ class GroupDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const Icon(
-                      Icons.copy_rounded,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
+                    const Icon(Icons.copy_rounded,
+                        color: AppColors.primary, size: 20),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 8),
             Center(
-              child: Text(
-                'Tap to copy',
-                style: TextStyle(
-                    fontSize: 11, color: AppColors.primaryLight),
-              ),
+              child: Text('Tap to copy',
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.primaryLight)),
             ),
           ],
         ),
@@ -304,13 +334,15 @@ class GroupDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
   void _showGroupMenu(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: BoxDecoration(
-          color: isDark(context) ? AppColors.primaryDark : Colors.white,
+          color:
+          isDark(context) ? AppColors.primaryDark : Colors.white,
           borderRadius:
           const BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -347,6 +379,20 @@ class GroupDetailScreen extends ConsumerWidget {
                 _showInviteDialog(context);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart_rounded,
+                  color: AppColors.primary),
+              title: const Text('Spending Reports'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ReportsScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -354,18 +400,14 @@ class GroupDetailScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BALANCE SUMMARY CARD — now shows real data from expenses
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Balance Summary Card ──────────────────────────────────────────────────────
 class _BalanceSummaryCard extends ConsumerWidget {
   final GroupModel group;
   const _BalanceSummaryCard({required this.group});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch expenses so card updates when expenses change
     ref.watch(expensesProvider(group.id));
-
     final summary = ref.watch(groupBalanceSummaryProvider({
       'groupId': group.id,
       'groupName': group.name,
@@ -382,35 +424,35 @@ class _BalanceSummaryCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            group.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.primaryTint,
-            ),
-          ),
+          Text(group.name,
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primaryTint)),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _BalanceItem(
                   label: 'Total spent',
-                  value: '${group.currency} ${summary.totalSpent.toStringAsFixed(0)}',
+                  value:
+                  '${group.currency} ${summary.totalSpent.toStringAsFixed(0)}',
                   color: AppColors.primaryLight,
                 ),
               ),
               Expanded(
                 child: _BalanceItem(
                   label: 'You are owed',
-                  value: '${group.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
+                  value:
+                  '${group.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
                   color: AppColors.success,
                 ),
               ),
               Expanded(
                 child: _BalanceItem(
                   label: 'You owe',
-                  value: '${group.currency} ${summary.youOwe.toStringAsFixed(0)}',
+                  value:
+                  '${group.currency} ${summary.youOwe.toStringAsFixed(0)}',
                   color: AppColors.danger,
                 ),
               ),
@@ -421,6 +463,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
     );
   }
 }
+
 class _BalanceItem extends StatelessWidget {
   final String label;
   final String value;
@@ -449,9 +492,7 @@ class _BalanceItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MEMBER TILE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Member Tile ───────────────────────────────────────────────────────────────
 class _MemberTile extends StatelessWidget {
   final Map<String, dynamic> member;
   const _MemberTile({required this.member});
@@ -467,7 +508,8 @@ class _MemberTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = isDark(context);
-    final profile = member['profiles'] as Map<String, dynamic>? ?? {};
+    final profile =
+        member['profiles'] as Map<String, dynamic>? ?? {};
     final name = profile['full_name'] as String? ?? 'Unknown';
     final avatarColor =
         profile['avatar_color'] as String? ?? '#0F766E';
@@ -475,10 +517,11 @@ class _MemberTile extends StatelessWidget {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding:
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: dark ? AppColors.primaryDark : Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -537,9 +580,7 @@ class _MemberTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EXPENSES EMPTY STATE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Expenses Empty State ──────────────────────────────────────────────────────
 class _ExpensesEmptyState extends StatelessWidget {
   final GroupModel group;
   const _ExpensesEmptyState({required this.group});
@@ -549,8 +590,8 @@ class _ExpensesEmptyState extends StatelessWidget {
     final dark = isDark(context);
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 40, vertical: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -558,8 +599,9 @@ class _ExpensesEmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color:
-                dark ? AppColors.primaryDark : AppColors.primaryTint,
+                color: dark
+                    ? AppColors.primaryDark
+                    : AppColors.primaryTint,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.receipt_long_outlined,
@@ -578,7 +620,9 @@ class _ExpensesEmptyState extends StatelessWidget {
               'Add the first expense to start tracking who owes what.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 13, color: AppColors.primary, height: 1.5),
+                  fontSize: 13,
+                  color: AppColors.primary,
+                  height: 1.5),
             ),
             const SizedBox(height: 80),
           ],

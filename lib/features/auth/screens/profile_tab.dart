@@ -4,6 +4,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../reports/screens/reports_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -16,16 +17,15 @@ class ProfileTab extends ConsumerWidget {
     final fullName =
         user?.userMetadata?['full_name'] as String? ?? 'Splitly User';
     final email = user?.email ?? '';
-    final avatarLetter = fullName.isNotEmpty
-        ? fullName[0].toUpperCase()
-        : 'S';
+    final avatarLetter =
+    fullName.isNotEmpty ? fullName[0].toUpperCase() : 'S';
 
     final textColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
     final cardBg = dark ? AppColors.primaryDark : Colors.white;
-    final cardBorder =
-    dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
-    final subColor = AppColors.primary;
+    final cardBorder = dark
+        ? AppColors.primary.withOpacity(0.2)
+        : AppColors.primaryTint;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -33,14 +33,11 @@ class ProfileTab extends ConsumerWidget {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primaryTint,
-          ),
-        ),
+        title: const Text('Profile',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primaryTint)),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -49,46 +46,38 @@ class ProfileTab extends ConsumerWidget {
           children: [
             const SizedBox(height: 32),
 
-            // ── Avatar ───────────────────────────────────────────────────
+            // ── Avatar ────────────────────────────────────────────────
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(
-                  avatarLetter,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Text(avatarLetter,
+                    style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white)),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            // ── Name ─────────────────────────────────────────────────────
-            Text(
-              fullName,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: textColor,
-              ),
-            ),
+            Text(fullName,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: textColor)),
             const SizedBox(height: 4),
-            Text(
-              email,
-              style: TextStyle(fontSize: 14, color: subColor),
-            ),
+            Text(email,
+                style: TextStyle(
+                    fontSize: 14, color: AppColors.primary)),
 
             const SizedBox(height: 32),
 
-            // ── Settings section ─────────────────────────────────────────
+            // ── Section 1 — Main settings ─────────────────────────────
             _SectionCard(
               cardBg: cardBg,
               cardBorder: cardBorder,
@@ -96,17 +85,27 @@ class ProfileTab extends ConsumerWidget {
                 _ProfileTile(
                   icon: Icons.person_outlined,
                   label: 'Edit Profile',
-                  onTap: () {
-                    // TODO: edit profile screen
-                  },
+                  onTap: () {},
                 ),
                 _Divider(),
+
+                // ✅ Reports tile
+                _ProfileTile(
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Spending Reports',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ReportsScreen(),
+                    ),
+                  ),
+                ),
+                _Divider(),
+
                 _ProfileTile(
                   icon: Icons.notifications_outlined,
                   label: 'Notifications',
-                  onTap: () {
-                    // TODO: notifications settings
-                  },
+                  onTap: () {},
                 ),
                 _Divider(),
                 _ProfileTile(
@@ -114,20 +113,18 @@ class ProfileTab extends ConsumerWidget {
                       ? Icons.light_mode_outlined
                       : Icons.dark_mode_outlined,
                   label: isDark(context) ? 'Light Mode' : 'Dark Mode',
-                  trailing: Text(
-                    'System',
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.primaryLight),
-                  ),
-                  onTap: () {
-                    // Theme follows system — Option B toggle can be added later
-                  },
+                  trailing: Text('System',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primaryLight)),
+                  onTap: () {},
                 ),
               ],
             ),
 
             const SizedBox(height: 16),
 
+            // ── Section 2 — App settings ──────────────────────────────
             _SectionCard(
               cardBg: cardBg,
               cardBorder: cardBorder,
@@ -135,29 +132,24 @@ class ProfileTab extends ConsumerWidget {
                 _ProfileTile(
                   icon: Icons.language_outlined,
                   label: 'Language',
-                  trailing: Text(
-                    'English',
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.primaryLight),
-                  ),
-                  onTap: () {
-                    // TODO: language screen
-                  },
+                  trailing: Text('English',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primaryLight)),
+                  onTap: () {},
                 ),
                 _Divider(),
                 _ProfileTile(
                   icon: Icons.lock_outlined,
                   label: 'App Lock / PIN',
-                  onTap: () {
-                    // TODO: app lock screen
-                  },
+                  onTap: () {},
                 ),
               ],
             ),
 
             const SizedBox(height: 16),
 
-            // ── Sign Out ─────────────────────────────────────────────────
+            // ── Section 3 — Sign out ──────────────────────────────────
             _SectionCard(
               cardBg: cardBg,
               cardBorder: cardBorder,
@@ -174,13 +166,11 @@ class ProfileTab extends ConsumerWidget {
 
             const SizedBox(height: 40),
 
-            // ── App version ──────────────────────────────────────────────
             Text(
               'Splitly v1.0.0 · Your Circle. Your Hisaab.',
               style: TextStyle(
-                fontSize: 11,
-                color: AppColors.primaryLight.withOpacity(0.5),
-              ),
+                  fontSize: 11,
+                  color: AppColors.primaryLight.withOpacity(0.5)),
             ),
 
             const SizedBox(height: 24),
@@ -190,7 +180,8 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmSignOut(
+      BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -203,7 +194,8 @@ class ProfileTab extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(
+                foregroundColor: AppColors.danger),
             child: const Text('Sign Out'),
           ),
         ],
@@ -212,16 +204,11 @@ class ProfileTab extends ConsumerWidget {
 
     if (confirmed == true) {
       try {
-        // Sign out from Supabase
         await ref.read(authControllerProvider.notifier).signOut();
-      } catch (_) {
-        // Even if signOut throws, still navigate to login
-      }
-
-      // Navigate manually as a guaranteed fallback
-      // This runs regardless of whether AuthGate catches the event
+      } catch (_) {}
       if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
               (_) => false,
         );
@@ -230,7 +217,7 @@ class ProfileTab extends ConsumerWidget {
   }
 }
 
-// ── Reusable card wrapper ─────────────────────────────────────────────────────
+// ── Section card ──────────────────────────────────────────────────────────────
 class _SectionCard extends StatelessWidget {
   final List<Widget> children;
   final Color cardBg;
@@ -255,7 +242,7 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-// ── Profile list tile ─────────────────────────────────────────────────────────
+// ── Profile tile ──────────────────────────────────────────────────────────────
 class _ProfileTile extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -283,31 +270,23 @@ class _ProfileTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: iconColor ?? AppColors.primary,
-            ),
+            Icon(icon,
+                size: 20, color: iconColor ?? AppColors.primary),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: labelColor ?? defaultTextColor,
-                ),
-              ),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: labelColor ?? defaultTextColor)),
             ),
             trailing ??
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: AppColors.primaryLight,
-                ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 14, color: AppColors.primaryLight),
           ],
         ),
       ),
@@ -321,10 +300,9 @@ class _Divider extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 50),
       child: Divider(
-        height: 0.5,
-        thickness: 0.5,
-        color: AppColors.primaryTint,
-      ),
+          height: 0.5,
+          thickness: 0.5,
+          color: AppColors.primaryTint),
     );
   }
 }
