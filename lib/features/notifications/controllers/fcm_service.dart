@@ -1,17 +1,17 @@
-import 'dart:ui';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/material.dart';
+import '../../../config/supabase/supabase_config.dart';
 import '../../../firebase_options.dart';
 
-// ── Background handler (must be top-level function) ──────────────────────────
+// ── Background handler (must be top-level) ────────────────────────────────────
 @pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> firebaseMessagingBackgroundHandler(
+    RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Message received while app is in background/terminated
 }
 
 class FCMService {
@@ -23,30 +23,28 @@ class FCMService {
   final FlutterLocalNotificationsPlugin _localNotifications =
   FlutterLocalNotificationsPlugin();
 
-  // Android notification channel
-  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+  static const AndroidNotificationChannel _channel =
+  AndroidNotificationChannel(
     'high_importance_channel',
     'High Importance Notifications',
     description: 'Used for Splitly expense and payment notifications',
     importance: Importance.high,
   );
 
-  // ── Initialize everything ─────────────────────────────────────────────────
+  // ── Initialize ────────────────────────────────────────────────────────────
   Future<void> initialize() async {
-    // 1. Request permission from user (important for iOS)
     await _requestPermission();
-
-    // 2. Setup local notifications (for foreground messages)
     await _setupLocalNotifications();
-
-    // 3. Listen for messages
     _listenForMessages();
+    await _saveTokenToSupabase();
 
-    // 4. Get and print FCM token (you'll save this to Supabase later)
-    await _getToken();
+    // Listen for token refresh and save again
+    _messaging.onTokenRefresh.listen((newToken) {
+      _saveToken(newToken);
+    });
   }
 
-  // ── Request notification permission ───────────────────────────────────────
+  // ── Request permission ────────────────────────────────────────────────────
   Future<void> _requestPermission() async {
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -56,7 +54,7 @@ class FCMService {
     print('FCM Permission: ${settings.authorizationStatus}');
   }
 
-  // ── Setup local notifications (shows alerts in foreground) ────────────────
+  // ── Setup local notifications ─────────────────────────────────────────────
   Future<void> _setupLocalNotifications() async {
     const androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -65,24 +63,19 @@ class FCMService {
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-
     await _localNotifications.initialize(
       const InitializationSettings(
-        android: androidSettings,
-        iOS: iosSettings,
-      ),
+          android: androidSettings, iOS: iosSettings),
     );
-
-    // Create high importance Android channel
     await _localNotifications
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
   }
 
-  // ── Listen for incoming messages ──────────────────────────────────────────
+  // ── Listen for messages ───────────────────────────────────────────────────
   void _listenForMessages() {
-    // App is OPEN — show local notification manually
+    // App is OPEN — show local notification
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final notification = message.notification;
       if (notification != null) {
@@ -97,29 +90,49 @@ class FCMService {
               channelDescription: _channel.description,
               importance: Importance.high,
               priority: Priority.high,
-              color: const Color(0xFF0F766E), // Splitly teal
+              color: const Color(0xFF0F766E),
             ),
           ),
         );
       }
     });
 
-    // App opened FROM a notification
+    // App opened FROM notification
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification opened: ${message.data}');
-      // Later: navigate to the relevant group/expense screen
+      print('Notification opened app: ${message.data}');
+      // TODO: navigate to relevant screen based on message.data
     });
   }
 
-  // ── Get FCM token for this device ─────────────────────────────────────────
-  Future<String?> _getToken() async {
-    final token = await _messaging.getToken();
-    print('FCM Token: $token');
-    // Later: save this token to Supabase profiles table
-    // so Supabase Edge Functions can send targeted notifications
-    return token;
+  // ── Save FCM token to Supabase ────────────────────────────────────────────
+  // Called on init and on token refresh
+  // Token is stored in profiles.fcm_token column
+  Future<void> _saveTokenToSupabase() async {
+    try {
+      final token = await _messaging.getToken();
+      if (token != null) {
+        await _saveToken(token);
+        print('FCM Token saved to Supabase: $token');
+      }
+    } catch (e) {
+      print('FCM token save error: $e');
+    }
   }
 
-  // ── Public method to get token from anywhere ──────────────────────────────
+  Future<void> _saveToken(String token) async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      await SupabaseConfig.client
+          .from('profiles')
+          .update({'fcm_token': token})
+          .eq('id', userId);
+    } catch (e) {
+      print('Save token error: $e');
+    }
+  }
+
+  // ── Public method to get token ────────────────────────────────────────────
   Future<String?> getToken() async => await _messaging.getToken();
 }
