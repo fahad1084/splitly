@@ -13,7 +13,7 @@ import '../../expenses/screens/expense_tile.dart';
 import '../controllers/groups_controller.dart';
 import '../models/group_model.dart';
 import '../../reports/screens/reports_screen.dart';
-
+import '../../chat/screens/chat_screen.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -71,6 +71,16 @@ class GroupDetailScreen extends ConsumerWidget {
             icon: const Icon(Icons.person_add_outlined,
                 color: AppColors.primaryTint),
             onPressed: () => _showInviteDialog(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded,
+                color: AppColors.primaryTint),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ChatScreen(group: group),
+              ),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.more_vert_rounded,
