@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../controllers/groups_controller.dart';
@@ -16,6 +17,7 @@ class GroupsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final user = ref.watch(currentUserProvider);
     final groupsAsync = ref.watch(groupsProvider);
@@ -52,7 +54,7 @@ class GroupsTab extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.group_add_outlined,
                 color: AppColors.primaryTint),
-            tooltip: 'Join a group',
+            tooltip: l10n.joinAGroup,
             onPressed: () => showJoinGroupSheet(context),
           ),
           IconButton(
@@ -75,13 +77,13 @@ class GroupsTab extends ConsumerWidget {
               Icon(Icons.error_outline,
                   color: AppColors.danger, size: 40),
               const SizedBox(height: 12),
-              Text('Something went wrong',
+              Text(l10n.somethingWentWrong,
                   style: TextStyle(color: AppColors.danger)),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () =>
                     ref.read(groupsProvider.notifier).refresh(),
-                child: const Text('Try again'),
+                child: Text(l10n.tryAgain),
               ),
             ],
           ),
@@ -131,7 +133,7 @@ class GroupsTab extends ConsumerWidget {
                       MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Your Groups',
+                          l10n.yourGroups,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -166,7 +168,7 @@ class GroupsTab extends ConsumerWidget {
                                         size: 13,
                                         color: AppColors.primary),
                                     const SizedBox(width: 4),
-                                    Text('Join',
+                                    Text(l10n.join,
                                         style: TextStyle(
                                             fontSize: 12,
                                             color: AppColors.primary,
@@ -191,13 +193,13 @@ class GroupsTab extends ConsumerWidget {
                                   BorderRadius.circular(20),
                                 ),
                                 child: Row(
-                                  children: const [
-                                    Icon(Icons.add_rounded,
+                                  children: [
+                                    const Icon(Icons.add_rounded,
                                         size: 13,
                                         color: Colors.white),
-                                    SizedBox(width: 4),
-                                    Text('New',
-                                        style: TextStyle(
+                                    const SizedBox(width: 4),
+                                    Text(l10n.newButton,
+                                        style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.white,
                                             fontWeight:
@@ -254,8 +256,8 @@ class GroupsTab extends ConsumerWidget {
         foregroundColor: AppColors.primaryDark,
         elevation: 0,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Group',
-            style: TextStyle(fontWeight: FontWeight.w500)),
+        label: Text(l10n.newGroup,
+            style: const TextStyle(fontWeight: FontWeight.w500)),
       ),
     );
   }
@@ -269,6 +271,7 @@ class _GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return GestureDetector(
       onTap: onTap,
@@ -318,7 +321,7 @@ class _GroupCard extends StatelessWidget {
                       Icon(Icons.people_outline_rounded,
                           size: 12, color: AppColors.primaryLight),
                       const SizedBox(width: 4),
-                      Text('${group.memberCount ?? 0} members',
+                      Text(l10n.membersCount(group.memberCount ?? 0),
                           style: TextStyle(
                               fontSize: 12,
                               color: AppColors.primaryLight)),
@@ -366,6 +369,7 @@ class _SummaryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       padding: const EdgeInsets.all(20),
@@ -376,21 +380,21 @@ class _SummaryBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Hey, $firstName 👋',
+          Text(l10n.hey(firstName) + ' 👋',
               style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: AppColors.primaryTint)),
           const SizedBox(height: 4),
-          const Text('Here\'s your balance summary',
-              style: TextStyle(
+          Text(l10n.balanceSummary,
+              style: const TextStyle(
                   fontSize: 13, color: AppColors.primaryLight)),
           const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: _BalanceCard(
-                  label: 'You are owed',
+                  label: l10n.youAreOwed,
                   amount: '$currency ${totalOwed.toStringAsFixed(0)}',
                   color: AppColors.success,
                   icon: Icons.arrow_downward_rounded,
@@ -399,7 +403,7 @@ class _SummaryBanner extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _BalanceCard(
-                  label: 'You owe',
+                  label: l10n.youOwe,
                   amount: '$currency ${totalOwe.toStringAsFixed(0)}',
                   color: AppColors.danger,
                   icon: Icons.arrow_upward_rounded,
@@ -475,6 +479,7 @@ class _EmptyGroupsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Padding(
@@ -495,7 +500,7 @@ class _EmptyGroupsState extends StatelessWidget {
                   size: 36, color: AppColors.primary),
             ),
             const SizedBox(height: 20),
-            Text('No groups yet',
+            Text(l10n.noGroupsYet,
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -504,7 +509,7 @@ class _EmptyGroupsState extends StatelessWidget {
                         : AppColors.primaryDark)),
             const SizedBox(height: 8),
             Text(
-              'Create a new group or join one with an invite code.',
+              l10n.createFirstGroupDesc,
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 14,
@@ -513,13 +518,13 @@ class _EmptyGroupsState extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             SplitlyButton(
-              label: 'Create a Group',
+              label: l10n.createGroup,
               onPressed: onCreateTap,
               icon: Icons.add_rounded,
             ),
             const SizedBox(height: 12),
             SplitlyButton(
-              label: 'Join with Invite Code',
+              label: l10n.joinWithInviteCode,
               onPressed: onJoinTap,
               isOutline: true,
               icon: Icons.login_rounded,

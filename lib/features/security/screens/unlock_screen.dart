@@ -24,7 +24,8 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   }
 
   Future<void> _tryBiometricAuto() async {
-    final biometricEnabled = await ref.read(appLockControllerProvider.notifier).isBiometricEnabled();
+    final biometricEnabled =
+    await ref.read(appLockControllerProvider.notifier).isBiometricEnabled();
     if (biometricEnabled && mounted) {
       await Future.delayed(const Duration(milliseconds: 400));
       _tryBiometric();
@@ -32,7 +33,8 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   }
 
   Future<void> _tryBiometric() async {
-    final success = await ref.read(appLockControllerProvider.notifier).authenticateWithBiometrics();
+    final success =
+    await ref.read(appLockControllerProvider.notifier).authenticateWithBiometrics();
     if (success && mounted) {
       ref.read(appLockControllerProvider.notifier).unlock();
     }
@@ -72,28 +74,34 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   @override
   Widget build(BuildContext context) {
     final dark = isDark(context);
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final dotColor = AppColors.primary;
 
     return Scaffold(
-      backgroundColor: AppColors.primaryDark,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 48),
-            SizedBox(
+            Container(
               width: 64,
               height: 64,
-              child: Icon(Icons.lock_rounded, size: 56, color: AppColors.primaryTint),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.lock_rounded, size: 30, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
             Text(
               'Splitly',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: AppColors.primaryTint),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
               'Enter your PIN to continue',
-              style: TextStyle(fontSize: 13, color: AppColors.accent),
+              style: TextStyle(fontSize: 13, color: AppColors.primary),
             ),
             const SizedBox(height: 32),
 
@@ -107,8 +115,8 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                   height: 16,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: filled ? AppColors.primaryTint : Colors.transparent,
-                    border: Border.all(color: AppColors.primaryTint, width: 2),
+                    color: filled ? dotColor : Colors.transparent,
+                    border: Border.all(color: dotColor, width: 2),
                   ),
                 );
               }),
@@ -125,13 +133,16 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 children: [
-                  _UnlockNumberPad(onKeyTap: _onKeyTap, onBackspace: _onBackspace),
+                  _UnlockNumberPad(
+                    textColor: textColor,
+                    onKeyTap: _onKeyTap,
+                    onBackspace: _onBackspace,
+                  ),
                   const SizedBox(height: 12),
                   TextButton.icon(
                     onPressed: _tryBiometric,
-                    icon: const Icon(Icons.fingerprint_rounded, color: AppColors.primaryTint),
-                    label: Text('Use biometrics',
-                        style: TextStyle(color: AppColors.primaryTint)),
+                    icon: Icon(Icons.fingerprint_rounded, color: AppColors.primary),
+                    label: Text('Use biometrics', style: TextStyle(color: AppColors.primary)),
                   ),
                 ],
               ),
@@ -145,10 +156,15 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
 }
 
 class _UnlockNumberPad extends StatelessWidget {
+  final Color textColor;
   final void Function(String) onKeyTap;
   final VoidCallback onBackspace;
 
-  const _UnlockNumberPad({required this.onKeyTap, required this.onBackspace});
+  const _UnlockNumberPad({
+    required this.textColor,
+    required this.onKeyTap,
+    required this.onBackspace,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -169,15 +185,16 @@ class _UnlockNumberPad extends StatelessWidget {
               if (key.isEmpty) return const SizedBox(width: 64, height: 64);
               if (key == 'back') {
                 return _Btn(
-                  child: const Icon(Icons.backspace_outlined,
-                      size: 22, color: AppColors.primaryTint),
+                  textColor: textColor,
+                  child: Icon(Icons.backspace_outlined, size: 22, color: textColor),
                   onTap: onBackspace,
                 );
               }
               return _Btn(
+                textColor: textColor,
                 child: Text(key,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.w500, color: AppColors.primaryTint)),
+                    style: TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.w500, color: textColor)),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   onKeyTap(key);
@@ -193,8 +210,9 @@ class _UnlockNumberPad extends StatelessWidget {
 
 class _Btn extends StatelessWidget {
   final Widget child;
+  final Color textColor;
   final VoidCallback onTap;
-  const _Btn({required this.child, required this.onTap});
+  const _Btn({required this.child, required this.textColor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

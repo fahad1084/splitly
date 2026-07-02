@@ -4,6 +4,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../features/groups/screens/groups_tab.dart';
 import '../../balances/screens/balances_tab.dart';
+import '../../../l10n/app_localizations.dart';
 import 'profile_tab.dart';
 
 // ── Bottom nav index provider ─────────────────────────────────────────────────
@@ -20,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final currentIndex = ref.watch(bottomNavIndexProvider);
     final dark = isDark(context);
 
@@ -50,19 +52,19 @@ class HomeScreen extends ConsumerWidget {
           NavigationDestination(
             icon: Icon(Icons.group_outlined, color: navUnselected),
             selectedIcon: Icon(Icons.group_rounded, color: navSelected),
-            label: 'Groups',
+            label: l10n.groups,
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined,
                 color: navUnselected),
             selectedIcon: Icon(Icons.account_balance_wallet_rounded,
                 color: navSelected),
-            label: 'Balances',
+            label: l10n.balances,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outlined, color: navUnselected),
             selectedIcon: Icon(Icons.person_rounded, color: navSelected),
-            label: 'Profile',
+            label: l10n.profile,
           ),
         ],
       ),
