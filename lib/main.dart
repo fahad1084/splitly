@@ -12,6 +12,8 @@ import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/home_screen.dart';
 import 'features/notifications/controllers/fcm_service.dart';
 import 'firebase_options.dart';
+import 'features/security/controllers/app_lock_controller.dart';
+import 'features/security/screens/unlock_screen.dart';
 
 // ── Global navigator key ──────────────────────────────────────────────────────
 // Attached to MaterialApp so ALL navigation uses the same stack

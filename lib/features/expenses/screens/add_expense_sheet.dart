@@ -8,6 +8,7 @@ import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
+import 'receipt_scanner_screen.dart';
 
 void showAddExpenseSheet(BuildContext context, GroupModel group) {
   showModalBottomSheet(
@@ -288,6 +289,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 14),
 
             // ── Amount ────────────────────────────────────────────────
+// ── Amount ────────────────────────────────────────────────
             TextFormField(
               controller: _amountCtrl,
               keyboardType:
@@ -316,6 +318,25 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           color: AppColors.primary)),
                 ),
                 prefixIconConstraints: const BoxConstraints(),
+                // ✅ NEW — Receipt scan button
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.document_scanner_outlined,
+                      color: AppColors.primary),
+                  tooltip: 'Scan Receipt',
+                  onPressed: () async {
+                    final result = await Navigator.push<ReceiptScanResult>(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ReceiptScannerScreen()),
+                    );
+                    if (result?.amount != null) {
+                      setState(() {
+                        _amountCtrl.text =
+                            result!.amount!.toStringAsFixed(0);
+                      });
+                    }
+                  },
+                ),
               ),
             ),
 
