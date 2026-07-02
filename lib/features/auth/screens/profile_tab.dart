@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:splitly/features/settings/controllers/locale_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../reports/screens/reports_screen.dart';
@@ -13,6 +15,7 @@ class ProfileTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final user = ref.watch(currentUserProvider);
 
@@ -35,8 +38,8 @@ class ProfileTab extends ConsumerWidget {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text('Profile',
-            style: TextStyle(
+        title: Text(l10n.profile,
+            style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
                 color: AppColors.primaryTint)),
@@ -86,7 +89,7 @@ class ProfileTab extends ConsumerWidget {
               children: [
                 _ProfileTile(
                   icon: Icons.person_outlined,
-                  label: 'Edit Profile',
+                  label: l10n.editProfile,
                   onTap: () {},
                 ),
                 _Divider(),
@@ -94,7 +97,7 @@ class ProfileTab extends ConsumerWidget {
                 // ✅ Reports tile
                 _ProfileTile(
                   icon: Icons.bar_chart_rounded,
-                  label: 'Spending Reports',
+                  label: l10n.spendingReports,
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -106,7 +109,7 @@ class ProfileTab extends ConsumerWidget {
 
                 _ProfileTile(
                   icon: Icons.notifications_outlined,
-                  label: 'Notifications',
+                  label: l10n.notifications,
                   onTap: () {},
                 ),
                 _Divider(),
@@ -114,8 +117,8 @@ class ProfileTab extends ConsumerWidget {
                   icon: isDark(context)
                       ? Icons.light_mode_outlined
                       : Icons.dark_mode_outlined,
-                  label: isDark(context) ? 'Light Mode' : 'Dark Mode',
-                  trailing: Text('System',
+                  label: isDark(context) ? l10n.lightMode : l10n.darkMode,
+                  trailing: Text(l10n.system,
                       style: TextStyle(
                           fontSize: 12,
                           color: AppColors.primaryLight)),
@@ -132,18 +135,18 @@ class ProfileTab extends ConsumerWidget {
               cardBorder: cardBorder,
               children: [
                 _ProfileTile(
-                  icon: Icons.language_outlined,
-                  label: 'Language',
-                  trailing: Text('English',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.primaryLight)),
-                  onTap: () {},
+                  icon: Icons.language_rounded,
+                  label: l10n.language,
+                  trailing: Text(
+                    ref.watch(localeControllerProvider).languageCode == 'ur' ? 'اردو' : 'English',
+                    style: TextStyle(fontSize: 12, color: AppColors.primaryLight),
+                  ),
+                  onTap: () => _showLanguageSheet(context, ref),
                 ),
                 _Divider(),
                 _ProfileTile(
                   icon: Icons.lock_outline_rounded,
-                  label: 'App Lock / PIN',
+                  label: l10n.appLock,
                   onTap: () => _showAppLockSheet(context, ref),
                 ),
               ],
@@ -158,7 +161,7 @@ class ProfileTab extends ConsumerWidget {
               children: [
                 _ProfileTile(
                   icon: Icons.logout_rounded,
-                  label: 'Sign Out',
+                  label: l10n.signOut,
                   labelColor: AppColors.danger,
                   iconColor: AppColors.danger,
                   onTap: () => _confirmSignOut(context, ref),
@@ -169,7 +172,7 @@ class ProfileTab extends ConsumerWidget {
             const SizedBox(height: 40),
 
             Text(
-              'Splitly v1.0.0 · Your Circle. Your Hisaab.',
+              l10n.splitlyFooter,
               style: TextStyle(
                   fontSize: 11,
                   color: AppColors.primaryLight.withOpacity(0.5)),
@@ -182,23 +185,85 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
+  void _showLanguageSheet(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+    final currentLocale = ref.read(localeControllerProvider).languageCode;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: BoxDecoration(
+          color: dark ? AppColors.primaryDark : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            Text(l10n.language,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w600,
+                    color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
+            const SizedBox(height: 20),
+
+            _LangTile(
+              label: 'English',
+              subtitle: 'English',
+              selected: currentLocale == 'en',
+              dark: dark,
+              onTap: () {
+                ref.read(localeControllerProvider.notifier).setLocale('en');
+                Navigator.pop(sheetContext);
+              },
+            ),
+            const SizedBox(height: 10),
+            _LangTile(
+              label: 'اردو',
+              subtitle: 'Urdu',
+              selected: currentLocale == 'ur',
+              dark: dark,
+              onTap: () {
+                ref.read(localeControllerProvider.notifier).setLocale('ur');
+                Navigator.pop(sheetContext);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmSignOut(
       BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(l10n.signOut),
+        content: Text(l10n.signOutConfirmDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
                 foregroundColor: AppColors.danger),
-            child: const Text('Sign Out'),
+            child: Text(l10n.signOut),
           ),
         ],
       ),
@@ -220,6 +285,7 @@ class ProfileTab extends ConsumerWidget {
 }
 
 void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context)!;
   final controller = ref.read(appLockControllerProvider.notifier);
   final isEnabled = await controller.isLockEnabled();
   final canBiometric = await controller.canUseBiometrics();
@@ -227,71 +293,172 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
 
   if (!context.mounted) return;
   final dark = isDark(context);
+  final sheetBg = dark ? AppColors.primaryDark : Colors.white;
+  final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+  final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
 
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
-    builder: (sheetContext) => Container(
-      decoration: BoxDecoration(
-        color: dark ? AppColors.primaryDark : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40, height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(10),
-              ),
+    isScrollControlled: true,
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (sheetContext, setSheetState) {
+        bool localBiometricOn = biometricOn;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: sheetBg,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                // Icon + heading
+                Center(
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.lock_outline_rounded,
+                        color: AppColors.primary, size: 26),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  l10n.appLock,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w600, color: textColor),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isEnabled
+                      ? l10n.protectSplitly
+                      : l10n.addExtraLayer,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: AppColors.primary),
+                ),
+                const SizedBox(height: 24),
+
+                if (!isEnabled)
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      Navigator.pop(sheetContext);
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SetPinScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.lock_outline_rounded, size: 18),
+                    label: Text(l10n.enablePinLock),
+                  )
+                else ...[
+                  if (canBiometric)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          l10n.useBiometricUnlock,
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
+                        ),
+                        subtitle: Text(
+                          l10n.unlockWithFingerprint,
+                          style: TextStyle(fontSize: 12, color: AppColors.primaryLight),
+                        ),
+                        value: localBiometricOn,
+                        activeColor: AppColors.primary,
+                        onChanged: (val) async {
+                          await controller.setBiometricEnabled(val);
+                          setSheetState(() => localBiometricOn = val);
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _confirmDisableAppLock(context, ref);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      side: BorderSide(color: AppColors.danger.withOpacity(0.4)),
+                    ),
+                    icon: const Icon(Icons.lock_open_rounded, size: 18),
+                    label: Text(l10n.disableAppLock),
+                  ),
+                ],
+              ],
             ),
           ),
-          Text('App Lock',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600,
-                  color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
-          const SizedBox(height: 20),
+        );
+      },
+    ),
+  );
+}
 
-          if (!isEnabled)
-            ElevatedButton.icon(
-              onPressed: () async {
-                Navigator.pop(sheetContext);
-                await Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const SetPinScreen()));
-              },
-              icon: const Icon(Icons.lock_outline_rounded),
-              label: const Text('Enable PIN Lock'),
-            )
-          else ...[
-            if (canBiometric)
-              SwitchListTile(
-                title: const Text('Use Biometric Unlock'),
-                value: biometricOn,
-                activeColor: AppColors.primary,
-                onChanged: (val) async {
-                  await controller.setBiometricEnabled(val);
-                  Navigator.pop(sheetContext);
-                },
-              ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: () async {
-                await controller.disableLock();
-                if (context.mounted) {
-                  Navigator.pop(sheetContext);
-                  showSuccessSnack(context, 'App Lock disabled');
-                }
-              },
-              icon: Icon(Icons.lock_open_rounded, color: AppColors.danger),
-              label: Text('Disable App Lock', style: TextStyle(color: AppColors.danger)),
-            ),
-          ],
-        ],
+void _confirmDisableAppLock(BuildContext context, WidgetRef ref) {
+  final l10n = AppLocalizations.of(context)!;
+  final dark = isDark(context);
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(
+        l10n.disableAppLockTitle,
+        style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark),
       ),
+      content: Text(
+        l10n.disableAppLockDesc,
+        style: TextStyle(
+          color: dark
+              ? AppColors.primaryTint.withOpacity(0.8)
+              : AppColors.primaryDark.withOpacity(0.7),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+        ),
+        TextButton(
+          onPressed: () async {
+            await ref.read(appLockControllerProvider.notifier).disableLock();
+            if (dialogContext.mounted) Navigator.pop(dialogContext);
+            if (context.mounted) showSuccessSnack(context, l10n.disableAppLock);
+          },
+          child: Text(l10n.disable, style: TextStyle(color: AppColors.danger)),
+        ),
+      ],
     ),
   );
 }
@@ -382,6 +549,55 @@ class _Divider extends StatelessWidget {
           height: 0.5,
           thickness: 0.5,
           color: AppColors.primaryTint),
+    );
+  }
+}
+
+class _LangTile extends StatelessWidget {
+  final String label;
+  final String subtitle;
+  final bool selected;
+  final bool dark;
+  final VoidCallback onTap;
+
+  const _LangTile({
+    required this.label,
+    required this.subtitle,
+    required this.selected,
+    required this.dark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.primaryTint,
+            width: selected ? 2 : 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: textColor)),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.primaryLight)),
+                ],
+              ),
+            ),
+            if (selected) Icon(Icons.check_circle_rounded, color: AppColors.primary),
+          ],
+        ),
+      ),
     );
   }
 }
