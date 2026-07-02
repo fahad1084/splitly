@@ -12,6 +12,8 @@ import '../../expenses/screens/expense_history_screen.dart';
 import '../../expenses/screens/expense_tile.dart';
 import '../controllers/groups_controller.dart';
 import '../models/group_model.dart';
+import '../../expenses/screens/share_summary_sheet.dart';
+import '../../expenses/screens/export_sheet.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../chat/screens/chat_screen.dart';
 
@@ -279,137 +281,312 @@ class GroupDetailScreen extends ConsumerWidget {
   }
 
   void _showInviteDialog(BuildContext context) {
-    showDialog(
+    final dark = isDark(context);
+    final sheetBg = dark ? AppColors.primaryDark : Colors.white;
+    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final codeBg = dark ? AppColors.darkBg : AppColors.primaryTint;
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Invite Members'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Share this invite code with your friends.\nThey can enter it in the app to join this group.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () {
-                Clipboard.setData(
-                    ClipboardData(text: group.inviteCode));
-                Navigator.pop(ctx);
-                showSuccessSnack(context, 'Invite code copied!');
-              },
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryTint,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.primaryLight, width: 0.5),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: sheetBg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Row(
+              ),
+
+              Text(
+                'Invite to ${group.name}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Share this code with friends to join',
+                style: TextStyle(fontSize: 13, color: AppColors.primary),
+              ),
+              const SizedBox(height: 24),
+
+              // Invite code display
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: codeBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primaryLight.withOpacity(0.4)),
+                ),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Text(
-                        group.inviteCode.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primaryDark,
-                          letterSpacing: 4,
-                        ),
+                    Text(
+                      group.inviteCode,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 4,
+                        color: AppColors.primary,
                       ),
                     ),
-                    const Icon(Icons.copy_rounded,
-                        color: AppColors.primary, size: 20),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Invite Code',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: textColor.withOpacity(0.5),
+                      ),
+                    ),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: group.inviteCode));
+                    Navigator.pop(sheetContext);
+                    showSuccessSnack(context, 'Invite code copied!');
+                  },
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  label: const Text('Copy Code'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  void _showGroupMenu(BuildContext context, WidgetRef ref) {
+    final dark = isDark(context);
+    final sheetBg = dark ? AppColors.primaryDark : Colors.white;
+    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: BoxDecoration(
+          color: sheetBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Text(
+                group.name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+            ),
+
+            _MenuTile(
+              icon: Icons.person_add_outlined,
+              iconColor: AppColors.primary,
+              label: 'Share Invite Code',
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showInviteDialog(context);
+              },
             ),
             const SizedBox(height: 8),
-            Center(
-              child: Text('Tap to copy',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.primaryLight)),
+
+            _MenuTile(
+              icon: Icons.share_outlined,
+              iconColor: AppColors.primary,
+              label: 'Share Summary',
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showShareSummarySheet(context, group);
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.download_outlined,
+              iconColor: AppColors.primary,
+              label: 'Export PDF/CSV',
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showExportSheet(context, group);
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.bar_chart_rounded,
+              iconColor: AppColors.primary,
+              label: 'Spending Reports',
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.archive_outlined,
+              iconColor: AppColors.danger,
+              label: 'Archive Group',
+              textColor: AppColors.danger,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmArchive(context, ref);
+              },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmArchive(BuildContext context, WidgetRef ref) {
+    final dark = isDark(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Archive Group?',
+          style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark),
+        ),
+        content: Text(
+          'You can still view past expenses, but no new expenses can be added.',
+          style: TextStyle(color: dark ? AppColors.primaryTint.withOpacity(0.8) : AppColors.primaryDark.withOpacity(0.7)),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel', style: TextStyle(color: AppColors.primary)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await ref.read(groupsProvider.notifier).archiveGroup(group.id);
+              if (context.mounted) Navigator.pop(context); // back to groups list
+            },
+            child: Text('Archive', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
     );
   }
+}
 
-  void _showGroupMenu(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
+class _MenuTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final Color textColor;
+  final Color borderColor;
+  final VoidCallback onTap;
+
+  const _MenuTile({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.textColor,
+    required this.borderColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color:
-          isDark(context) ? AppColors.primaryDark : Colors.white,
-          borderRadius:
-          const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor),
         ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                  color: AppColors.primaryTint,
-                  borderRadius: BorderRadius.circular(2)),
+                color: iconColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Icon(Icons.archive_outlined,
-                  color: AppColors.primary),
-              title: const Text('Archive Group'),
-              onTap: () async {
-                Navigator.pop(context);
-                await ref
-                    .read(groupsProvider.notifier)
-                    .archiveGroup(group.id);
-                if (context.mounted) Navigator.pop(context);
-              },
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.share_outlined,
-                  color: AppColors.primary),
-              title: const Text('Share Invite Code'),
-              onTap: () {
-                Navigator.pop(context);
-                _showInviteDialog(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart_rounded,
-                  color: AppColors.primary),
-              title: const Text('Spending Reports'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ReportsScreen(),
-                  ),
-                );
-              },
-            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight, size: 20),
           ],
         ),
       ),
     );
   }
 }
-
 // ── Balance Summary Card ──────────────────────────────────────────────────────
 class _BalanceSummaryCard extends ConsumerWidget {
   final GroupModel group;

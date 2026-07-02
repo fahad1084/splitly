@@ -5,6 +5,8 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../reports/screens/reports_screen.dart';
+import '../../security/controllers/app_lock_controller.dart';
+import '../../security/screens/set_pin_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -140,9 +142,9 @@ class ProfileTab extends ConsumerWidget {
                 ),
                 _Divider(),
                 _ProfileTile(
-                  icon: Icons.lock_outlined,
+                  icon: Icons.lock_outline_rounded,
                   label: 'App Lock / PIN',
-                  onTap: () {},
+                  onTap: () => _showAppLockSheet(context, ref),
                 ),
               ],
             ),
@@ -215,6 +217,83 @@ class ProfileTab extends ConsumerWidget {
       }
     }
   }
+}
+
+void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
+  final controller = ref.read(appLockControllerProvider.notifier);
+  final isEnabled = await controller.isLockEnabled();
+  final canBiometric = await controller.canUseBiometrics();
+  final biometricOn = await controller.isBiometricEnabled();
+
+  if (!context.mounted) return;
+  final dark = isDark(context);
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => Container(
+      decoration: BoxDecoration(
+        color: dark ? AppColors.primaryDark : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          Text('App Lock',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600,
+                  color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
+          const SizedBox(height: 20),
+
+          if (!isEnabled)
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(sheetContext);
+                await Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const SetPinScreen()));
+              },
+              icon: const Icon(Icons.lock_outline_rounded),
+              label: const Text('Enable PIN Lock'),
+            )
+          else ...[
+            if (canBiometric)
+              SwitchListTile(
+                title: const Text('Use Biometric Unlock'),
+                value: biometricOn,
+                activeColor: AppColors.primary,
+                onChanged: (val) async {
+                  await controller.setBiometricEnabled(val);
+                  Navigator.pop(sheetContext);
+                },
+              ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () async {
+                await controller.disableLock();
+                if (context.mounted) {
+                  Navigator.pop(sheetContext);
+                  showSuccessSnack(context, 'App Lock disabled');
+                }
+              },
+              icon: Icon(Icons.lock_open_rounded, color: AppColors.danger),
+              label: Text('Disable App Lock', style: TextStyle(color: AppColors.danger)),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 }
 
 // ── Section card ──────────────────────────────────────────────────────────────
