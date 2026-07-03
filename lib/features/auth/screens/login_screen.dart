@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
@@ -116,6 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final headingColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -143,14 +145,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 const SizedBox(height: 40),
 
                 // ── Heading ───────────────────────────────────────────────
-                Text('Welcome back',
+                Text(l10n.welcomeBack,
                     style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w500,
                         color: headingColor,
                         letterSpacing: -0.5)),
                 const SizedBox(height: 4),
-                Text('Sign in to your account',
+                Text(l10n.signInToAccount,
                     style: TextStyle(
                         fontSize: 14, color: AppColors.primary)),
 
@@ -159,14 +161,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 // ── Email ─────────────────────────────────────────────────
                 SplitlyTextField(
                   controller: _emailCtrl,
-                  label: 'Email',
+                  label: l10n.email,
                   hint: 'you@example.com',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email is required';
+                    if (v == null || v.isEmpty) return l10n.emailRequired;
                     if (!v.contains('@') || !v.contains('.'))
-                      return 'Enter a valid email';
+                      return l10n.enterValidEmail;
                     return null;
                   },
                 ),
@@ -176,13 +178,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 // ── Password ──────────────────────────────────────────────
                 SplitlyTextField(
                   controller: _passwordCtrl,
-                  label: 'Password',
+                  label: l10n.password,
                   hint: '••••••••',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'At least 6 characters';
+                    if (v == null || v.isEmpty) return l10n.passwordRequired;
+                    if (v.length < 6) return l10n.atLeast6Chars;
                     return null;
                   },
                 ),
@@ -199,8 +201,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 4, vertical: 4),
                     ),
-                    child: const Text('Forgot password?',
-                        style: TextStyle(
+                    child: Text(l10n.forgotPassword,
+                        style: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w500)),
                   ),
                 ),
@@ -209,7 +211,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                 // ── Sign In button ────────────────────────────────────────
                 SplitlyButton(
-                    label: 'Sign In',
+                    label: l10n.signIn,
                     isLoading: _isLoading,
                     onPressed: _login),
 
@@ -221,7 +223,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       child: Divider(color: dividerColor, thickness: 1)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('or continue with',
+                    child: Text(l10n.orContinueWith,
                         style: TextStyle(
                             fontSize: 12,
                             color: AppColors.primaryLight)),
@@ -245,12 +247,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('New to Splitly? ',
+                    Text(l10n.newToSplitly,
                         style: TextStyle(
                             fontSize: 13, color: linkMutedColor)),
                     GestureDetector(
                       onTap: _goToSignUp,
-                      child: Text('Sign Up',
+                      child: Text(l10n.signUp,
                           style: TextStyle(
                               fontSize: 13,
                               color: AppColors.primary,

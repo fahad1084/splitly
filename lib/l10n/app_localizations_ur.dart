@@ -223,4 +223,216 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get system => 'سسٹم';
+
+  @override
+  String get overallBalance => 'مجموعی بیلنس';
+
+  @override
+  String get whoOwesWho => 'کس پر کتنا واجب ہے';
+
+  @override
+  String get byGroup => 'بلحاظ گروپ';
+
+  @override
+  String get owedToYou => 'آپ کو ملنا ہے';
+
+  @override
+  String get youAreOwedLower => 'آپ کو ملنا ہے';
+
+  @override
+  String get youOweLower => 'آپ پر واجب ہے';
+
+  @override
+  String get createOrJoinGroup =>
+      'بیلنس دیکھنے کے لیے گروپ بنائیں\nیا شامل ہوں۔';
+
+  @override
+  String get youWord => 'آپ';
+
+  @override
+  String get owesWord => ' پر واجب ہے ';
+
+  @override
+  String get youWordLower => 'آپ پر';
+
+  @override
+  String get orContinueWith => 'یا اس کے ذریعے جاری رکھیں';
+
+  @override
+  String get welcomeBack => 'خوش آمدید';
+
+  @override
+  String get signInToAccount => 'اپنے اکاؤنٹ میں سائن ان کریں';
+
+  @override
+  String get emailRequired => 'ای میل درکار ہے';
+
+  @override
+  String get enterValidEmail => 'درست ای میل درج کریں';
+
+  @override
+  String get passwordRequired => 'پاس ورڈ درکار ہے';
+
+  @override
+  String get atLeast6Chars => 'کم از کم 6 حروف';
+
+  @override
+  String get createAccountTitle => 'اکاؤنٹ بنائیں';
+
+  @override
+  String get joinSplitly => 'Splitly میں شامل ہوں';
+
+  @override
+  String get splitExpensesCircle => 'اپنے حلقے کے ساتھ اخراجات تقسیم کریں';
+
+  @override
+  String get fullName => 'پورا نام';
+
+  @override
+  String get nameRequired => 'نام درکار ہے';
+
+  @override
+  String get nameTooShort => 'نام بہت مختصر ہے';
+
+  @override
+  String get confirmPassword => 'پاس ورڈ کی تصدیق کریں';
+
+  @override
+  String get confirmYourPassword => 'براہ کرم اپنے پاس ورڈ کی تصدیق کریں';
+
+  @override
+  String get passwordsDoNotMatch => 'پاس ورڈز مماثل نہیں ہیں';
+
+  @override
+  String get accountCreatedCheckEmail =>
+      'اکاؤنٹ بن گیا! تصدیق کے لیے اپنا ای میل چیک کریں';
+
+  @override
+  String get totalSpent => 'کل خرچ';
+
+  @override
+  String get members => 'اراکین';
+
+  @override
+  String get admin => 'ایڈمن';
+
+  @override
+  String get couldNotLoadMembers => 'اراکین لوڈ نہیں ہو سکے';
+
+  @override
+  String get couldNotLoadExpenses => 'خرچے لوڈ نہیں ہو سکے';
+
+  @override
+  String get noExpensesYet => 'ابھی کوئی خرچہ نہیں';
+
+  @override
+  String get addFirstExpenseDesc =>
+      'کس پر کیا واجب ہے جاننے کے لیے پہلا خرچہ شامل کریں۔';
+
+  @override
+  String get history => 'تاریخ';
+
+  @override
+  String get add => 'شامل کریں';
+
+  @override
+  String inviteToGroup(String groupName) {
+    return '$groupName میں دعوت دیں';
+  }
+
+  @override
+  String get shareCodeDesc =>
+      'شامل ہونے کے لیے دوستوں کے ساتھ یہ کوڈ شیئر کریں';
+
+  @override
+  String get inviteCodeCopied => 'دعوتی کوڈ کاپی ہو گیا!';
+
+  @override
+  String get shareInviteCode => 'دعوتی کوڈ شیئر کریں';
+
+  @override
+  String get youJoinedGroup => 'آپ گروپ میں شامل ہو گئے!';
+
+  @override
+  String get archiveGroupTitle => 'گروپ آرکائیو کریں؟';
+
+  @override
+  String get archiveGroupDesc =>
+      'آپ اب بھی پرانے خرچے دیکھ سکتے ہیں، لیکن نئے خرچے شامل نہیں کیے جا سکتے۔';
+
+  @override
+  String get archive => 'آرکائیو کریں';
+
+  @override
+  String get createAGroup => 'گروپ بنائیں';
+
+  @override
+  String get startSplittingCircle =>
+      'اپنے حلقے کے ساتھ خرچے تقسیم کرنا شروع کریں';
+
+  @override
+  String get groupType => 'گروپ کی قسم';
+
+  @override
+  String get groupName => 'گروپ کا نام';
+
+  @override
+  String get groupNameRequired => 'گروپ کا نام درکار ہے';
+
+  @override
+  String get groupNameTooShort => 'نام بہت مختصر ہے';
+
+  @override
+  String get description => 'تفصیل';
+
+  @override
+  String get descriptionOptional => 'تفصیل (اختیاری)';
+
+  @override
+  String get currency => 'کرنسی';
+
+  @override
+  String get groupCreated => 'گروپ بن گیا!';
+
+  @override
+  String get joinAGroupTitle => 'گروپ میں شامل ہوں';
+
+  @override
+  String get enterInviteCodeDesc => 'گروپ ایڈمن کا دیا ہوا دعوتی کوڈ درج کریں';
+
+  @override
+  String get pleaseEnterInviteCode => 'براہ کرم دعوتی کوڈ درج کریں';
+
+  @override
+  String get invalidInviteCode =>
+      'غلط دعوتی کوڈ۔ براہ کرم چیک کر کے دوبارہ کوشش کریں۔';
+
+  @override
+  String alreadyMemberOf(String groupName) {
+    return 'آپ پہلے سے \"$groupName\" کے رکن ہیں۔';
+  }
+
+  @override
+  String get expensesHeading => 'خرچے';
+
+  @override
+  String get youPay => 'آپ ادا کریں';
+
+  @override
+  String userPays(String name) {
+    return '$name ادا کرتے ہیں';
+  }
+
+  @override
+  String get amountToSettle => 'طے کرنے کی رقم';
+
+  @override
+  String get settleUpInfo =>
+      'اس سے ان دونوں کے درمیان متعلقہ خرچے طے شدہ کے طور پر نشان زد ہو جائیں گے۔';
+
+  @override
+  String get confirmSettlement => 'تصفیہ کی تصدیق کریں';
+
+  @override
+  String get settlementRecorded => 'تصفیہ محفوظ ہو گیا! ✅';
 }
