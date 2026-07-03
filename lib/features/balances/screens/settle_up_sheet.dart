@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/balances_controller.dart';
 import '../models/balance_model.dart';
 
@@ -29,6 +30,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
       SupabaseConfig.client.auth.currentUser?.id ?? '';
 
   Future<void> _settle() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     final error = await ref.read(settleUpProvider.notifier).settleUp(
@@ -45,13 +47,14 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
     if (error != null) {
       showErrorSnack(context, error);
     } else {
-      showSuccessSnack(context, 'Settlement recorded! ✅');
+      showSuccessSnack(context, l10n.settlementRecorded);
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? const Color(0xFF042F2E) : Colors.white;
     final headingColor =
@@ -101,7 +104,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
 
           const SizedBox(height: 16),
 
-          Text('Settle Up',
+          Text(l10n.settleUp,
               style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w500,
@@ -134,17 +137,15 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                         children: [
                           Text(
                             iAmPaying
-                                ? 'You pay'
-                                : '${widget.debt.fromUserName} pays',
+                                ? l10n.youPay
+                                : l10n.userPays(widget.debt.fromUserName),
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.primaryLight,
                             ),
                           ),
                           Text(
-                            iAmPaying
-                                ? widget.debt.toUserName
-                                : widget.debt.toUserName,
+                            widget.debt.toUserName,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -189,7 +190,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                   child: Column(
                     children: [
                       Text(
-                        'Amount to settle',
+                        l10n.amountToSettle,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.primaryLight,
@@ -228,7 +229,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'This will mark all related expense splits as settled between these two people.',
+                    l10n.settleUpInfo,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primary,
@@ -244,7 +245,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
 
           // Confirm button
           SplitlyButton(
-            label: 'Confirm Settlement',
+            label: l10n.confirmSettlement,
             isLoading: _isLoading,
             onPressed: _settle,
             icon: Icons.check_rounded,
@@ -254,7 +255,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
 
           // Cancel
           SplitlyButton(
-            label: 'Cancel',
+            label: l10n.cancel,
             isOutline: true,
             onPressed: () => Navigator.pop(context),
           ),

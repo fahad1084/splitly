@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import 'home_screen.dart';
 
@@ -52,6 +53,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     final error = await ref.read(authControllerProvider.notifier).signUp(
       fullName: _nameCtrl.text.trim(),
@@ -63,7 +65,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     if (error != null) {
       showErrorSnack(context, error);
     } else {
-      showSuccessSnack(context, 'Account created! Check your email to verify.');
+      showSuccessSnack(context, l10n.accountCreatedCheckEmail);
       // ✅ No navigation here — go back to login so user can sign in
       Navigator.pop(context);
     }
@@ -80,6 +82,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   }
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final headingColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -91,7 +94,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
     return AuthPageWrapper(
       showBackButton: true,
-      title: 'Create Account',
+      title: l10n.createAccountTitle,
       child: FadeTransition(
         opacity: _fadeAnim,
         child: SlideTransition(
@@ -109,14 +112,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 const SizedBox(height: 32),
 
                 // ── Heading ───────────────────────────────────────────────
-                Text('Join Splitly',
+                Text(l10n.joinSplitly,
                     style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w500,
                         color: headingColor,
                         letterSpacing: -0.5)),
                 const SizedBox(height: 4),
-                Text('Split expenses with your circle',
+                Text(l10n.splitExpensesCircle,
                     style: TextStyle(
                         fontSize: 14, color: AppColors.primary)),
 
@@ -125,14 +128,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 // ── Full Name ─────────────────────────────────────────────
                 SplitlyTextField(
                   controller: _nameCtrl,
-                  label: 'Full Name',
+                  label: l10n.fullName,
                   hint: 'Ahmed Khan',
                   prefixIcon: Icons.person_outlined,
                   textCapitalization: TextCapitalization.words,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty)
-                      return 'Name is required';
-                    if (v.trim().length < 2) return 'Name too short';
+                      return l10n.nameRequired;
+                    if (v.trim().length < 2) return l10n.nameTooShort;
                     return null;
                   },
                 ),
@@ -142,14 +145,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 // ── Email ─────────────────────────────────────────────────
                 SplitlyTextField(
                   controller: _emailCtrl,
-                  label: 'Email',
+                  label: l10n.email,
                   hint: 'you@example.com',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email is required';
+                    if (v == null || v.isEmpty) return l10n.emailRequired;
                     if (!v.contains('@') || !v.contains('.'))
-                      return 'Enter a valid email';
+                      return l10n.enterValidEmail;
                     return null;
                   },
                 ),
@@ -159,13 +162,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 // ── Password ──────────────────────────────────────────────
                 SplitlyTextField(
                   controller: _passwordCtrl,
-                  label: 'Password',
+                  label: l10n.password,
                   hint: '••••••••',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'At least 6 characters';
+                    if (v == null || v.isEmpty) return l10n.passwordRequired;
+                    if (v.length < 6) return l10n.atLeast6Chars;
                     return null;
                   },
                 ),
@@ -175,15 +178,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 // ── Confirm Password ──────────────────────────────────────
                 SplitlyTextField(
                   controller: _confirmCtrl,
-                  label: 'Confirm Password',
+                  label: l10n.confirmPassword,
                   hint: '••••••••',
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   validator: (v) {
                     if (v == null || v.isEmpty)
-                      return 'Please confirm your password';
+                      return l10n.confirmYourPassword;
                     if (v != _passwordCtrl.text)
-                      return 'Passwords do not match';
+                      return l10n.passwordsDoNotMatch;
                     return null;
                   },
                 ),
@@ -192,7 +195,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
                 // ── Create Account button ─────────────────────────────────
                 SplitlyButton(
-                    label: 'Create Account',
+                    label: l10n.createAccount,
                     isLoading: _isLoading,
                     onPressed: _signUp),
 
@@ -204,7 +207,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                       child: Divider(color: dividerColor, thickness: 1)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('or continue with',
+                    child: Text(l10n.orContinueWith,
                         style: TextStyle(
                             fontSize: 12,
                             color: AppColors.primaryLight)),
@@ -227,12 +230,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Already have an account? ',
+                    Text(l10n.alreadyHaveAccount,
                         style: TextStyle(
                             fontSize: 13, color: linkMutedColor)),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Text('Sign In',
+                      child: Text(l10n.signIn,
                           style: TextStyle(
                               fontSize: 13,
                               color: AppColors.primary,

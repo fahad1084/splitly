@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/groups_controller.dart';
 
 // Supported currencies for Splitly
@@ -58,6 +59,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
 
   Future<void> _createGroup() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     final error = await ref.read(groupsProvider.notifier).createGroup(
@@ -72,17 +74,17 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
     setState(() => _isLoading = false);
 
     if (error != null) {
-      // Show ACTUAL error so we can debug it
       showErrorSnack(context, error);
       print('=== CREATE GROUP SHEET ERROR: $error ===');
     } else {
-      showSuccessSnack(context, 'Group created!');
+      showSuccessSnack(context, l10n.groupCreated);
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final headingColor =
@@ -122,7 +124,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
 
               // ── Title ────────────────────────────────────────────────────
               Text(
-                'Create a Group',
+                l10n.createAGroup,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w500,
@@ -132,14 +134,14 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Start splitting expenses with your circle',
+                l10n.startSplittingCircle,
                 style: TextStyle(fontSize: 13, color: labelColor),
               ),
 
               const SizedBox(height: 24),
 
               // ── Group type selector ──────────────────────────────────────
-              Text('Group type',
+              Text(l10n.groupType,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -205,7 +207,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 20),
 
               // ── Group name ───────────────────────────────────────────────
-              Text('Group name',
+              Text(l10n.groupName,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -213,16 +215,16 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 8),
               SplitlyTextField(
                 controller: _nameCtrl,
-                label: 'Name',
+                label: l10n.groupName,
                 hint: 'e.g. Apartment, Dubai Trip',
                 prefixIcon: Icons.group_outlined,
                 textCapitalization: TextCapitalization.words,
                 autofocus: true,
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) {
-                    return 'Group name is required';
+                    return l10n.groupNameRequired;
                   }
-                  if (v.trim().length < 2) return 'Name too short';
+                  if (v.trim().length < 2) return l10n.groupNameTooShort;
                   return null;
                 },
               ),
@@ -230,7 +232,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 16),
 
               // ── Description (optional) ───────────────────────────────────
-              Text('Description (optional)',
+              Text(l10n.descriptionOptional,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -238,7 +240,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 8),
               SplitlyTextField(
                 controller: _descCtrl,
-                label: 'Description',
+                label: l10n.description,
                 hint: 'e.g. Shared flat expenses',
                 prefixIcon: Icons.notes_rounded,
               ),
@@ -246,7 +248,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 16),
 
               // ── Currency ─────────────────────────────────────────────────
-              Text('Currency',
+              Text(l10n.currency,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -309,7 +311,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
 
               // ── Create button ─────────────────────────────────────────────
               SplitlyButton(
-                label: 'Create Group',
+                label: l10n.createGroup,
                 isLoading: _isLoading,
                 onPressed: _createGroup,
                 icon: Icons.add_rounded,

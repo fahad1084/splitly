@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/groups_controller.dart';
 
 // ── Provider to join a group ──────────────────────────────────────────────────
@@ -31,7 +32,7 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
 
       if (groups.isEmpty) {
         state = const AsyncValue.data(null);
-        return 'Invalid invite code. Please check and try again.';
+        return 'INVALID_CODE'; // handled in UI with l10n
       }
 
       final groupId = groups.first['id'] as String;
@@ -46,7 +47,7 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
 
       if (existing.isNotEmpty) {
         state = const AsyncValue.data(null);
-        return 'You are already a member of "$groupName".';
+        return 'ALREADY_MEMBER::$groupName'; // handled in UI with l10n
       }
 
       // Join the group
@@ -97,8 +98,9 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
   }
 
   Future<void> _join() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_codeCtrl.text.trim().isEmpty) {
-      showErrorSnack(context, 'Please enter an invite code');
+      showErrorSnack(context, l10n.pleaseEnterInviteCode);
       return;
     }
     setState(() => _isLoading = true);
@@ -111,15 +113,24 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
     setState(() => _isLoading = false);
 
     if (error != null) {
-      showErrorSnack(context, error);
+      // ── Translate internal error codes to localized messages ──────
+      if (error == 'INVALID_CODE') {
+        showErrorSnack(context, l10n.invalidInviteCode);
+      } else if (error.startsWith('ALREADY_MEMBER::')) {
+        final groupName = error.split('::').last;
+        showErrorSnack(context, l10n.alreadyMemberOf(groupName));
+      } else {
+        showErrorSnack(context, error);
+      }
     } else {
-      showSuccessSnack(context, 'You joined the group!');
+      showSuccessSnack(context, l10n.youJoinedGroup);
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? const Color(0xFF042F2E) : Colors.white;
     final headingColor =
@@ -171,7 +182,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
 
             const SizedBox(height: 16),
 
-            Text('Join a Group',
+            Text(l10n.joinAGroupTitle,
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -179,7 +190,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
                     letterSpacing: -0.5)),
             const SizedBox(height: 4),
             Text(
-                'Enter the invite code shared by your group admin',
+                l10n.enterInviteCodeDesc,
                 style: TextStyle(
                     fontSize: 13, color: AppColors.primary)),
 
@@ -204,7 +215,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
                   color: AppColors.primaryLight.withOpacity(0.4),
                   letterSpacing: 4,
                 ),
-                labelText: 'Invite Code',
+                labelText: l10n.inviteCode,
                 labelStyle:
                 const TextStyle(color: AppColors.primary),
               ),
@@ -213,7 +224,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
             const SizedBox(height: 28),
 
             SplitlyButton(
-              label: 'Join Group',
+              label: l10n.joinGroup,
               isLoading: _isLoading,
               onPressed: _join,
               icon: Icons.login_rounded,

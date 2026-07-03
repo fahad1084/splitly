@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../balances/models/balance_model.dart';
 import '../../balances/screens/settle_up_sheet.dart';
@@ -14,6 +15,7 @@ class BalancesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final groupsAsync = ref.watch(groupsProvider);
 
@@ -23,9 +25,9 @@ class BalancesTab extends ConsumerWidget {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
-          'Balances',
-          style: TextStyle(
+        title: Text(
+          l10n.balances,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: AppColors.primaryTint,
@@ -38,11 +40,11 @@ class BalancesTab extends ConsumerWidget {
               color: AppColors.primary, strokeWidth: 2),
         ),
         error: (e, _) => Center(
-          child: Text('Error: $e',
+          child: Text('${l10n.somethingWentWrong}: $e',
               style: TextStyle(color: AppColors.danger)),
         ),
         data: (groups) {
-          if (groups.isEmpty) return _EmptyState();
+          if (groups.isEmpty) return const _EmptyState();
 
           // ── Pre-load expenses for ALL groups ──────────────────────
           // This ensures balances calculate correctly on first open
@@ -96,7 +98,7 @@ class BalancesTab extends ConsumerWidget {
                     padding:
                     const EdgeInsets.fromLTRB(20, 24, 20, 12),
                     child: Text(
-                      'Who owes who',
+                      l10n.whoOwesWho,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -128,7 +130,7 @@ class BalancesTab extends ConsumerWidget {
                     padding:
                     const EdgeInsets.fromLTRB(20, 24, 20, 12),
                     child: Text(
-                      'By group',
+                      l10n.byGroup,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -173,6 +175,7 @@ class _OverallBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final net = totalOwed - totalOwe;
     final isPositive = net >= 0;
 
@@ -186,8 +189,8 @@ class _OverallBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Overall Balance',
-              style: TextStyle(
+          Text(l10n.overallBalance,
+              style: const TextStyle(
                   fontSize: 13, color: AppColors.primaryLight)),
           const SizedBox(height: 8),
           Row(
@@ -208,7 +211,7 @@ class _OverallBanner extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  isPositive ? 'you are owed' : 'you owe',
+                  isPositive ? l10n.youAreOwedLower : l10n.youOweLower,
                   style: TextStyle(
                     fontSize: 13,
                     color: isPositive
@@ -224,7 +227,7 @@ class _OverallBanner extends StatelessWidget {
             children: [
               Expanded(
                 child: _BannerStat(
-                  label: 'You are owed',
+                  label: l10n.youAreOwed,
                   value:
                   '$currency ${totalOwed.toStringAsFixed(0)}',
                   color: AppColors.success,
@@ -233,7 +236,7 @@ class _OverallBanner extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _BannerStat(
-                  label: 'You owe',
+                  label: l10n.youOwe,
                   value:
                   '$currency ${totalOwe.toStringAsFixed(0)}',
                   color: AppColors.danger,
@@ -292,6 +295,7 @@ class _DebtTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final currentUserId =
         SupabaseConfig.client.auth.currentUser?.id ?? '';
@@ -339,15 +343,15 @@ class _DebtTile extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: iAmPaying
-                            ? 'You'
+                            ? l10n.youWord
                             : debt.fromUserName.split(' ').first,
                         style: const TextStyle(
                             fontWeight: FontWeight.w500),
                       ),
-                      const TextSpan(text: ' owe '),
+                      TextSpan(text: l10n.owesWord),
                       TextSpan(
                         text: iAmReceiving
-                            ? 'you'
+                            ? l10n.youWordLower
                             : debt.toUserName.split(' ').first,
                         style: const TextStyle(
                             fontWeight: FontWeight.w500),
@@ -387,9 +391,9 @@ class _DebtTile extends StatelessWidget {
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'Settle up',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.settleUp,
+                      style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white,
                           fontWeight: FontWeight.w500),
@@ -411,6 +415,7 @@ class _GroupBalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
@@ -467,7 +472,7 @@ class _GroupBalanceCard extends StatelessWidget {
                 if (summary.youAreOwed > 0)
                   Expanded(
                     child: _GroupStat(
-                      label: 'Owed to you',
+                      label: l10n.owedToYou,
                       value:
                       '${summary.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
                       color: AppColors.success,
@@ -478,7 +483,7 @@ class _GroupBalanceCard extends StatelessWidget {
                 if (summary.youOwe > 0)
                   Expanded(
                     child: _GroupStat(
-                      label: 'You owe',
+                      label: l10n.youOwe,
                       value:
                       '${summary.currency} ${summary.youOwe.toStringAsFixed(0)}',
                       color: AppColors.danger,
@@ -529,8 +534,11 @@ class _GroupStat extends StatelessWidget {
 
 // ── Empty States ──────────────────────────────────────────────────────────────
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Column(
@@ -550,7 +558,7 @@ class _EmptyState extends StatelessWidget {
                 color: AppColors.primary),
           ),
           const SizedBox(height: 20),
-          Text('No groups yet',
+          Text(l10n.noGroupsYet,
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -559,7 +567,7 @@ class _EmptyState extends StatelessWidget {
                       : AppColors.primaryDark)),
           const SizedBox(height: 8),
           Text(
-            'Create or join a group to\nstart tracking balances.',
+            l10n.createOrJoinGroup,
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14,
@@ -577,6 +585,7 @@ class _SettledState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Padding(
       padding: const EdgeInsets.all(40),
@@ -593,7 +602,7 @@ class _SettledState extends StatelessWidget {
                 size: 36, color: AppColors.success),
           ),
           const SizedBox(height: 16),
-          Text('All settled up!',
+          Text(l10n.allSettledUp,
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -602,7 +611,7 @@ class _SettledState extends StatelessWidget {
                       : AppColors.primaryDark)),
           const SizedBox(height: 8),
           Text(
-            'No outstanding balances.\nEveryone is even.',
+            l10n.noOutstandingBalances,
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14,

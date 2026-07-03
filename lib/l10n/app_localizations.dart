@@ -517,6 +517,402 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System'**
   String get system;
+
+  /// No description provided for @overallBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Balance'**
+  String get overallBalance;
+
+  /// No description provided for @whoOwesWho.
+  ///
+  /// In en, this message translates to:
+  /// **'Who owes who'**
+  String get whoOwesWho;
+
+  /// No description provided for @byGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'By group'**
+  String get byGroup;
+
+  /// No description provided for @owedToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed to you'**
+  String get owedToYou;
+
+  /// No description provided for @youAreOwedLower.
+  ///
+  /// In en, this message translates to:
+  /// **'you are owed'**
+  String get youAreOwedLower;
+
+  /// No description provided for @youOweLower.
+  ///
+  /// In en, this message translates to:
+  /// **'you owe'**
+  String get youOweLower;
+
+  /// No description provided for @createOrJoinGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create or join a group to\nstart tracking balances.'**
+  String get createOrJoinGroup;
+
+  /// No description provided for @youWord.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youWord;
+
+  /// No description provided for @owesWord.
+  ///
+  /// In en, this message translates to:
+  /// **' owe '**
+  String get owesWord;
+
+  /// No description provided for @youWordLower.
+  ///
+  /// In en, this message translates to:
+  /// **'you'**
+  String get youWordLower;
+
+  /// No description provided for @orContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with'**
+  String get orContinueWith;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @signInToAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get signInToAccount;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get emailRequired;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email'**
+  String get enterValidEmail;
+
+  /// No description provided for @passwordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get passwordRequired;
+
+  /// No description provided for @atLeast6Chars.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get atLeast6Chars;
+
+  /// No description provided for @createAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccountTitle;
+
+  /// No description provided for @joinSplitly.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Splitly'**
+  String get joinSplitly;
+
+  /// No description provided for @splitExpensesCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split expenses with your circle'**
+  String get splitExpensesCircle;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get nameRequired;
+
+  /// No description provided for @nameTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Name too short'**
+  String get nameTooShort;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @confirmYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get confirmYourPassword;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @accountCreatedCheckEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created! Check your email to verify'**
+  String get accountCreatedCheckEmail;
+
+  /// No description provided for @totalSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Total spent'**
+  String get totalSpent;
+
+  /// No description provided for @members.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get members;
+
+  /// No description provided for @admin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get admin;
+
+  /// No description provided for @couldNotLoadMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load members'**
+  String get couldNotLoadMembers;
+
+  /// No description provided for @couldNotLoadExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load expenses'**
+  String get couldNotLoadExpenses;
+
+  /// No description provided for @noExpensesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses yet'**
+  String get noExpensesYet;
+
+  /// No description provided for @addFirstExpenseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the first expense to start tracking who owes what.'**
+  String get addFirstExpenseDesc;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @inviteToGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite to {groupName}'**
+  String inviteToGroup(String groupName);
+
+  /// No description provided for @shareCodeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with friends to join'**
+  String get shareCodeDesc;
+
+  /// No description provided for @inviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied!'**
+  String get inviteCodeCopied;
+
+  /// No description provided for @shareInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Invite Code'**
+  String get shareInviteCode;
+
+  /// No description provided for @youJoinedGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'You joined the group!'**
+  String get youJoinedGroup;
+
+  /// No description provided for @archiveGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Group?'**
+  String get archiveGroupTitle;
+
+  /// No description provided for @archiveGroupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You can still view past expenses, but no new expenses can be added.'**
+  String get archiveGroupDesc;
+
+  /// No description provided for @archive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archive;
+
+  /// No description provided for @createAGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Group'**
+  String get createAGroup;
+
+  /// No description provided for @startSplittingCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start splitting expenses with your circle'**
+  String get startSplittingCircle;
+
+  /// No description provided for @groupType.
+  ///
+  /// In en, this message translates to:
+  /// **'Group type'**
+  String get groupType;
+
+  /// No description provided for @groupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get groupName;
+
+  /// No description provided for @groupNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name is required'**
+  String get groupNameRequired;
+
+  /// No description provided for @groupNameTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Name too short'**
+  String get groupNameTooShort;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// No description provided for @groupCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Group created!'**
+  String get groupCreated;
+
+  /// No description provided for @joinAGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a Group'**
+  String get joinAGroupTitle;
+
+  /// No description provided for @enterInviteCodeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the invite code shared by your group admin'**
+  String get enterInviteCodeDesc;
+
+  /// No description provided for @pleaseEnterInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an invite code'**
+  String get pleaseEnterInviteCode;
+
+  /// No description provided for @invalidInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid invite code. Please check and try again.'**
+  String get invalidInviteCode;
+
+  /// No description provided for @alreadyMemberOf.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already a member of \"{groupName}\".'**
+  String alreadyMemberOf(String groupName);
+
+  /// No description provided for @expensesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expensesHeading;
+
+  /// No description provided for @youPay.
+  ///
+  /// In en, this message translates to:
+  /// **'You pay'**
+  String get youPay;
+
+  /// No description provided for @userPays.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} pays'**
+  String userPays(String name);
+
+  /// No description provided for @amountToSettle.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to settle'**
+  String get amountToSettle;
+
+  /// No description provided for @settleUpInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'This will mark all related expense splits as settled between these two people.'**
+  String get settleUpInfo;
+
+  /// No description provided for @confirmSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Settlement'**
+  String get confirmSettlement;
+
+  /// No description provided for @settlementRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement recorded! ✅'**
+  String get settlementRecorded;
 }
 
 class _AppLocalizationsDelegate

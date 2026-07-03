@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
@@ -23,6 +24,7 @@ class GroupDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final headingColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -113,7 +115,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Members',
+                    Text(l10n.members,
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -159,7 +161,7 @@ class GroupDetailScreen extends ConsumerWidget {
               error: (e, _) => SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text('Could not load members',
+                  child: Text(l10n.couldNotLoadMembers,
                       style: TextStyle(color: AppColors.danger)),
                 ),
               ),
@@ -172,7 +174,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Expenses',
+                    Text(l10n.expensesHeading,
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -191,7 +193,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           icon: Icon(Icons.history_rounded,
                               size: 16,
                               color: AppColors.primaryLight),
-                          label: Text('History',
+                          label: Text(l10n.history,
                               style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.primaryLight)),
@@ -206,7 +208,7 @@ class GroupDetailScreen extends ConsumerWidget {
                               showAddExpenseSheet(context, group),
                           icon: Icon(Icons.add,
                               size: 16, color: AppColors.primary),
-                          label: Text('Add',
+                          label: Text(l10n.add,
                               style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.primary)),
@@ -235,7 +237,7 @@ class GroupDetailScreen extends ConsumerWidget {
               error: (e, _) => SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text('Could not load expenses: $e',
+                  child: Text('${l10n.couldNotLoadExpenses}: $e',
                       style: TextStyle(color: AppColors.danger)),
                 ),
               ),
@@ -274,13 +276,14 @@ class GroupDetailScreen extends ConsumerWidget {
         foregroundColor: AppColors.primaryDark,
         elevation: 0,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Add Expense',
-            style: TextStyle(fontWeight: FontWeight.w500)),
+        label: Text(l10n.addExpense,
+            style: const TextStyle(fontWeight: FontWeight.w500)),
       ),
     );
   }
 
   void _showInviteDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -318,7 +321,7 @@ class GroupDetailScreen extends ConsumerWidget {
               ),
 
               Text(
-                'Invite to ${group.name}',
+                l10n.inviteToGroup(group.name),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -327,7 +330,7 @@ class GroupDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Share this code with friends to join',
+                l10n.shareCodeDesc,
                 style: TextStyle(fontSize: 13, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
@@ -354,7 +357,7 @@ class GroupDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Invite Code',
+                      l10n.inviteCode,
                       style: TextStyle(
                         fontSize: 11,
                         color: textColor.withOpacity(0.5),
@@ -372,10 +375,10 @@ class GroupDetailScreen extends ConsumerWidget {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: group.inviteCode));
                     Navigator.pop(sheetContext);
-                    showSuccessSnack(context, 'Invite code copied!');
+                    showSuccessSnack(context, l10n.inviteCodeCopied);
                   },
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: const Text('Copy Code'),
+                  label: Text(l10n.copyCode),
                 ),
               ),
             ],
@@ -385,6 +388,7 @@ class GroupDetailScreen extends ConsumerWidget {
     );
   }
   void _showGroupMenu(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -431,7 +435,7 @@ class GroupDetailScreen extends ConsumerWidget {
             _MenuTile(
               icon: Icons.person_add_outlined,
               iconColor: AppColors.primary,
-              label: 'Share Invite Code',
+              label: l10n.shareInviteCode,
               textColor: textColor,
               borderColor: borderColor,
               onTap: () {
@@ -444,7 +448,7 @@ class GroupDetailScreen extends ConsumerWidget {
             _MenuTile(
               icon: Icons.share_outlined,
               iconColor: AppColors.primary,
-              label: 'Share Summary',
+              label: l10n.shareSummary,
               textColor: textColor,
               borderColor: borderColor,
               onTap: () {
@@ -457,7 +461,7 @@ class GroupDetailScreen extends ConsumerWidget {
             _MenuTile(
               icon: Icons.download_outlined,
               iconColor: AppColors.primary,
-              label: 'Export PDF/CSV',
+              label: l10n.exportPdfCsv,
               textColor: textColor,
               borderColor: borderColor,
               onTap: () {
@@ -470,7 +474,7 @@ class GroupDetailScreen extends ConsumerWidget {
             _MenuTile(
               icon: Icons.bar_chart_rounded,
               iconColor: AppColors.primary,
-              label: 'Spending Reports',
+              label: l10n.spendingReports,
               textColor: textColor,
               borderColor: borderColor,
               onTap: () {
@@ -486,7 +490,7 @@ class GroupDetailScreen extends ConsumerWidget {
             _MenuTile(
               icon: Icons.archive_outlined,
               iconColor: AppColors.danger,
-              label: 'Archive Group',
+              label: l10n.archiveGroup,
               textColor: AppColors.danger,
               borderColor: borderColor,
               onTap: () {
@@ -501,6 +505,7 @@ class GroupDetailScreen extends ConsumerWidget {
   }
 
   void _confirmArchive(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     showDialog(
       context: context,
@@ -508,17 +513,17 @@ class GroupDetailScreen extends ConsumerWidget {
         backgroundColor: dark ? AppColors.primaryDark : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Archive Group?',
+          l10n.archiveGroupTitle,
           style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark),
         ),
         content: Text(
-          'You can still view past expenses, but no new expenses can be added.',
+          l10n.archiveGroupDesc,
           style: TextStyle(color: dark ? AppColors.primaryTint.withOpacity(0.8) : AppColors.primaryDark.withOpacity(0.7)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: TextStyle(color: AppColors.primary)),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
           ),
           TextButton(
             onPressed: () async {
@@ -526,7 +531,7 @@ class GroupDetailScreen extends ConsumerWidget {
               await ref.read(groupsProvider.notifier).archiveGroup(group.id);
               if (context.mounted) Navigator.pop(context); // back to groups list
             },
-            child: Text('Archive', style: TextStyle(color: AppColors.danger)),
+            child: Text(l10n.archive, style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -594,6 +599,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     ref.watch(expensesProvider(group.id));
     final summary = ref.watch(groupBalanceSummaryProvider({
       'groupId': group.id,
@@ -621,7 +627,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _BalanceItem(
-                  label: 'Total spent',
+                  label: l10n.totalSpent,
                   value:
                   '${group.currency} ${summary.totalSpent.toStringAsFixed(0)}',
                   color: AppColors.primaryLight,
@@ -629,7 +635,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
               ),
               Expanded(
                 child: _BalanceItem(
-                  label: 'You are owed',
+                  label: l10n.youAreOwed,
                   value:
                   '${group.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
                   color: AppColors.success,
@@ -637,7 +643,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
               ),
               Expanded(
                 child: _BalanceItem(
-                  label: 'You owe',
+                  label: l10n.youOwe,
                   value:
                   '${group.currency} ${summary.youOwe.toStringAsFixed(0)}',
                   color: AppColors.danger,
@@ -694,6 +700,7 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final profile =
         member['profiles'] as Map<String, dynamic>? ?? {};
@@ -754,7 +761,7 @@ class _MemberTile extends StatelessWidget {
                   color: AppColors.primaryTint,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('Admin',
+                child: Text(l10n.admin,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
@@ -774,6 +781,7 @@ class _ExpensesEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Padding(
@@ -795,7 +803,7 @@ class _ExpensesEmptyState extends StatelessWidget {
                   size: 32, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
-            Text('No expenses yet',
+            Text(l10n.noExpensesYet,
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -804,7 +812,7 @@ class _ExpensesEmptyState extends StatelessWidget {
                         : AppColors.primaryDark)),
             const SizedBox(height: 8),
             Text(
-              'Add the first expense to start tracking who owes what.',
+              l10n.addFirstExpenseDesc,
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 13,

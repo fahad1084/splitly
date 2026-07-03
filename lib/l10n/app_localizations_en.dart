@@ -225,4 +225,216 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get system => 'System';
+
+  @override
+  String get overallBalance => 'Overall Balance';
+
+  @override
+  String get whoOwesWho => 'Who owes who';
+
+  @override
+  String get byGroup => 'By group';
+
+  @override
+  String get owedToYou => 'Owed to you';
+
+  @override
+  String get youAreOwedLower => 'you are owed';
+
+  @override
+  String get youOweLower => 'you owe';
+
+  @override
+  String get createOrJoinGroup =>
+      'Create or join a group to\nstart tracking balances.';
+
+  @override
+  String get youWord => 'You';
+
+  @override
+  String get owesWord => ' owe ';
+
+  @override
+  String get youWordLower => 'you';
+
+  @override
+  String get orContinueWith => 'or continue with';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get signInToAccount => 'Sign in to your account';
+
+  @override
+  String get emailRequired => 'Email is required';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get passwordRequired => 'Password is required';
+
+  @override
+  String get atLeast6Chars => 'At least 6 characters';
+
+  @override
+  String get createAccountTitle => 'Create Account';
+
+  @override
+  String get joinSplitly => 'Join Splitly';
+
+  @override
+  String get splitExpensesCircle => 'Split expenses with your circle';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get nameRequired => 'Name is required';
+
+  @override
+  String get nameTooShort => 'Name too short';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get confirmYourPassword => 'Please confirm your password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get accountCreatedCheckEmail =>
+      'Account created! Check your email to verify';
+
+  @override
+  String get totalSpent => 'Total spent';
+
+  @override
+  String get members => 'Members';
+
+  @override
+  String get admin => 'Admin';
+
+  @override
+  String get couldNotLoadMembers => 'Could not load members';
+
+  @override
+  String get couldNotLoadExpenses => 'Could not load expenses';
+
+  @override
+  String get noExpensesYet => 'No expenses yet';
+
+  @override
+  String get addFirstExpenseDesc =>
+      'Add the first expense to start tracking who owes what.';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String inviteToGroup(String groupName) {
+    return 'Invite to $groupName';
+  }
+
+  @override
+  String get shareCodeDesc => 'Share this code with friends to join';
+
+  @override
+  String get inviteCodeCopied => 'Invite code copied!';
+
+  @override
+  String get shareInviteCode => 'Share Invite Code';
+
+  @override
+  String get youJoinedGroup => 'You joined the group!';
+
+  @override
+  String get archiveGroupTitle => 'Archive Group?';
+
+  @override
+  String get archiveGroupDesc =>
+      'You can still view past expenses, but no new expenses can be added.';
+
+  @override
+  String get archive => 'Archive';
+
+  @override
+  String get createAGroup => 'Create a Group';
+
+  @override
+  String get startSplittingCircle =>
+      'Start splitting expenses with your circle';
+
+  @override
+  String get groupType => 'Group type';
+
+  @override
+  String get groupName => 'Group name';
+
+  @override
+  String get groupNameRequired => 'Group name is required';
+
+  @override
+  String get groupNameTooShort => 'Name too short';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get descriptionOptional => 'Description (optional)';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get groupCreated => 'Group created!';
+
+  @override
+  String get joinAGroupTitle => 'Join a Group';
+
+  @override
+  String get enterInviteCodeDesc =>
+      'Enter the invite code shared by your group admin';
+
+  @override
+  String get pleaseEnterInviteCode => 'Please enter an invite code';
+
+  @override
+  String get invalidInviteCode =>
+      'Invalid invite code. Please check and try again.';
+
+  @override
+  String alreadyMemberOf(String groupName) {
+    return 'You are already a member of \"$groupName\".';
+  }
+
+  @override
+  String get expensesHeading => 'Expenses';
+
+  @override
+  String get youPay => 'You pay';
+
+  @override
+  String userPays(String name) {
+    return '$name pays';
+  }
+
+  @override
+  String get amountToSettle => 'Amount to settle';
+
+  @override
+  String get settleUpInfo =>
+      'This will mark all related expense splits as settled between these two people.';
+
+  @override
+  String get confirmSettlement => 'Confirm Settlement';
+
+  @override
+  String get settlementRecorded => 'Settlement recorded! ✅';
 }
