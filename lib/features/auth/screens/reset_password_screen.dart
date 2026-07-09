@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -47,6 +48,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
 
   Future<void> _updatePassword() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -67,10 +69,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      showErrorSnack(
-        context,
-        'Failed to update password. The link may have expired. Please request a new one.',
-      );
+      showErrorSnack(context, l10n.updatePasswordFailed);
     }
   }
 
@@ -106,6 +105,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
 
   // ── Form view ──────────────────────────────────────────────────────────────
   Widget _formView(Color iconBg, Color headingColor) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: Column(
@@ -136,7 +136,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           const SizedBox(height: 20),
 
           Text(
-            'Set new password',
+            l10n.setNewPassword,
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w500,
@@ -146,7 +146,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            'Enter and confirm your new password below.',
+            l10n.enterConfirmNewPassword,
             style: TextStyle(
               fontSize: 14,
               color: AppColors.primary,
@@ -159,14 +159,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           // New password
           SplitlyTextField(
             controller: _passwordCtrl,
-            label: 'New Password',
+            label: l10n.newPassword,
             hint: '••••••••',
             prefixIcon: Icons.lock_outlined,
             obscureText: true,
             autofocus: true,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Password is required';
-              if (v.length < 6) return 'At least 6 characters';
+              if (v == null || v.isEmpty) return l10n.passwordRequired;
+              if (v.length < 6) return l10n.atLeast6Chars;
               return null;
             },
           ),
@@ -176,13 +176,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           // Confirm new password
           SplitlyTextField(
             controller: _confirmCtrl,
-            label: 'Confirm New Password',
+            label: l10n.confirmNewPassword,
             hint: '••••••••',
             prefixIcon: Icons.lock_outlined,
             obscureText: true,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Please confirm your password';
-              if (v != _passwordCtrl.text) return 'Passwords do not match';
+              if (v == null || v.isEmpty) return l10n.confirmYourPassword;
+              if (v != _passwordCtrl.text) return l10n.passwordsDoNotMatch;
               return null;
             },
           ),
@@ -190,7 +190,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           const SizedBox(height: 28),
 
           SplitlyButton(
-            label: 'Update Password',
+            label: l10n.updatePassword,
             isLoading: _isLoading,
             onPressed: _updatePassword,
             icon: Icons.check_rounded,
@@ -204,6 +204,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
 
   // ── Success view ───────────────────────────────────────────────────────────
   Widget _successView(Color iconBg, Color headingColor) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       key: const ValueKey('success'),
       padding: const EdgeInsets.only(top: 120),
@@ -227,7 +228,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           const SizedBox(height: 24),
 
           Text(
-            'Password updated!',
+            l10n.passwordUpdated,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w500,
@@ -239,7 +240,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           const SizedBox(height: 10),
 
           Text(
-            'Your password has been changed successfully.\nSigning you out now...',
+            l10n.passwordUpdatedDesc,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,

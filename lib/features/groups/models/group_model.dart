@@ -7,7 +7,9 @@ class GroupModel {
   final String inviteCode;
   final bool isArchived;
   final DateTime createdAt;
-  final int? memberCount; // joined from group_members count
+  final String? category;
+  final String? photoUrl;      // ✅ new
+  final int? memberCount;
 
   const GroupModel({
     required this.id,
@@ -18,6 +20,8 @@ class GroupModel {
     required this.inviteCode,
     required this.isArchived,
     required this.createdAt,
+    this.category,
+    this.photoUrl,             // ✅ new
     this.memberCount,
   });
 
@@ -28,17 +32,12 @@ class GroupModel {
       description: map['description'] as String?,
       currency: map['currency'] as String? ?? 'PKR',
       createdBy: map['created_by'] as String,
-      inviteCode: map['invite_code'] as String? ?? '',
+      inviteCode: map['invite_code'] as String,
       isArchived: map['is_archived'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at'] as String),
+      category: map['category'] as String?,
+      photoUrl: map['photo_url'] as String?,   // ✅ new
       memberCount: map['member_count'] as int?,
     );
   }
-
-  Map<String, dynamic> toMap() => {
-    'name': name,
-    'description': description,
-    'currency': currency,
-    'created_by': createdBy,
-  };
 }

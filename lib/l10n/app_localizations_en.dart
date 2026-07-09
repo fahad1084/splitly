@@ -437,4 +437,496 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settlementRecorded => 'Settlement recorded! ✅';
+
+  @override
+  String get setAppPin => 'Set App PIN';
+
+  @override
+  String get confirmYourPin => 'Confirm your PIN';
+
+  @override
+  String get createPin => 'Create a 4-digit PIN';
+
+  @override
+  String get enterSamePinAgain => 'Enter the same PIN again';
+
+  @override
+  String get pinUsageHint => 'You\'ll use this to unlock Splitly';
+
+  @override
+  String get pinsDoNotMatch => 'PINs do not match. Try again.';
+
+  @override
+  String get appLockEnabled => 'App Lock enabled!';
+
+  @override
+  String get enterPinToContinue => 'Enter your PIN to continue';
+
+  @override
+  String get incorrectPin => 'Incorrect PIN. Try again.';
+
+  @override
+  String get useBiometricsButton => 'Use biometrics';
+
+  @override
+  String exportGroupTitle(String groupName) {
+    return 'Export $groupName';
+  }
+
+  @override
+  String get downloadExpenseRecords => 'Download your expense records';
+
+  @override
+  String get noExpensesToExport => 'No expenses to export yet.';
+
+  @override
+  String get pdfExportedSuccess => 'PDF exported successfully';
+
+  @override
+  String get pdfExportFailed => 'Failed to export PDF. Please try again.';
+
+  @override
+  String get csvExportedSuccess => 'CSV exported successfully';
+
+  @override
+  String get csvExportFailed => 'Failed to export CSV. Please try again.';
+
+  @override
+  String get exportAsPdf => 'Export as PDF';
+
+  @override
+  String get pdfSubtitle => 'Formatted summary with expense list';
+
+  @override
+  String get exportAsCsv => 'Export as CSV';
+
+  @override
+  String get csvSubtitle => 'Raw data for Excel or Google Sheets';
+
+  @override
+  String get resetPasswordTitle => 'Reset Password';
+
+  @override
+  String get forgotYourPassword => 'Forgot your\npassword?';
+
+  @override
+  String get resetLinkDesc =>
+      'Enter your email and we\'ll send a secure reset link.';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get checkYourEmail => 'Check your email';
+
+  @override
+  String get weSentResetLink => 'We sent a reset link to';
+
+  @override
+  String get checkSpamFolder =>
+      'Check your spam folder if you don\'t see it within a minute.';
+
+  @override
+  String get backToSignIn => 'Back to Sign In';
+
+  @override
+  String get setNewPassword => 'Set new password';
+
+  @override
+  String get enterConfirmNewPassword =>
+      'Enter and confirm your new password below.';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get updatePassword => 'Update Password';
+
+  @override
+  String get passwordUpdated => 'Password updated!';
+
+  @override
+  String get passwordUpdatedDesc =>
+      'Your password has been changed successfully.\nSigning you out now...';
+
+  @override
+  String get updatePasswordFailed =>
+      'Failed to update password. The link may have expired. Please request a new one.';
+
+  @override
+  String get byCategory => 'By Category';
+
+  @override
+  String get byMember => 'By Member';
+
+  @override
+  String get thisMonth => 'This month';
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get allTime => 'All time';
+
+  @override
+  String get totalSpentLabel => 'Total Spent';
+
+  @override
+  String expensesCountLabel(int count) {
+    return '$count expenses';
+  }
+
+  @override
+  String get avgLabel => 'avg';
+
+  @override
+  String get createGroupAddExpensesDesc =>
+      'Create a group and add expenses\nto see spending reports.';
+
+  @override
+  String get noExpensesInPeriod => 'No expenses in this period';
+
+  @override
+  String get tryDifferentPeriod => 'Try selecting a different time period';
+
+  @override
+  String get youPaid => 'You paid';
+
+  @override
+  String userPaid(String name) {
+    return '$name paid';
+  }
+
+  @override
+  String get youLent => 'you lent';
+
+  @override
+  String youOweAmount(String amount) {
+    return 'you owe $amount';
+  }
+
+  @override
+  String get deleteExpense => 'Delete Expense';
+
+  @override
+  String deleteExpenseConfirm(String title) {
+    return 'Delete \"$title\"? This cannot be undone.';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get splitBreakdown => 'Split breakdown';
+
+  @override
+  String get settled => 'Settled';
+
+  @override
+  String splitLabel(String type) {
+    return '$type split';
+  }
+
+  @override
+  String get searchExpenses => 'Search expenses...';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'YESTERDAY';
+
+  @override
+  String get todayCaps => 'TODAY';
+
+  @override
+  String get noMatchingExpenses => 'No matching expenses';
+
+  @override
+  String get tryChangingFilters => 'Try changing or clearing the filters';
+
+  @override
+  String get addExpenseToSeeHere => 'Add an expense to see it here';
+
+  @override
+  String get shareSummaryTitle => 'Share Summary';
+
+  @override
+  String shareGroupSummary(String groupName) {
+    return 'Share $groupName expense summary';
+  }
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get summaryCopied => 'Summary copied!';
+
+  @override
+  String get scanReceipt => 'Scan Receipt';
+
+  @override
+  String get scanReceiptDesc => 'Scan a receipt to auto-fill amount';
+
+  @override
+  String get couldNotDetectTotal =>
+      'Could not detect total — please enter it below';
+
+  @override
+  String get detectedTotalConfirm =>
+      'Detected total — confirm or correct it below';
+
+  @override
+  String get totalAmountLabel => 'Total Amount';
+
+  @override
+  String get useThisAmount => 'Use This Amount';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get retake => 'Retake';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get couldNotReadReceipt =>
+      'Could not read receipt. Please enter amount manually.';
+
+  @override
+  String get additionalDetailsHint => 'Any additional details...';
+
+  @override
+  String get whatWasItForHint => 'What was it for?';
+
+  @override
+  String get expenseTitleHint => 'e.g. Dinner, Groceries, Taxi';
+
+  @override
+  String get pleaseEnterTitle => 'Please enter a title';
+
+  @override
+  String get pleaseEnterValidAmount => 'Please enter a valid amount';
+
+  @override
+  String get noMembersToSplit => 'No members to split with';
+
+  @override
+  String get pleaseSelectWhoPaid => 'Please select who paid';
+
+  @override
+  String customAmountsMustAddUp(String currency, String amount) {
+    return 'Custom amounts must add up to $currency $amount';
+  }
+
+  @override
+  String get percentagesMustAddTo100 => 'Percentages must add up to 100%';
+
+  @override
+  String get expenseAdded => 'Expense added!';
+
+  @override
+  String get loadingMembers => 'Loading members...';
+
+  @override
+  String get percentSymbol => '%';
+
+  @override
+  String get groupChat => 'Group chat';
+
+  @override
+  String get noMessagesYet => 'No messages yet';
+
+  @override
+  String get startTheConversation => 'Start the conversation!';
+
+  @override
+  String get messageHint => 'Message...';
+
+  @override
+  String get todayLabel => 'Today';
+
+  @override
+  String get yesterdayLabel => 'Yesterday';
+
+  @override
+  String get editProfileTitle => 'Edit Profile';
+
+  @override
+  String get fullNameLabel => 'Full Name';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get phoneOptional => 'Phone Number (optional)';
+
+  @override
+  String get chooseAvatarColor => 'Choose Avatar Color';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get profileUpdated => 'Profile updated!';
+
+  @override
+  String get profileUpdateFailed =>
+      'Failed to update profile. Please try again.';
+
+  @override
+  String get yourEmail => 'Your Email';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get onboardTitle1 => 'Split Expenses with Groups';
+
+  @override
+  String get onboardDesc1 =>
+      'Create groups for trips, home, or friends and track shared expenses together.';
+
+  @override
+  String get onboardTitle2 => 'Add Expenses in Seconds';
+
+  @override
+  String get onboardDesc2 =>
+      'Scan receipts, split equally or custom, and see who owes what instantly.';
+
+  @override
+  String get onboardTitle3 => 'Settle Up Easily';
+
+  @override
+  String get onboardDesc3 =>
+      'Simplified debts show the minimum payments needed to settle everyone up.';
+
+  @override
+  String get photo => 'Photo';
+
+  @override
+  String get camera2 => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get recording => 'Recording...';
+
+  @override
+  String get tapToRecord => 'Tap mic to record';
+
+  @override
+  String get sendingAttachment => 'Sending...';
+
+  @override
+  String get voiceMessage => 'Voice message';
+
+  @override
+  String get microphonePermissionNeeded =>
+      'Microphone permission needed to record voice messages.';
+
+  @override
+  String get failedToSendAttachment => 'Failed to send. Please try again.';
+
+  @override
+  String get removeMember => 'Remove Member';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'Remove $name from this group?';
+  }
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get leaveGroup => 'Leave Group';
+
+  @override
+  String get leaveGroupConfirm => 'Are you sure you want to leave this group?';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get makeAdmin => 'Make Admin';
+
+  @override
+  String get removeAdmin => 'Remove Admin';
+
+  @override
+  String get memberRemoved => 'Member removed';
+
+  @override
+  String get youLeftGroup => 'You left the group';
+
+  @override
+  String get onlyAdminsCanDoThis => 'Only group admins can do this';
+
+  @override
+  String get changeGroupPhoto => 'Change Group Photo';
+
+  @override
+  String get groupPhotoUpdated => 'Group photo updated!';
+
+  @override
+  String get failedToUpdatePhoto => 'Failed to update photo. Please try again';
+
+  @override
+  String get deleteMessage => 'Delete Message';
+
+  @override
+  String get deleteMessageConfirm => 'Delete this message?';
+
+  @override
+  String get copyMessage => 'Copy';
+
+  @override
+  String replyTo(String name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get messageCopied => 'Message copied!';
+
+  @override
+  String isTyping(String name) {
+    return '$name is typing...';
+  }
+
+  @override
+  String get severalTyping => 'Several people are typing...';
+
+  @override
+  String get messageDeleted => 'Message deleted';
+
+  @override
+  String get reply => 'Reply';
 }

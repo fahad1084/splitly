@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/app_lock_controller.dart';
 
 class UnlockScreen extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
 
   Future<void> _onKeyTap(String digit) async {
     if (_pin.length >= 4 || _checking) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _error = null;
       _pin += digit;
@@ -55,7 +57,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
       } else {
         HapticFeedback.heavyImpact();
         setState(() {
-          _error = 'Incorrect PIN. Try again.';
+          _error = l10n.incorrectPin;
           _pin = '';
           _checking = false;
         });
@@ -73,6 +75,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -95,12 +98,12 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Splitly',
+              l10n.appName,
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter your PIN to continue',
+              l10n.enterPinToContinue,
               style: TextStyle(fontSize: 13, color: AppColors.primary),
             ),
             const SizedBox(height: 32),
@@ -142,7 +145,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                   TextButton.icon(
                     onPressed: _tryBiometric,
                     icon: Icon(Icons.fingerprint_rounded, color: AppColors.primary),
-                    label: Text('Use biometrics', style: TextStyle(color: AppColors.primary)),
+                    label: Text(l10n.useBiometricsButton, style: TextStyle(color: AppColors.primary)),
                   ),
                 ],
               ),

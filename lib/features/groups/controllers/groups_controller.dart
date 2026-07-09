@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../models/group_model.dart';
+import 'dart:io';
 
 final groupsProvider =
 AsyncNotifierProvider<GroupsController, List<GroupModel>>(
@@ -135,6 +136,77 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  // ── Remove a member from group (admin only) ────────────────────────────
+  Future<String?> removeMember(String groupId, String userId) async {
+    try {
+      await _db
+          .from('group_members')
+          .delete()
+          .eq('group_id', groupId)
+          .eq('user_id', userId);
+      return null;
+    } catch (e) {
+      print('=== REMOVE MEMBER ERROR: $e ===');
+      return 'Failed to remove member: $e';
+    }
+  }
+
+  // ── Leave a group (current user removes self) ───────────────────────────
+  Future<String?> leaveGroup(String groupId) async {
+    final userId = _db.auth.currentUser?.id;
+    if (userId == null) return 'Not signed in';
+    try {
+      await _db
+          .from('group_members')
+          .delete()
+          .eq('group_id', groupId)
+          .eq('user_id', userId);
+      await refresh();
+      return null;
+    } catch (e) {
+      print('=== LEAVE GROUP ERROR: $e ===');
+      return 'Failed to leave group: $e';
+    }
+  }
+
+  // ── Promote/demote a member's role ──────────────────────────────────────
+  Future<String?> setMemberRole(
+      String groupId, String userId, String role) async {
+    try {
+      await _db
+          .from('group_members')
+          .update({'role': role})
+          .eq('group_id', groupId)
+          .eq('user_id', userId);
+      return null;
+    } catch (e) {
+      print('=== SET MEMBER ROLE ERROR: $e ===');
+      return 'Failed to update role: $e';
+    }
+  }
+
+  // ── Update group photo ───────────────────────────────────────────────────
+  Future<String?> updateGroupPhoto(String groupId, File imageFile) async {
+    try {
+      final ext = imageFile.path.split('.').last;
+      final path = '$groupId/photo.$ext';
+
+      await _db.storage
+          .from('group-photos')
+          .upload(path, imageFile, fileOptions: const FileOptions(upsert: true));
+
+      final url = _db.storage.from('group-photos').getPublicUrl(path);
+      final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+
+      await _db.from('groups').update({'photo_url': bustedUrl}).eq('id', groupId);
+      state = AsyncValue.data(await _fetchGroups());
+      return null;
+    } catch (e) {
+      print('=== UPDATE GROUP PHOTO ERROR: $e ===');
+      return 'Failed to update photo: $e';
+    }
+  }
 }
 
 final groupDetailProvider =
@@ -161,6 +233,8 @@ FutureProvider.family<GroupModel?, String>((ref, groupId) async {
     rethrow;
   }
 });
+
+
 
 final groupMembersProvider =
 FutureProvider.family<List<Map<String, dynamic>>, String>(

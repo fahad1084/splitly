@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -76,9 +77,10 @@ class _ForgotPasswordScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AuthPageWrapper(
       showBackButton: true,
-      title: 'Reset Password',
+      title: l10n.resetPasswordTitle,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
         switchInCurve: Curves.easeOut,
@@ -89,6 +91,7 @@ class _ForgotPasswordScreenState
   }
 
   Widget _formView() {
+    final l10n = AppLocalizations.of(context)!;
     final headingColor =
     isDark(context) ? AppColors.primaryTint : AppColors.primaryDark;
     final iconBg =
@@ -123,7 +126,7 @@ class _ForgotPasswordScreenState
 
               const SizedBox(height: 20),
 
-              Text('Forgot your\npassword?',
+              Text(l10n.forgotYourPassword,
                   style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w500,
@@ -134,7 +137,7 @@ class _ForgotPasswordScreenState
               const SizedBox(height: 8),
 
               Text(
-                  "Enter your email and we'll send a secure reset link.",
+                  l10n.resetLinkDesc,
                   style: TextStyle(
                       fontSize: 14,
                       color: AppColors.primary,
@@ -144,15 +147,15 @@ class _ForgotPasswordScreenState
 
               SplitlyTextField(
                 controller: _emailCtrl,
-                label: 'Email',
+                label: l10n.email,
                 hint: 'you@example.com',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 autofocus: true,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
+                  if (v == null || v.isEmpty) return l10n.emailRequired;
                   if (!v.contains('@') || !v.contains('.'))
-                    return 'Enter a valid email';
+                    return l10n.enterValidEmail;
                   return null;
                 },
               ),
@@ -160,7 +163,7 @@ class _ForgotPasswordScreenState
               const SizedBox(height: 24),
 
               SplitlyButton(
-                label: 'Send Reset Link',
+                label: l10n.sendResetLink,
                 isLoading: _isLoading,
                 onPressed: _resetPassword,
                 icon: Icons.send_rounded,
@@ -175,6 +178,7 @@ class _ForgotPasswordScreenState
   }
 
   Widget _successView() {
+    final l10n = AppLocalizations.of(context)!;
     final headingColor =
     isDark(context) ? AppColors.primaryTint : AppColors.primaryDark;
     final emailColor =
@@ -206,7 +210,7 @@ class _ForgotPasswordScreenState
 
               const SizedBox(height: 28),
 
-              Text('Check your email',
+              Text(l10n.checkYourEmail,
                   style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w500,
@@ -215,7 +219,7 @@ class _ForgotPasswordScreenState
 
               const SizedBox(height: 10),
 
-              Text('We sent a reset link to',
+              Text(l10n.weSentResetLink,
                   style:
                   TextStyle(fontSize: 14, color: AppColors.primary),
                   textAlign: TextAlign.center),
@@ -244,7 +248,7 @@ class _ForgotPasswordScreenState
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "Check your spam folder if you don't see it within a minute.",
+                      l10n.checkSpamFolder,
                       style: TextStyle(
                           fontSize: 12,
                           color: AppColors.primary,
@@ -257,7 +261,7 @@ class _ForgotPasswordScreenState
               const SizedBox(height: 32),
 
               SplitlyButton(
-                label: 'Back to Sign In',
+                label: l10n.backToSignIn,
                 onPressed: () => Navigator.pop(context),
                 icon: Icons.arrow_back_rounded,
               ),

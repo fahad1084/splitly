@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/expense_model.dart';
+import '../../../core/utils/string_utils.dart';
 
 // Matches _categoryIcons in add_expense_sheet.dart
 const _categoryIconMap = {
@@ -33,6 +35,7 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final iPaid = expense.paidBy == currentUserId;
 
@@ -63,19 +66,18 @@ class ExpenseTile extends StatelessWidget {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Delete Expense'),
-            content: Text(
-                'Delete "${expense.title}"? This cannot be undone.'),
+            title: Text(l10n.deleteExpense),
+            content: Text(l10n.deleteExpenseConfirm(expense.title)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: TextButton.styleFrom(
                     foregroundColor: AppColors.danger),
-                child: const Text('Delete'),
+                child: Text(l10n.delete),
               ),
             ],
           ),
@@ -134,8 +136,8 @@ class ExpenseTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     iPaid
-                        ? 'You paid'
-                        : '${expense.paidByName} paid',
+                        ? l10n.youPaid
+                        : l10n.userPaid(expense.paidByName),
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primaryLight,
@@ -162,8 +164,9 @@ class ExpenseTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   iPaid
-                      ? 'you lent'
-                      : 'you owe ${expense.currency} ${myShare.toStringAsFixed(0)}',
+                      ? l10n.youLent
+                      : l10n.youOweAmount(
+                      '${expense.currency} ${myShare.toStringAsFixed(0)}'),
                   style: TextStyle(
                     fontSize: 11,
                     color: iPaid

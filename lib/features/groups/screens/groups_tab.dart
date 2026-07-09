@@ -66,9 +66,9 @@ class GroupsTab extends ConsumerWidget {
         ],
       ),
       body: groupsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-              color: AppColors.primary, strokeWidth: 2),
+        loading: () => const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: ShimmerList(),
         ),
         error: (e, _) => Center(
           child: Column(
@@ -296,9 +296,17 @@ class _GroupCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primaryTint,
                 borderRadius: BorderRadius.circular(14),
+                image: (group.photoUrl != null && group.photoUrl!.isNotEmpty)
+                    ? DecorationImage(
+                  image: NetworkImage(group.photoUrl!),
+                  fit: BoxFit.cover,
+                )
+                    : null,
               ),
-              child: const Icon(Icons.group_rounded,
-                  color: AppColors.primary, size: 24),
+              child: (group.photoUrl == null || group.photoUrl!.isEmpty)
+                  ? const Icon(Icons.group_rounded,
+                  color: AppColors.primary, size: 24)
+                  : null,
             ),
             const SizedBox(width: 14),
             Expanded(

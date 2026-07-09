@@ -913,6 +913,918 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settlement recorded! ✅'**
   String get settlementRecorded;
+
+  /// No description provided for @setAppPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Set App PIN'**
+  String get setAppPin;
+
+  /// No description provided for @confirmYourPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your PIN'**
+  String get confirmYourPin;
+
+  /// No description provided for @createPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a 4-digit PIN'**
+  String get createPin;
+
+  /// No description provided for @enterSamePinAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the same PIN again'**
+  String get enterSamePinAgain;
+
+  /// No description provided for @pinUsageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll use this to unlock Splitly'**
+  String get pinUsageHint;
+
+  /// No description provided for @pinsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match. Try again.'**
+  String get pinsDoNotMatch;
+
+  /// No description provided for @appLockEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'App Lock enabled!'**
+  String get appLockEnabled;
+
+  /// No description provided for @enterPinToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN to continue'**
+  String get enterPinToContinue;
+
+  /// No description provided for @incorrectPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN. Try again.'**
+  String get incorrectPin;
+
+  /// No description provided for @useBiometricsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Use biometrics'**
+  String get useBiometricsButton;
+
+  /// No description provided for @exportGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export {groupName}'**
+  String exportGroupTitle(String groupName);
+
+  /// No description provided for @downloadExpenseRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Download your expense records'**
+  String get downloadExpenseRecords;
+
+  /// No description provided for @noExpensesToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses to export yet.'**
+  String get noExpensesToExport;
+
+  /// No description provided for @pdfExportedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF exported successfully'**
+  String get pdfExportedSuccess;
+
+  /// No description provided for @pdfExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export PDF. Please try again.'**
+  String get pdfExportFailed;
+
+  /// No description provided for @csvExportedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV exported successfully'**
+  String get csvExportedSuccess;
+
+  /// No description provided for @csvExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export CSV. Please try again.'**
+  String get csvExportFailed;
+
+  /// No description provided for @exportAsPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as PDF'**
+  String get exportAsPdf;
+
+  /// No description provided for @pdfSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Formatted summary with expense list'**
+  String get pdfSubtitle;
+
+  /// No description provided for @exportAsCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as CSV'**
+  String get exportAsCsv;
+
+  /// No description provided for @csvSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw data for Excel or Google Sheets'**
+  String get csvSubtitle;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @forgotYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your\npassword?'**
+  String get forgotYourPassword;
+
+  /// No description provided for @resetLinkDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send a secure reset link.'**
+  String get resetLinkDesc;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get sendResetLink;
+
+  /// No description provided for @checkYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get checkYourEmail;
+
+  /// No description provided for @weSentResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a reset link to'**
+  String get weSentResetLink;
+
+  /// No description provided for @checkSpamFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your spam folder if you don\'t see it within a minute.'**
+  String get checkSpamFolder;
+
+  /// No description provided for @backToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Sign In'**
+  String get backToSignIn;
+
+  /// No description provided for @setNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new password'**
+  String get setNewPassword;
+
+  /// No description provided for @enterConfirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter and confirm your new password below.'**
+  String get enterConfirmNewPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @updatePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Password'**
+  String get updatePassword;
+
+  /// No description provided for @passwordUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated!'**
+  String get passwordUpdated;
+
+  /// No description provided for @passwordUpdatedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been changed successfully.\nSigning you out now...'**
+  String get passwordUpdatedDesc;
+
+  /// No description provided for @updatePasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update password. The link may have expired. Please request a new one.'**
+  String get updatePasswordFailed;
+
+  /// No description provided for @byCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'By Category'**
+  String get byCategory;
+
+  /// No description provided for @byMember.
+  ///
+  /// In en, this message translates to:
+  /// **'By Member'**
+  String get byMember;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get thisMonth;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get allTime;
+
+  /// No description provided for @totalSpentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Spent'**
+  String get totalSpentLabel;
+
+  /// No description provided for @expensesCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} expenses'**
+  String expensesCountLabel(int count);
+
+  /// No description provided for @avgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'avg'**
+  String get avgLabel;
+
+  /// No description provided for @createGroupAddExpensesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a group and add expenses\nto see spending reports.'**
+  String get createGroupAddExpensesDesc;
+
+  /// No description provided for @noExpensesInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses in this period'**
+  String get noExpensesInPeriod;
+
+  /// No description provided for @tryDifferentPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Try selecting a different time period'**
+  String get tryDifferentPeriod;
+
+  /// No description provided for @youPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You paid'**
+  String get youPaid;
+
+  /// No description provided for @userPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} paid'**
+  String userPaid(String name);
+
+  /// No description provided for @youLent.
+  ///
+  /// In en, this message translates to:
+  /// **'you lent'**
+  String get youLent;
+
+  /// No description provided for @youOweAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'you owe {amount}'**
+  String youOweAmount(String amount);
+
+  /// No description provided for @deleteExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Expense'**
+  String get deleteExpense;
+
+  /// No description provided for @deleteExpenseConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\"? This cannot be undone.'**
+  String deleteExpenseConfirm(String title);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @splitBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Split breakdown'**
+  String get splitBreakdown;
+
+  /// No description provided for @settled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get settled;
+
+  /// No description provided for @splitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} split'**
+  String splitLabel(String type);
+
+  /// No description provided for @searchExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Search expenses...'**
+  String get searchExpenses;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'YESTERDAY'**
+  String get yesterday;
+
+  /// No description provided for @todayCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get todayCaps;
+
+  /// No description provided for @noMatchingExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching expenses'**
+  String get noMatchingExpenses;
+
+  /// No description provided for @tryChangingFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Try changing or clearing the filters'**
+  String get tryChangingFilters;
+
+  /// No description provided for @addExpenseToSeeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an expense to see it here'**
+  String get addExpenseToSeeHere;
+
+  /// No description provided for @shareSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Summary'**
+  String get shareSummaryTitle;
+
+  /// No description provided for @shareGroupSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Share {groupName} expense summary'**
+  String shareGroupSummary(String groupName);
+
+  /// No description provided for @preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get preview;
+
+  /// No description provided for @whatsapp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsapp;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @summaryCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary copied!'**
+  String get summaryCopied;
+
+  /// No description provided for @scanReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Receipt'**
+  String get scanReceipt;
+
+  /// No description provided for @scanReceiptDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a receipt to auto-fill amount'**
+  String get scanReceiptDesc;
+
+  /// No description provided for @couldNotDetectTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not detect total — please enter it below'**
+  String get couldNotDetectTotal;
+
+  /// No description provided for @detectedTotalConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected total — confirm or correct it below'**
+  String get detectedTotalConfirm;
+
+  /// No description provided for @totalAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Amount'**
+  String get totalAmountLabel;
+
+  /// No description provided for @useThisAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use This Amount'**
+  String get useThisAmount;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get retake;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @couldNotReadReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read receipt. Please enter amount manually.'**
+  String get couldNotReadReceipt;
+
+  /// No description provided for @additionalDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any additional details...'**
+  String get additionalDetailsHint;
+
+  /// No description provided for @whatWasItForHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What was it for?'**
+  String get whatWasItForHint;
+
+  /// No description provided for @expenseTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Dinner, Groceries, Taxi'**
+  String get expenseTitleHint;
+
+  /// No description provided for @pleaseEnterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a title'**
+  String get pleaseEnterTitle;
+
+  /// No description provided for @pleaseEnterValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get pleaseEnterValidAmount;
+
+  /// No description provided for @noMembersToSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'No members to split with'**
+  String get noMembersToSplit;
+
+  /// No description provided for @pleaseSelectWhoPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select who paid'**
+  String get pleaseSelectWhoPaid;
+
+  /// No description provided for @customAmountsMustAddUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom amounts must add up to {currency} {amount}'**
+  String customAmountsMustAddUp(String currency, String amount);
+
+  /// No description provided for @percentagesMustAddTo100.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentages must add up to 100%'**
+  String get percentagesMustAddTo100;
+
+  /// No description provided for @expenseAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense added!'**
+  String get expenseAdded;
+
+  /// No description provided for @loadingMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading members...'**
+  String get loadingMembers;
+
+  /// No description provided for @percentSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'%'**
+  String get percentSymbol;
+
+  /// No description provided for @groupChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Group chat'**
+  String get groupChat;
+
+  /// No description provided for @noMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get noMessagesYet;
+
+  /// No description provided for @startTheConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the conversation!'**
+  String get startTheConversation;
+
+  /// No description provided for @messageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message...'**
+  String get messageHint;
+
+  /// No description provided for @todayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayLabel;
+
+  /// No description provided for @yesterdayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterdayLabel;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @fullNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullNameLabel;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// No description provided for @phoneOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number (optional)'**
+  String get phoneOptional;
+
+  /// No description provided for @chooseAvatarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Avatar Color'**
+  String get chooseAvatarColor;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated!'**
+  String get profileUpdated;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile. Please try again.'**
+  String get profileUpdateFailed;
+
+  /// No description provided for @yourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Email'**
+  String get yourEmail;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @onboardTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Split Expenses with Groups'**
+  String get onboardTitle1;
+
+  /// No description provided for @onboardDesc1.
+  ///
+  /// In en, this message translates to:
+  /// **'Create groups for trips, home, or friends and track shared expenses together.'**
+  String get onboardDesc1;
+
+  /// No description provided for @onboardTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Expenses in Seconds'**
+  String get onboardTitle2;
+
+  /// No description provided for @onboardDesc2.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan receipts, split equally or custom, and see who owes what instantly.'**
+  String get onboardDesc2;
+
+  /// No description provided for @onboardTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settle Up Easily'**
+  String get onboardTitle3;
+
+  /// No description provided for @onboardDesc3.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplified debts show the minimum payments needed to settle everyone up.'**
+  String get onboardDesc3;
+
+  /// No description provided for @photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get photo;
+
+  /// No description provided for @camera2.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get camera2;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording...'**
+  String get recording;
+
+  /// No description provided for @tapToRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap mic to record'**
+  String get tapToRecord;
+
+  /// No description provided for @sendingAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending...'**
+  String get sendingAttachment;
+
+  /// No description provided for @voiceMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice message'**
+  String get voiceMessage;
+
+  /// No description provided for @microphonePermissionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission needed to record voice messages.'**
+  String get microphonePermissionNeeded;
+
+  /// No description provided for @failedToSendAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send. Please try again.'**
+  String get failedToSendAttachment;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Member'**
+  String get removeMember;
+
+  /// No description provided for @removeMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from this group?'**
+  String removeMemberConfirm(String name);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Group'**
+  String get leaveGroup;
+
+  /// No description provided for @leaveGroupConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave this group?'**
+  String get leaveGroupConfirm;
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
+  /// No description provided for @makeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Admin'**
+  String get makeAdmin;
+
+  /// No description provided for @removeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Admin'**
+  String get removeAdmin;
+
+  /// No description provided for @memberRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Member removed'**
+  String get memberRemoved;
+
+  /// No description provided for @youLeftGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the group'**
+  String get youLeftGroup;
+
+  /// No description provided for @onlyAdminsCanDoThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Only group admins can do this'**
+  String get onlyAdminsCanDoThis;
+
+  /// No description provided for @changeGroupPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Group Photo'**
+  String get changeGroupPhoto;
+
+  /// No description provided for @groupPhotoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Group photo updated!'**
+  String get groupPhotoUpdated;
+
+  /// No description provided for @failedToUpdatePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update photo. Please try again'**
+  String get failedToUpdatePhoto;
+
+  /// No description provided for @deleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Message'**
+  String get deleteMessage;
+
+  /// No description provided for @deleteMessageConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get deleteMessageConfirm;
+
+  /// No description provided for @copyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyMessage;
+
+  /// No description provided for @replyTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String replyTo(String name);
+
+  /// No description provided for @messageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied!'**
+  String get messageCopied;
+
+  /// No description provided for @isTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is typing...'**
+  String isTyping(String name);
+
+  /// No description provided for @severalTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'Several people are typing...'**
+  String get severalTyping;
+
+  /// No description provided for @messageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get messageDeleted;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
 }
 
 class _AppLocalizationsDelegate

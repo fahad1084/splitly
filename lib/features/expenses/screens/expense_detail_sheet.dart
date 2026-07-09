@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
+import '../../../core/utils/string_utils.dart';
 
 const _categoryIconMap = {
   'food':          Icons.restaurant_rounded,
@@ -38,6 +40,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? const Color(0xFF042F2E) : Colors.white;
     final headingColor =
@@ -103,8 +106,8 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                     const SizedBox(height: 3),
                     Text(
                       iPaid
-                          ? 'You paid'
-                          : '${expense.paidByName} paid',
+                          ? l10n.youPaid
+                          : l10n.userPaid(expense.paidByName),
                       style: TextStyle(
                           fontSize: 13,
                           color: AppColors.primaryLight),
@@ -148,7 +151,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '${expense.splitType} split',
+                  l10n.splitLabel(expense.splitType),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -198,7 +201,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
           ],
 
           // ── Splits breakdown ───────────────────────────────────────
-          Text('Split breakdown',
+          Text(l10n.splitBreakdown,
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -224,9 +227,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                     backgroundColor:
                     AppColors.primary.withOpacity(0.2),
                     child: Text(
-                      split.userName.isNotEmpty
-                          ? split.userName[0].toUpperCase()
-                          : '?',
+                      getInitial(split.userName),
                       style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 12,
@@ -236,7 +237,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      isMe ? 'You' : split.userName,
+                      isMe ? l10n.youWord : split.userName,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -254,7 +255,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                         AppColors.success.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Text('Settled',
+                      child: Text(l10n.settled,
                           style: TextStyle(
                               fontSize: 10,
                               color: AppColors.success,
@@ -281,27 +282,26 @@ class _ExpenseDetailSheet extends ConsumerWidget {
           // ── Delete button (only if you paid) ──────────────────────
           if (iPaid)
             SplitlyButton(
-              label: 'Delete Expense',
+              label: l10n.deleteExpense,
               isOutline: true,
               icon: Icons.delete_outline_rounded,
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Expense'),
-                    content: Text(
-                        'Delete "${expense.title}"? This cannot be undone.'),
+                    title: Text(l10n.deleteExpense),
+                    content: Text(l10n.deleteExpenseConfirm(expense.title)),
                     actions: [
                       TextButton(
                           onPressed: () =>
                               Navigator.pop(ctx, false),
-                          child: const Text('Cancel')),
+                          child: Text(l10n.cancel)),
                       TextButton(
                         onPressed: () =>
                             Navigator.pop(ctx, true),
                         style: TextButton.styleFrom(
                             foregroundColor: AppColors.danger),
-                        child: const Text('Delete'),
+                        child: Text(l10n.delete),
                       ),
                     ],
                   ),
