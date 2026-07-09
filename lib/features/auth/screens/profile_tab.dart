@@ -9,6 +9,7 @@ import '../../auth/screens/login_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../security/controllers/app_lock_controller.dart';
 import '../../security/screens/set_pin_screen.dart';
+import '../../groups/screens/edit_profile_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -90,7 +91,10 @@ class ProfileTab extends ConsumerWidget {
                 _ProfileTile(
                   icon: Icons.person_outlined,
                   label: l10n.editProfile,
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                  ),
                 ),
                 _Divider(),
 

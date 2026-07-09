@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../groups/models/group_model.dart';
@@ -24,6 +25,7 @@ class _ShareSummarySheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? const Color(0xFF042F2E) : Colors.white;
     final headingColor =
@@ -81,14 +83,14 @@ class _ShareSummarySheet extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Title
-          Text('Share Summary',
+          Text(l10n.shareSummaryTitle,
               style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w500,
                   color: headingColor,
                   letterSpacing: -0.5)),
           const SizedBox(height: 4),
-          Text('Share ${group.name} expense summary',
+          Text(l10n.shareGroupSummary(group.name),
               style:
               TextStyle(fontSize: 13, color: AppColors.primary)),
 
@@ -113,7 +115,7 @@ class _ShareSummarySheet extends ConsumerWidget {
                     Icon(Icons.preview_rounded,
                         size: 14, color: AppColors.primaryLight),
                     const SizedBox(width: 6),
-                    Text('Preview',
+                    Text(l10n.preview,
                         style: TextStyle(
                             fontSize: 11,
                             color: AppColors.primaryLight,
@@ -156,12 +158,12 @@ class _ShareSummarySheet extends ConsumerWidget {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.chat_rounded,
+                      children: [
+                        const Icon(Icons.chat_rounded,
                             color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Text('WhatsApp',
-                            style: TextStyle(
+                        const SizedBox(width: 8),
+                        Text(l10n.whatsapp,
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14)),
@@ -179,7 +181,7 @@ class _ShareSummarySheet extends ConsumerWidget {
                   onTap: () {
                     Clipboard.setData(
                         ClipboardData(text: summaryText));
-                    showSuccessSnack(context, 'Summary copied!');
+                    showSuccessSnack(context, l10n.summaryCopied);
                     Navigator.pop(context);
                   },
                   child: Container(
@@ -196,7 +198,7 @@ class _ShareSummarySheet extends ConsumerWidget {
                         Icon(Icons.copy_rounded,
                             color: AppColors.primary, size: 18),
                         const SizedBox(width: 8),
-                        Text('Copy',
+                        Text(l10n.copy,
                             style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w500,
@@ -221,12 +223,12 @@ class _ShareSummarySheet extends ConsumerWidget {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.share_rounded,
+                      children: [
+                        const Icon(Icons.share_rounded,
                             color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Text('Share',
-                            style: TextStyle(
+                        const SizedBox(width: 8),
+                        Text(l10n.share,
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14)),
@@ -242,7 +244,7 @@ class _ShareSummarySheet extends ConsumerWidget {
     );
   }
 
-  // ── Generate WhatsApp-ready summary text ──────────────────────────────────
+  // ── Generate WhatsApp-ready summary text (kept in English — shared data) ──
   String _generateSummary({
     required GroupModel group,
     required List expenses,
@@ -259,12 +261,10 @@ class _ShareSummarySheet extends ConsumerWidget {
 
     final buffer = StringBuffer();
 
-    // Header
     buffer.writeln('💸 *Splitly — ${group.name}*');
     buffer.writeln('📅 $dateStr');
     buffer.writeln('─────────────────');
 
-    // Balance summary
     buffer.writeln('💰 *Balance Summary*');
     buffer.writeln(
         '• Total spent: ${group.currency} ${summary.totalSpent.toStringAsFixed(0)}');
@@ -277,7 +277,6 @@ class _ShareSummarySheet extends ConsumerWidget {
           '• You owe: ${group.currency} ${summary.youOwe.toStringAsFixed(0)}');
     }
 
-    // Who owes who
     if (summary.debts.isNotEmpty) {
       buffer.writeln('─────────────────');
       buffer.writeln('🤝 *Who Owes Who*');
@@ -287,7 +286,6 @@ class _ShareSummarySheet extends ConsumerWidget {
       }
     }
 
-    // Recent expenses (last 5)
     if (expenses.isNotEmpty) {
       buffer.writeln('─────────────────');
       buffer.writeln('🧾 *Recent Expenses*');
@@ -309,7 +307,6 @@ class _ShareSummarySheet extends ConsumerWidget {
   }
 
   void _shareToWhatsApp(String text) {
-    // share_plus will open WhatsApp if available on Android
     Share.share(text, subject: 'Splitly Expense Summary');
   }
 

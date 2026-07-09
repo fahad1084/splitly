@@ -17,6 +17,9 @@ import '../../expenses/screens/share_summary_sheet.dart';
 import '../../expenses/screens/export_sheet.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../chat/screens/chat_screen.dart';
+import '../../../core/utils/string_utils.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -55,19 +58,44 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(group.name,
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primaryTint)),
-            Text(group.currency,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w500)),
+            GestureDetector(
+              onTap: () => _changeGroupPhoto(context, ref),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                  image: (group.photoUrl != null && group.photoUrl!.isNotEmpty)
+                      ? DecorationImage(
+                    image: NetworkImage(group.photoUrl!),
+                    fit: BoxFit.cover,
+                  )
+                      : null,
+                ),
+                child: (group.photoUrl == null || group.photoUrl!.isEmpty)
+                    ? const Icon(Icons.group_rounded, color: AppColors.primaryTint, size: 18)
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(group.name,
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryTint)),
+                Text(group.currency,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ),
           ],
         ),
         actions: [
@@ -146,16 +174,19 @@ class GroupDetailScreen extends ConsumerWidget {
             membersAsync.when(
               data: (members) => SliverList(
                 delegate: SliverChildBuilderDelegate(
-                      (_, i) => _MemberTile(member: members[i]),
+                      (_, i) => _MemberTile(
+                    member: members[i],
+                    group: group,
+                    isCurrentUserAdmin: members.any((m) =>
+                    m['user_id'] == currentUserId && m['role'] == 'admin'),
+                  ),
                   childCount: members.length,
                 ),
               ),
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.primary, strokeWidth: 2)),
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: ShimmerList(count: 2),
                 ),
               ),
               error: (e, _) => SliverToBoxAdapter(
@@ -228,10 +259,8 @@ class GroupDetailScreen extends ConsumerWidget {
             expensesAsync.when(
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.primary, strokeWidth: 2)),
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: ShimmerList(count: 3),
                 ),
               ),
               error: (e, _) => SliverToBoxAdapter(
@@ -280,6 +309,28 @@ class GroupDetailScreen extends ConsumerWidget {
             style: const TextStyle(fontWeight: FontWeight.w500)),
       ),
     );
+  }
+
+  // ✅ NEW — pick a photo from gallery and update the group's photo
+  void _changeGroupPhoto(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 75,
+      maxWidth: 800,
+    );
+    if (picked == null) return;
+
+    final error = await ref
+        .read(groupsProvider.notifier)
+        .updateGroupPhoto(group.id, File(picked.path));
+
+    if (!context.mounted) return;
+    if (error != null) {
+      showErrorSnack(context, l10n.failedToUpdatePhoto);
+    } else {
+      showSuccessSnack(context, l10n.groupPhotoUpdated);
+    }
   }
 
   void _showInviteDialog(BuildContext context) {
@@ -472,6 +523,18 @@ class GroupDetailScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             _MenuTile(
+              icon: Icons.exit_to_app_rounded,
+              iconColor: AppColors.danger,
+              label: l10n.leaveGroup,
+              textColor: AppColors.danger,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmLeaveGroup(context, ref);
+              },
+            ),
+
+            _MenuTile(
               icon: Icons.bar_chart_rounded,
               iconColor: AppColors.primary,
               label: l10n.spendingReports,
@@ -537,6 +600,44 @@ class GroupDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _confirmLeaveGroup(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(l10n.leaveGroup,
+            style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
+        content: Text(l10n.leaveGroupConfirm,
+            style: TextStyle(color: dark ? AppColors.primaryTint.withOpacity(0.8) : AppColors.primaryDark.withOpacity(0.7))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              final error = await ref.read(groupsProvider.notifier).leaveGroup(group.id);
+              if (context.mounted) {
+                if (error != null) {
+                  showErrorSnack(context, error);
+                } else {
+                  showSuccessSnack(context, l10n.youLeftGroup);
+                  Navigator.pop(context);
+                }
+              }
+            },
+            child: Text(l10n.leave, style: TextStyle(color: AppColors.danger)),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 class _MenuTile extends StatelessWidget {
@@ -686,9 +787,16 @@ class _BalanceItem extends StatelessWidget {
 }
 
 // ── Member Tile ───────────────────────────────────────────────────────────────
-class _MemberTile extends StatelessWidget {
+class _MemberTile extends ConsumerWidget {
   final Map<String, dynamic> member;
-  const _MemberTile({required this.member});
+  final GroupModel group;
+  final bool isCurrentUserAdmin;
+
+  const _MemberTile({
+    required this.member,
+    required this.group,
+    required this.isCurrentUserAdmin,
+  });
 
   Color _parseColor(String hex) {
     try {
@@ -699,74 +807,167 @@ class _MemberTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final profile =
         member['profiles'] as Map<String, dynamic>? ?? {};
     final name = profile['full_name'] as String? ?? 'Unknown';
+    final memberUserId = profile['id'] as String? ?? '';
     final avatarColor =
         profile['avatar_color'] as String? ?? '#0F766E';
     final role = member['role'] as String? ?? 'member';
-    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+    final initial = getInitial(name);
+    final currentUserId = ref.watch(currentUserProvider)?.id ?? '';
+    final isSelf = memberUserId == currentUserId;
 
     return Padding(
       padding:
       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: dark ? AppColors.primaryDark : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: dark
-                ? AppColors.primary.withOpacity(0.2)
-                : AppColors.primaryTint,
-            width: 0.5,
+      child: GestureDetector(
+        onLongPress: (isCurrentUserAdmin && !isSelf)
+            ? () => _showMemberActions(context, ref, name, memberUserId, role)
+            : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: dark ? AppColors.primaryDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: dark
+                  ? AppColors.primary.withOpacity(0.2)
+                  : AppColors.primaryTint,
+              width: 0.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _parseColor(avatarColor),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(initial,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(name,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: dark
+                            ? AppColors.primaryTint
+                            : AppColors.primaryDark)),
+              ),
+              if (role == 'admin')
+                Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTint,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(l10n.admin,
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryDark)),
+                ),
+              if (isCurrentUserAdmin && !isSelf)
+                Icon(Icons.more_vert_rounded,
+                    size: 18, color: AppColors.primaryLight),
+            ],
           ),
         ),
-        child: Row(
+      ),
+    );
+  }
+
+  void _showMemberActions(BuildContext context, WidgetRef ref,
+      String name, String memberUserId, String role) {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: BoxDecoration(
+          color: dark ? AppColors.primaryDark : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: _parseColor(avatarColor),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(initial,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(name,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: dark
-                          ? AppColors.primaryTint
-                          : AppColors.primaryDark)),
-            ),
-            if (role == 'admin')
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryTint,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.primaryLight.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(l10n.admin,
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.primaryDark)),
               ),
+            ),
+            ListTile(
+              leading: Icon(
+                role == 'admin' ? Icons.remove_moderator_outlined : Icons.admin_panel_settings_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(role == 'admin' ? l10n.removeAdmin : l10n.makeAdmin),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                await ref.read(groupsProvider.notifier).setMemberRole(
+                    group.id, memberUserId, role == 'admin' ? 'member' : 'admin');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_remove_outlined, color: AppColors.danger),
+              title: Text(l10n.removeMember, style: const TextStyle(color: AppColors.danger)),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text(l10n.removeMember),
+                    content: Text(l10n.removeMemberConfirm(name)),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: Text(l10n.cancel)),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                        child: Text(l10n.remove),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true && context.mounted) {
+                  final error = await ref
+                      .read(groupsProvider.notifier)
+                      .removeMember(group.id, memberUserId);
+                  if (context.mounted) {
+                    if (error != null) {
+                      showErrorSnack(context, error);
+                    } else {
+                      showSuccessSnack(context, l10n.memberRemoved);
+                    }
+                  }
+                }
+              },
+            ),
           ],
         ),
       ),

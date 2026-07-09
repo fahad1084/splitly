@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:shimmer/shimmer.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DARK MODE HELPER — use isDark(context) anywhere instead of repeating check
@@ -51,6 +53,8 @@ class SBlobPainter extends CustomPainter {
 // ─────────────────────────────────────────────────────────────────────────────
 // SPLITLY LOGO WIDGET — reads context, auto-adapts name/tagline color
 // ─────────────────────────────────────────────────────────────────────────────
+// Note: 'Splitly' and 'Your Circle. Your Hisaab.' are the brand name/tagline —
+// these are never translated, same as how "WhatsApp" stays "WhatsApp" in any language.
 class SplitlyLogo extends StatelessWidget {
   final double size;
   final bool showTagline;
@@ -113,6 +117,7 @@ class SplitlyTextField extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final bool autofocus;
   final Iterable<String>? autofillHints;
+  final void Function(String)? onChanged; // ✅ added
 
   const SplitlyTextField({
     super.key,
@@ -126,6 +131,7 @@ class SplitlyTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autofocus = false,
     this.autofillHints,
+    this.onChanged, // ✅ added
   });
 
   @override
@@ -159,6 +165,7 @@ class _SplitlyTextFieldState extends State<SplitlyTextField> {
       textCapitalization: widget.textCapitalization,
       autofocus: widget.autofocus,
       autofillHints: widget.autofillHints,
+      onChanged: widget.onChanged, // ✅ added
       style: TextStyle(
         color: textColor,
         fontSize: 15,
@@ -314,6 +321,7 @@ class SplitlyGoogleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ✅ added
     final dark = isDark(context);
     final bgColor = dark
         ? AppColors.primaryDark.withOpacity(0.6)
@@ -358,7 +366,7 @@ class SplitlyGoogleButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Continue with Google',
+                  l10n.continueWithGoogle, // ✅ localized
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -448,6 +456,61 @@ class _GoogleGPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SHIMMER LOADING CARD — reusable skeleton for lists while data loads
+// ─────────────────────────────────────────────────────────────────────────────
+class ShimmerCard extends StatelessWidget {
+  final double height;
+  final EdgeInsets margin;
+
+  const ShimmerCard({
+    super.key,
+    this.height = 72,
+    this.margin = const EdgeInsets.fromLTRB(16, 0, 16, 10),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = isDark(context);
+    final baseColor = dark ? AppColors.primaryDark : AppColors.primaryTint;
+    final highlightColor = dark
+        ? AppColors.primary.withOpacity(0.3)
+        : Colors.white;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Container(
+        height: height,
+        margin: margin,
+        decoration: BoxDecoration(
+          color: baseColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+}
+
+// List of shimmer cards — drop-in replacement for CircularProgressIndicator
+class ShimmerList extends StatelessWidget {
+  final int count;
+  const ShimmerList({super.key, this.count = 4});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        count,
+            (_) => const Padding(
+          padding: EdgeInsets.only(top: 12),
+          child: ShimmerCard(),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // AUTH PAGE WRAPPER — scaffold + appbar fully theme-aware
 // ─────────────────────────────────────────────────────────────────────────────
 class AuthPageWrapper extends StatelessWidget {
@@ -517,4 +580,5 @@ class AuthPageWrapper extends StatelessWidget {
       ),
     );
   }
+
 }

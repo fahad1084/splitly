@@ -6,6 +6,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/balances_controller.dart';
 import '../models/balance_model.dart';
+import '../../../core/utils/string_utils.dart';
 
 void showSettleUpSheet(BuildContext context, DebtModel debt) {
   showModalBottomSheet(
@@ -276,7 +277,7 @@ class _Avatar extends StatelessWidget {
       radius: 22,
       backgroundColor: color.withOpacity(0.15),
       child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        getInitial(name),
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w500,

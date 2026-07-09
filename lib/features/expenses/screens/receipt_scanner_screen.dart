@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ReceiptScanResult {
   final double? amount;
@@ -46,6 +47,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
     if (_image == null) return;
     setState(() => _scanning = true);
 
+    final l10n = AppLocalizations.of(context)!;
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     try {
       final inputImage = InputImage.fromFile(_image!);
@@ -65,7 +67,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
         if (found != null) _amountCtrl.text = found.toStringAsFixed(2);
       });
     } catch (e) {
-      if (mounted) showErrorSnack(context, 'Could not read receipt. Please enter amount manually.');
+      if (mounted) showErrorSnack(context, l10n.couldNotReadReceipt);
     } finally {
       await textRecognizer.close();
       if (mounted) setState(() => _scanning = false);
@@ -150,12 +152,13 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(title: const Text('Scan Receipt')),
+      appBar: AppBar(title: Text(l10n.scanReceipt)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -172,7 +175,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                             size: 72, color: AppColors.primaryLight.withOpacity(0.6)),
                         const SizedBox(height: 16),
                         Text(
-                          'Scan a receipt to auto-fill amount',
+                          l10n.scanReceiptDesc,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: textColor.withOpacity(0.7)),
                         ),
@@ -201,8 +204,8 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
               if (!_scanning && _image != null) ...[
                 Text(
                   _amountCtrl.text.isEmpty
-                      ? 'Could not detect total — please enter it below'
-                      : 'Detected total — confirm or correct it below',
+                      ? l10n.couldNotDetectTotal
+                      : l10n.detectedTotalConfirm,
                   style: TextStyle(
                     fontSize: 13,
                     color: _amountCtrl.text.isEmpty ? AppColors.danger : AppColors.success,
@@ -215,9 +218,9 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   autofocus: _amountCtrl.text.isEmpty,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: textColor),
-                  decoration: const InputDecoration(
-                    labelText: 'Total Amount',
-                    prefixIcon: Icon(Icons.payments_outlined),
+                  decoration: InputDecoration(
+                    labelText: l10n.totalAmountLabel,
+                    prefixIcon: const Icon(Icons.payments_outlined),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -231,7 +234,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                       ReceiptScanResult(amount: val, rawText: _rawText),
                     );
                   },
-                  child: const Text('Use This Amount'),
+                  child: Text(l10n.useThisAmount),
                 ),
                 const SizedBox(height: 10),
               ],
@@ -242,7 +245,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined),
-                      label: Text(_image == null ? 'Camera' : 'Retake'),
+                      label: Text(_image == null ? l10n.camera : l10n.retake),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -250,7 +253,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
                       icon: const Icon(Icons.photo_outlined),
-                      label: const Text('Gallery'),
+                      label: Text(l10n.gallery),
                     ),
                   ),
                 ],

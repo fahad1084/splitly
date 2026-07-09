@@ -38,11 +38,14 @@ dependencies:
   google_sign_in: ^6.2.1
   crypto: ^3.0.3
   fl_chart: ^0.69.0
+  record: 5.0.4
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   generate: true
@@ -51,3 +54,15 @@ flutter:
     - .env
     - assets/images/
     - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#134E4A"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
+
+dependency_overrides:
+  record_linux: 0.7.1
+  record_platform_interface: 1.2.0

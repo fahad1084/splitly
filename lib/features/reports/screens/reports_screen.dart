@@ -7,6 +7,7 @@ import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/models/expense_model.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -35,6 +36,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;   // ✅ add this line
     final dark = isDark(context);
     final groupsAsync = ref.watch(groupsProvider);
     final headingColor =
@@ -58,7 +60,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                 color: AppColors.primaryTint, size: 16),
           ),
         ),
-        title: const Text('Spending Reports',
+          title: Text(l10n.spendingReports,
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -69,9 +71,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
           unselectedLabelColor: AppColors.primaryLight,
           indicatorColor: AppColors.accent,
           indicatorSize: TabBarIndicatorSize.label,
-          tabs: const [
-            Tab(text: 'By Category'),
-            Tab(text: 'By Member'),
+          tabs: [
+            Tab(text: l10n.byCategory),
+            Tab(text: l10n.byMember),
           ],
         ),
       ),
@@ -147,21 +149,21 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                 child: Row(
                   children: [
                     _PeriodChip(
-                        label: 'This month',
+                        label: l10n.thisMonth,   // was 'This month'
                         value: 'month',
                         selected: _selectedPeriod == 'month',
                         onTap: () => setState(
                                 () => _selectedPeriod = 'month')),
                     const SizedBox(width: 8),
                     _PeriodChip(
-                        label: 'This week',
+                        label: l10n.thisWeek,    // was 'This week'
                         value: 'week',
                         selected: _selectedPeriod == 'week',
                         onTap: () => setState(
                                 () => _selectedPeriod = 'week')),
                     const SizedBox(width: 8),
                     _PeriodChip(
-                        label: 'All time',
+                        label: l10n.allTime,     // was 'All time'
                         value: 'all',
                         selected: _selectedPeriod == 'all',
                         onTap: () =>
@@ -275,6 +277,7 @@ class _TotalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;   // ✅ add this
     final total =
     expenses.fold(0.0, (sum, e) => sum + e.amount);
     final dark = isDark(context);
@@ -292,14 +295,13 @@ class _TotalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Total Spent',
+          Text(l10n.totalSpentLabel,
                     style: TextStyle(
                         fontSize: 12,
                         color: AppColors.primaryLight)),
                 const SizedBox(height: 4),
                 Text(
-                  '$currency ${total.toStringAsFixed(0)}',
-                  style: const TextStyle(
+                  l10n.expensesCountLabel(expenses.length),                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryTint,
@@ -320,7 +322,7 @@ class _TotalCard extends StatelessWidget {
               Text(
                 expenses.isEmpty
                     ? '-'
-                    : '$currency ${(total / expenses.length).toStringAsFixed(0)} avg',
+    :'$currency ${(total / expenses.length).toStringAsFixed(0)} ${l10n.avgLabel}',
                 style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.accent,
@@ -787,6 +789,7 @@ class _MemberTabState extends State<_MemberTab> {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;   // ✅ add this
     final dark = isDark(context);
     return Center(
       child: Column(
@@ -802,13 +805,13 @@ class _EmptyState extends StatelessWidget {
                 size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 20),
-          Text('No groups yet',
+        Text(l10n.noGroupsYet,
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
-          Text('Create a group and add expenses\nto see spending reports.',
+        Text(l10n.createGroupAddExpensesDesc,
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 14, color: AppColors.primary, height: 1.5)),
@@ -821,6 +824,7 @@ class _EmptyState extends StatelessWidget {
 class _NoDataState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;   // ✅ add this
     final dark = isDark(context);
     return Center(
       child: Column(
@@ -836,13 +840,13 @@ class _NoDataState extends StatelessWidget {
                 size: 32, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
-          Text('No expenses in this period',
+        Text(l10n.noExpensesInPeriod,
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
-          Text('Try selecting a different time period.',
+        Text(l10n.tryDifferentPeriod,
               style: TextStyle(fontSize: 13, color: AppColors.primary)),
         ],
       ),

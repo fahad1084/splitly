@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -31,7 +32,7 @@ class ChatController
     return messages;
   }
 
-  // ── Fetch messages with sender names ─────────────────────────────────────
+// ── Fetch messages with sender names + reply info ──────────────────────────
   Future<List<MessageModel>> _fetchMessages() async {
     try {
       final List<dynamic> rows = await SupabaseConfig.client
@@ -43,7 +44,6 @@ class ChatController
 
       if (rows.isEmpty) return [];
 
-      // Fetch sender names
       final senderIds =
       rows.map((r) => r['sender_id'] as String).toSet().toList();
       final List<dynamic> profiles = await SupabaseConfig.client
@@ -56,10 +56,27 @@ class ChatController
           p['id'] as String: p['full_name'] as String,
       };
 
+      // Build a lookup for reply-to messages (id → content + sender)
+      final byId = <String, Map<String, dynamic>>{
+        for (final r in rows) r['id'] as String: Map<String, dynamic>.from(r),
+      };
+
       return rows.map((r) {
+        final map = Map<String, dynamic>.from(r);
+        final replyToId = map['reply_to_id'] as String?;
+        String? replyContent;
+        String? replySender;
+        if (replyToId != null && byId.containsKey(replyToId)) {
+          final replyMsg = byId[replyToId]!;
+          replyContent = replyMsg['content'] as String?;
+          replySender = nameMap[replyMsg['sender_id']] ?? 'Unknown';
+        }
+
         return MessageModel.fromMap({
-          ...Map<String, dynamic>.from(r),
+          ...map,
           'sender_name': nameMap[r['sender_id']] ?? 'Unknown',
+          'reply_to_content': replyContent,
+          'reply_to_sender': replySender,
         });
       }).toList();
     } catch (e) {
@@ -112,8 +129,9 @@ class ChatController
         .subscribe();
   }
 
-  // ── Send message ──────────────────────────────────────────────────────────
-  Future<String?> sendMessage(String content) async {
+// ── Send text message (with optional reply) ─────────────────────────────
+// ── Send text message (with optional reply) ─────────────────────────────
+  Future<String?> sendMessage(String content, {String? replyToId}) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
     if (userId == null) return 'Not signed in';
     if (content.trim().isEmpty) return null;
@@ -124,6 +142,7 @@ class ChatController
         'group_id': _groupId,
         'sender_id': userId,
         'content': content.trim(),
+        'reply_to_id': replyToId,
       });
       return null;
     } catch (e) {
@@ -131,4 +150,132 @@ class ChatController
       return 'Failed to send message';
     }
   }
+  // ── Delete a message (sender only, enforced by RLS) ─────────────────────
+  Future<String?> deleteMessage(String messageId) async {
+    try {
+      await SupabaseConfig.client.from('messages').delete().eq('id', messageId);
+      final current = state.value ?? [];
+      state = AsyncValue.data(current.where((m) => m.id != messageId).toList());
+      return null;
+    } catch (e) {
+      return 'Failed to delete message';
+    }
+  }
+
+  // ── Typing indicator ──────────────────────────────────────────────────────
+  Future<void> setTyping(bool isTyping) async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      if (isTyping) {
+        final profile = await SupabaseConfig.client
+            .from('profiles')
+            .select('full_name')
+            .eq('id', userId)
+            .single();
+
+        await SupabaseConfig.client.from('typing_status').upsert({
+          'group_id': _groupId,
+          'user_id': userId,
+          'user_name': profile['full_name'],
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      } else {
+        await SupabaseConfig.client
+            .from('typing_status')
+            .delete()
+            .eq('group_id', _groupId)
+            .eq('user_id', userId);
+      }
+    } catch (_) {}
+  }
+  // ── Send image attachment ─────────────────────────────────────────────────
+// ── Send image attachment ─────────────────────────────────────────────────
+  Future<String?> sendImage(File imageFile, {String caption = ''}) async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return 'Not signed in';
+
+    try {
+      final ext = imageFile.path.split('.').last;
+      final fileName = '${const Uuid().v4()}.$ext';
+      final path = '$_groupId/$fileName';
+
+      await SupabaseConfig.client.storage
+          .from('chat-attachments')
+          .upload(path, imageFile);
+
+      final url = SupabaseConfig.client.storage
+          .from('chat-attachments')
+          .getPublicUrl(path);
+
+      await SupabaseConfig.client.from('messages').insert({
+        'id': const Uuid().v4(),
+        'group_id': _groupId,
+        'sender_id': userId,
+        'content': caption,          // ✅ caption goes here now
+        'attachment_url': url,
+        'attachment_type': 'image',
+      });
+      return null;
+    } catch (e) {
+      print('=== SEND IMAGE ERROR: $e ===');
+      return 'Failed to send image';
+    }
+  }
+
+
+  // ── Send voice message ────────────────────────────────────────────────────
+  Future<String?> sendAudio(File audioFile, int durationSeconds) async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return 'Not signed in';
+
+    try {
+      final fileName = '${const Uuid().v4()}.m4a';
+      final path = '$_groupId/$fileName';
+
+      await SupabaseConfig.client.storage
+          .from('chat-attachments')
+          .upload(path, audioFile);
+
+      final url = SupabaseConfig.client.storage
+          .from('chat-attachments')
+          .getPublicUrl(path);
+
+      await SupabaseConfig.client.from('messages').insert({
+        'id': const Uuid().v4(),
+        'group_id': _groupId,
+        'sender_id': userId,
+        'content': '',
+        'attachment_url': url,
+        'attachment_type': 'audio',
+        'audio_duration': durationSeconds,
+      });
+      return null;
+    } catch (e) {
+      print('=== SEND AUDIO ERROR: $e ===');
+      return 'Failed to send voice message';
+    }
+  }
 }
+
+// ── Typing status stream — who is currently typing in this group ─────────────
+final typingUsersProvider = StreamProvider.family<List<String>, String>((ref, groupId) {
+  final currentUserId = SupabaseConfig.client.auth.currentUser?.id;
+  return SupabaseConfig.client
+      .from('typing_status')
+      .stream(primaryKey: ['group_id', 'user_id'])
+      .eq('group_id', groupId)
+      .map((rows) {
+    final now = DateTime.now();
+    return rows
+        .where((r) {
+      // Ignore self and stale entries older than 5 seconds
+      final updatedAt = DateTime.parse(r['updated_at'] as String).toLocal();
+      final isRecent = now.difference(updatedAt).inSeconds < 5;
+      return r['user_id'] != currentUserId && isRecent;
+    })
+        .map((r) => r['user_name'] as String? ?? 'Someone')
+        .toList();
+  });
+});

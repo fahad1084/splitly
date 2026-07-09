@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/app_lock_controller.dart';
 
 class SetPinScreen extends ConsumerStatefulWidget {
@@ -51,9 +52,10 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
   }
 
   Future<void> _validateAndSave() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_pin != _confirmPin) {
       setState(() {
-        _error = 'PINs do not match. Try again.';
+        _error = l10n.pinsDoNotMatch;
         _confirmPin = '';
         _isConfirmStep = false;
         _pin = '';
@@ -64,20 +66,21 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
 
     await ref.read(appLockControllerProvider.notifier).setPin(_pin);
     if (mounted) {
-      showSuccessSnack(context, 'App Lock enabled!');
+      showSuccessSnack(context, l10n.appLockEnabled);
       Navigator.pop(context, true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final activeDigits = _isConfirmStep ? _confirmPin.length : _pin.length;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(title: const Text('Set App PIN')),
+      appBar: AppBar(title: Text(l10n.setAppPin)),
       body: SafeArea(
         child: Column(
           children: [
@@ -85,12 +88,12 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
             Icon(Icons.lock_outline_rounded, size: 56, color: AppColors.primary),
             const SizedBox(height: 16),
             Text(
-              _isConfirmStep ? 'Confirm your PIN' : 'Create a 4-digit PIN',
+              _isConfirmStep ? l10n.confirmYourPin : l10n.createPin,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
-              _isConfirmStep ? 'Enter the same PIN again' : 'You\'ll use this to unlock Splitly',
+              _isConfirmStep ? l10n.enterSamePinAgain : l10n.pinUsageHint,
               style: TextStyle(fontSize: 13, color: AppColors.primary),
             ),
             const SizedBox(height: 24),

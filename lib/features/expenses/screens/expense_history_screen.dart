@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/expenses_controller.dart';
@@ -24,6 +25,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final expensesAsync = ref.watch(expensesProvider(group.id));
     final categoryFilter = ref.watch(selectedCategoryFilterProvider);
@@ -56,8 +58,8 @@ class ExpenseHistoryScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Expense History',
-                style: TextStyle(
+            Text(l10n.expenseHistory,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryTint)),
@@ -82,7 +84,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                       ? AppColors.primaryTint
                       : AppColors.primaryDark),
               decoration: InputDecoration(
-                hintText: 'Search expenses...',
+                hintText: l10n.searchExpenses,
                 hintStyle: TextStyle(
                     color: AppColors.primaryLight.withOpacity(0.5),
                     fontSize: 14),
@@ -102,11 +104,11 @@ class ExpenseHistoryScreen extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _DateChip(label: 'All', value: 'all', ref: ref),
-                _DateChip(label: 'Today', value: 'today', ref: ref),
-                _DateChip(label: 'This week', value: 'week', ref: ref),
+                _DateChip(label: l10n.all, value: 'all', ref: ref),
+                _DateChip(label: l10n.today, value: 'today', ref: ref),
+                _DateChip(label: l10n.thisWeek, value: 'week', ref: ref),
                 _DateChip(
-                    label: 'This month', value: 'month', ref: ref),
+                    label: l10n.thisMonth, value: 'month', ref: ref),
               ],
             ),
           ),
@@ -121,7 +123,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _CategoryChip(
-                    label: 'All',
+                    label: l10n.all,
                     value: null,
                     icon: Icons.grid_view_rounded,
                     ref: ref),
@@ -145,7 +147,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                     color: AppColors.primary, strokeWidth: 2),
               ),
               error: (e, _) => Center(
-                child: Text('Error: $e',
+                child: Text('${l10n.somethingWentWrong}: $e',
                     style: TextStyle(color: AppColors.danger)),
               ),
               data: (expenses) {
@@ -166,7 +168,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                 }
 
                 // Group by date
-                final grouped = _groupByDate(filtered);
+                final grouped = _groupByDate(filtered, l10n);
 
                 return RefreshIndicator(
                   color: AppColors.primary,
@@ -299,7 +301,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
 
   // ── Group expenses by formatted date string ─────────────────────────────────
   Map<String, List<ExpenseModel>> _groupByDate(
-      List<ExpenseModel> expenses) {
+      List<ExpenseModel> expenses, AppLocalizations l10n) {
     final map = <String, List<ExpenseModel>>{};
     final now = DateTime.now();
 
@@ -310,11 +312,11 @@ class ExpenseHistoryScreen extends ConsumerWidget {
       if (d.year == now.year &&
           d.month == now.month &&
           d.day == now.day) {
-        label = 'TODAY';
+        label = l10n.todayCaps;
       } else if (d.year == now.year &&
           d.month == now.month &&
           d.day == now.day - 1) {
-        label = 'YESTERDAY';
+        label = l10n.yesterday;
       } else {
         label =
             '${_monthName(d.month)} ${d.day}, ${d.year}'.toUpperCase();
@@ -460,6 +462,7 @@ class _EmptyFilterState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Column(
@@ -484,8 +487,8 @@ class _EmptyFilterState extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             hasFilters
-                ? 'No matching expenses'
-                : 'No expenses yet',
+                ? l10n.noMatchingExpenses
+                : l10n.noExpensesYet,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -497,8 +500,8 @@ class _EmptyFilterState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             hasFilters
-                ? 'Try changing or clearing the filters'
-                : 'Add an expense to see it here',
+                ? l10n.tryChangingFilters
+                : l10n.addExpenseToSeeHere,
             style: TextStyle(
                 fontSize: 13,
                 color: AppColors.primary,

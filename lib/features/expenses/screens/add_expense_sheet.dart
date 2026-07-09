@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/features/auth/controllers/auth_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import 'receipt_scanner_screen.dart';
+import '../../../core/utils/string_utils.dart';
 
 void showAddExpenseSheet(BuildContext context, GroupModel group) {
   showModalBottomSheet(
@@ -120,21 +122,23 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_titleCtrl.text.trim().isEmpty) {
-      showErrorSnack(context, 'Please enter a title');
+      showErrorSnack(context, l10n.pleaseEnterTitle);
       return;
     }
     final amount = double.tryParse(_amountCtrl.text);
     if (amount == null || amount <= 0) {
-      showErrorSnack(context, 'Please enter a valid amount');
+      showErrorSnack(context, l10n.pleaseEnterValidAmount);
       return;
     }
     if (_members.isEmpty) {
-      showErrorSnack(context, 'No members to split with');
+      showErrorSnack(context, l10n.noMembersToSplit);
       return;
     }
     if (_paidBy == null) {
-      showErrorSnack(context, 'Please select who paid');
+      showErrorSnack(context, l10n.pleaseSelectWhoPaid);
       return;
     }
 
@@ -144,7 +148,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
           .fold(0.0, (sum, m) => sum + (m['custom_amount'] as double));
       if ((total - amount).abs() > 0.01) {
         showErrorSnack(context,
-            'Custom amounts must add up to ${widget.group.currency} $amount');
+            l10n.customAmountsMustAddUp(
+                widget.group.currency, amount.toString()));
         return;
       }
     }
@@ -154,7 +159,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
           .where((m) => m['included'] as bool)
           .fold(0.0, (sum, m) => sum + (m['percentage'] as double));
       if ((total - 100).abs() > 0.01) {
-        showErrorSnack(context, 'Percentages must add up to 100%');
+        showErrorSnack(context, l10n.percentagesMustAddTo100);
         return;
       }
     }
@@ -182,7 +187,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
     if (error != null) {
       showErrorSnack(context, error);
     } else {
-      showSuccessSnack(context, 'Expense added!');
+      showSuccessSnack(context, l10n.expenseAdded);
       Navigator.pop(context);
     }
   }
@@ -197,6 +202,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? const Color(0xFF042F2E) : Colors.white;
     final headingColor =
@@ -263,7 +269,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
             const SizedBox(height: 20),
 
-            Text('Add Expense',
+            Text(l10n.addExpense,
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -279,8 +285,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             // ── Title ─────────────────────────────────────────────────
             SplitlyTextField(
               controller: _titleCtrl,
-              label: 'What was it for?',
-              hint: 'e.g. Dinner, Groceries, Taxi',
+              label: l10n.whatWasItForHint,
+              hint: l10n.expenseTitleHint,
               prefixIcon: Icons.receipt_outlined,
               textCapitalization: TextCapitalization.sentences,
               autofocus: true,
@@ -289,7 +295,6 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 14),
 
             // ── Amount ────────────────────────────────────────────────
-// ── Amount ────────────────────────────────────────────────
             TextFormField(
               controller: _amountCtrl,
               keyboardType:
@@ -304,7 +309,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                   fontWeight: FontWeight.w500,
                   color: headingColor),
               decoration: InputDecoration(
-                labelText: 'Amount',
+                labelText: l10n.amount,
                 hintText: '0.00',
                 hintStyle: TextStyle(
                     color: AppColors.primaryLight.withOpacity(0.4),
@@ -318,11 +323,11 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           color: AppColors.primary)),
                 ),
                 prefixIconConstraints: const BoxConstraints(),
-                // ✅ NEW — Receipt scan button
+                // ✅ Receipt scan button
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.document_scanner_outlined,
                       color: AppColors.primary),
-                  tooltip: 'Scan Receipt',
+                  tooltip: l10n.scanReceipt,
                   onPressed: () async {
                     final result = await Navigator.push<ReceiptScanResult>(
                       context,
@@ -343,7 +348,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 20),
 
             // ── Category ──────────────────────────────────────────────
-            Text('Category',
+            Text(l10n.category,
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -408,7 +413,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 20),
 
             // ── Paid by ───────────────────────────────────────────────
-            Text('Paid by',
+            Text(l10n.paidBy,
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -435,7 +440,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('Loading members...',
+                    Text(l10n.loadingMembers,
                         style: TextStyle(
                             fontSize: 12,
                             color: AppColors.primary)),
@@ -480,9 +485,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                             radius: 12,
                             backgroundColor: color,
                             child: Text(
-                              (m['name'] as String)
-                                  .substring(0, 1)
-                                  .toUpperCase(),
+                              getInitial(m['name'] as String),
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -513,7 +516,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 20),
 
             // ── Split tabs ────────────────────────────────────────────
-            Text('Split',
+            Text(l10n.split,
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -534,10 +537,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
-                tabs: const [
-                  Tab(text: 'Equal'),
-                  Tab(text: 'Custom'),
-                  Tab(text: '%'),
+                tabs: [
+                  Tab(text: l10n.equal),
+                  Tab(text: l10n.custom),
+                  Tab(text: l10n.percentSymbol),
                 ],
               ),
             ),
@@ -561,7 +564,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           strokeWidth: 2, color: AppColors.primary),
                     ),
                     const SizedBox(width: 8),
-                    Text('Loading members...',
+                    Text(l10n.loadingMembers,
                         style: TextStyle(
                             fontSize: 12, color: AppColors.primary)),
                   ],
@@ -630,9 +633,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                         radius: 16,
                         backgroundColor: color,
                         child: Text(
-                          (m['name'] as String)
-                              .substring(0, 1)
-                              .toUpperCase(),
+                          getInitial(m['name'] as String),
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -722,7 +723,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                   color: AppColors.primaryLight
                                       .withOpacity(0.4),
                                   fontSize: 13),
-                              suffixText: '%',
+                              suffixText: l10n.percentSymbol,
                               suffixStyle: TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 13),
@@ -745,8 +746,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             // ── Notes ─────────────────────────────────────────────────
             SplitlyTextField(
               controller: _notesCtrl,
-              label: 'Notes (optional)',
-              hint: 'Any additional details...',
+              label: l10n.notes,
+              hint: l10n.additionalDetailsHint,
               prefixIcon: Icons.notes_rounded,
             ),
 
@@ -754,7 +755,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
             // ── Submit ────────────────────────────────────────────────
             SplitlyButton(
-              label: 'Add Expense',
+              label: l10n.addExpense,
               isLoading: _isLoading,
               onPressed: _submit,
               icon: Icons.add_rounded,

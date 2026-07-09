@@ -35,9 +35,9 @@ class BalancesTab extends ConsumerWidget {
         ),
       ),
       body: groupsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-              color: AppColors.primary, strokeWidth: 2),
+        loading: () => const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: ShimmerList(),
         ),
         error: (e, _) => Center(
           child: Text('${l10n.somethingWentWrong}: $e',

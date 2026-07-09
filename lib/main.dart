@@ -16,6 +16,7 @@ import 'firebase_options.dart';
 import 'features/security/controllers/app_lock_controller.dart';
 import 'features/security/screens/unlock_screen.dart';
 import 'features/settings/controllers/locale_controller.dart';
+import 'features/onboarding/screens/onboarding_screen.dart';
 import 'l10n/app_localizations.dart';
 
 // ── Global navigator key ──────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ class _AuthGateState extends State<AuthGate> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INITIAL SCREEN — shows splash for 2 seconds then routes by session
+// INITIAL SCREEN — shows splash for 2 seconds then routes by session/onboarding
 // ─────────────────────────────────────────────────────────────────────────────
 class _InitialScreen extends StatefulWidget {
   const _InitialScreen();
@@ -204,16 +205,26 @@ class _InitialScreenState extends State<_InitialScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async {
       if (!mounted) return;
       final session = Supabase.instance.client.auth.currentSession;
+      final seenOnboarding = await hasSeenOnboarding();
+
+      Widget destination;
+      if (session != null) {
+        // Already logged in → skip onboarding, go straight to home (with lock check)
+        destination = const _AppLockWrapper(child: HomeScreen());
+      } else if (!seenOnboarding) {
+        // First time ever opening the app → show onboarding slides
+        destination = const OnboardingScreen();
+      } else {
+        // Seen onboarding before but not logged in → go to login
+        destination = const LoginScreen();
+      }
+
+      if (!mounted) return;
       _navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => session != null
-          // ✅ Wrapped with app lock check
-              ? const _AppLockWrapper(child: HomeScreen())
-              : const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => destination),
             (_) => false,
       );
     });

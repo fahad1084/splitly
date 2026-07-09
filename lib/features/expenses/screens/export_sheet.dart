@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../groups/models/group_model.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import 'export_service.dart';
@@ -29,40 +30,42 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   bool _exportingCsv = false;
 
   Future<void> _exportPdf() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _exportingPdf = true);
     try {
       final expenses = ref.read(expensesProvider(widget.group.id)).value ?? [];
       if (expenses.isEmpty) {
-        if (mounted) showErrorSnack(context, 'No expenses to export yet.');
+        if (mounted) showErrorSnack(context, l10n.noExpensesToExport);
         return;
       }
       await ExportService.exportToPdf(group: widget.group, expenses: expenses);
       if (mounted) {
-        showSuccessSnack(context, 'PDF exported successfully');
+        showSuccessSnack(context, l10n.pdfExportedSuccess);
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) showErrorSnack(context, 'Failed to export PDF. Please try again.');
+      if (mounted) showErrorSnack(context, l10n.pdfExportFailed);
     } finally {
       if (mounted) setState(() => _exportingPdf = false);
     }
   }
 
   Future<void> _exportCsv() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _exportingCsv = true);
     try {
       final expenses = ref.read(expensesProvider(widget.group.id)).value ?? [];
       if (expenses.isEmpty) {
-        if (mounted) showErrorSnack(context, 'No expenses to export yet.');
+        if (mounted) showErrorSnack(context, l10n.noExpensesToExport);
         return;
       }
       await ExportService.exportToCsv(group: widget.group, expenses: expenses);
       if (mounted) {
-        showSuccessSnack(context, 'CSV exported successfully');
+        showSuccessSnack(context, l10n.csvExportedSuccess);
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) showErrorSnack(context, 'Failed to export CSV. Please try again.');
+      if (mounted) showErrorSnack(context, l10n.csvExportFailed);
     } finally {
       if (mounted) setState(() => _exportingCsv = false);
     }
@@ -70,6 +73,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
@@ -97,17 +101,17 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 ),
               ),
             ),
-            Text('Export ${widget.group.name}',
+            Text(l10n.exportGroupTitle(widget.group.name),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: textColor)),
             const SizedBox(height: 4),
-            Text('Download your expense records',
+            Text(l10n.downloadExpenseRecords,
                 style: TextStyle(fontSize: 13, color: AppColors.primary)),
             const SizedBox(height: 24),
             _ExportOptionTile(
               icon: Icons.picture_as_pdf_outlined,
               iconColor: AppColors.danger,
-              title: 'Export as PDF',
-              subtitle: 'Formatted summary with expense list',
+              title: l10n.exportAsPdf,
+              subtitle: l10n.pdfSubtitle,
               isLoading: _exportingPdf,
               onTap: _exportingPdf || _exportingCsv ? null : _exportPdf,
             ),
@@ -115,8 +119,8 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
             _ExportOptionTile(
               icon: Icons.table_chart_outlined,
               iconColor: AppColors.success,
-              title: 'Export as CSV',
-              subtitle: 'Raw data for Excel or Google Sheets',
+              title: l10n.exportAsCsv,
+              subtitle: l10n.csvSubtitle,
               isLoading: _exportingCsv,
               onTap: _exportingPdf || _exportingCsv ? null : _exportCsv,
             ),
