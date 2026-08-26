@@ -929,4 +929,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reply => 'Reply';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountTitle => 'Delete Account';
+
+  @override
+  String get deleteAccountWarning =>
+      'This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you\'re part of, so balances stay accurate for others. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirmPrompt =>
+      'Type DELETE to confirm you want to permanently delete your account.';
+
+  @override
+  String get continueLabel => 'Continue';
 }

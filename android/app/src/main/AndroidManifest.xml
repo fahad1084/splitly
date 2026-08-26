@@ -53,7 +53,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:scheme="com.example.splitly"
+                    android:scheme="com.splitly.app"
                     android:host="callback"/>
             </intent-filter>
         </activity>

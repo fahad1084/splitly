@@ -168,8 +168,15 @@ class _AuthGateState extends State<AuthGate> {
         break;
 
       case AuthChangeEvent.userUpdated:
-        _isPasswordRecovery = false;
-        _navigate(const LoginScreen());
+      // Supabase fires this event on ANY auth.updateUser() call — both
+      // the password-recovery flow (set new password) AND regular
+      // profile edits (e.g. changing full_name). Only force a re-login
+      // when it's actually the recovery flow finishing; otherwise this
+      // would log the user out every time they edit their profile.
+        if (_isPasswordRecovery) {
+          _isPasswordRecovery = false;
+          _navigate(const LoginScreen());
+        }
         break;
 
       case AuthChangeEvent.signedOut:

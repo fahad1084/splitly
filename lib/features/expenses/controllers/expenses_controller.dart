@@ -26,40 +26,32 @@ class ExpensesController
           .eq('group_id', _groupId)
           .order('created_at', ascending: false);
 
-      // Fetch payer names separately
-      final payerIds =
-      rows.map((r) => r['paid_by'] as String).toSet().toList();
+      if (rows.isEmpty) return [];
+
+      // ✅ Combine payer IDs + split user IDs into ONE set — avoids fetching
+      // the same profile twice and cuts 2 separate DB round trips down to 1
+      final allUserIds = <String>{};
+      for (final r in rows) {
+        allUserIds.add(r['paid_by'] as String);
+        for (final s in (r['expense_splits'] as List? ?? [])) {
+          allUserIds.add(s['user_id'] as String);
+        }
+      }
+
       final List<dynamic> profiles = await SupabaseConfig.client
           .from('profiles')
           .select('id, full_name')
-          .inFilter('id', payerIds);
+          .inFilter('id', allUserIds.toList());
 
       final nameMap = <String, String>{
         for (final p in profiles) p['id'] as String: p['full_name'] as String,
-      };
-
-      // Fetch split user names
-      final allSplits = rows
-          .expand((r) => (r['expense_splits'] as List? ?? []))
-          .toList();
-      final splitUserIds =
-      allSplits.map((s) => s['user_id'] as String).toSet().toList();
-      final List<dynamic> splitProfiles = splitUserIds.isEmpty
-          ? []
-          : await SupabaseConfig.client
-          .from('profiles')
-          .select('id, full_name')
-          .inFilter('id', splitUserIds);
-      final splitNameMap = <String, String>{
-        for (final p in splitProfiles)
-          p['id'] as String: p['full_name'] as String,
       };
 
       return rows.map((r) {
         final splits = (r['expense_splits'] as List? ?? []).map((s) {
           return {
             ...Map<String, dynamic>.from(s),
-            'user_name': splitNameMap[s['user_id']] ?? 'Unknown',
+            'user_name': nameMap[s['user_id']] ?? 'Unknown',
           };
         }).toList();
 

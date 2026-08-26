@@ -158,7 +158,7 @@ class ProfileTab extends ConsumerWidget {
 
             const SizedBox(height: 16),
 
-            // ── Section 3 — Sign out ──────────────────────────────────
+            // ── Section 3 — Sign out / Delete ─────────────────────────
             _SectionCard(
               cardBg: cardBg,
               cardBorder: cardBorder,
@@ -169,6 +169,14 @@ class ProfileTab extends ConsumerWidget {
                   labelColor: AppColors.danger,
                   iconColor: AppColors.danger,
                   onTap: () => _confirmSignOut(context, ref),
+                ),
+                _Divider(),
+                _ProfileTile(
+                  icon: Icons.delete_forever_rounded,
+                  label: l10n.deleteAccount,
+                  labelColor: AppColors.danger,
+                  iconColor: AppColors.danger,
+                  onTap: () => _confirmDeleteAccount(context, ref),
                 ),
               ],
             ),
@@ -285,6 +293,129 @@ class ProfileTab extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _confirmDeleteAccount(
+      BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+
+    // Step 1 — warning dialog
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.deleteAccountTitle,
+          style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark),
+        ),
+        content: Text(
+          l10n.deleteAccountWarning,
+          style: TextStyle(
+            color: dark
+                ? AppColors.primaryTint.withOpacity(0.8)
+                : AppColors.primaryDark.withOpacity(0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: Text(l10n.continueLabel),
+          ),
+        ],
+      ),
+    );
+    if (proceed != true || !context.mounted) return;
+
+    // Step 2 — type "DELETE" to confirm
+    final textCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final matches = textCtrl.text.trim().toUpperCase() == 'DELETE';
+          return AlertDialog(
+            backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text(
+              l10n.deleteAccountTitle,
+              style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.deleteAccountConfirmPrompt,
+                  style: TextStyle(
+                    color: dark
+                        ? AppColors.primaryTint.withOpacity(0.8)
+                        : AppColors.primaryDark.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: textCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    hintText: 'DELETE',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (_) => setSheetState(() {}),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+              ),
+              TextButton(
+                onPressed: matches ? () => Navigator.pop(ctx, true) : null,
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                child: Text(l10n.deleteAccount),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    // Show a lightweight loading state via a non-dismissible dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+
+    final error =
+    await ref.read(authControllerProvider.notifier).deleteAccount();
+
+    if (!context.mounted) return;
+    Navigator.pop(context); // close loading dialog
+
+    if (error != null) {
+      showErrorSnack(context, error);
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (_) => false,
+    );
   }
 }
 

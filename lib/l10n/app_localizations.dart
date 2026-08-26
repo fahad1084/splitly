@@ -1825,6 +1825,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reply'**
   String get reply;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you\'re part of, so balances stay accurate for others. This cannot be undone.'**
+  String get deleteAccountWarning;
+
+  /// No description provided for @deleteAccountConfirmPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm you want to permanently delete your account.'**
+  String get deleteAccountConfirmPrompt;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
 }
 
 class _AppLocalizationsDelegate

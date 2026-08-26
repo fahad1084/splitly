@@ -37,7 +37,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
         email: email,
         password: password,
         data: {'full_name': fullName},
-        emailRedirectTo: 'com.yourname.splitly://callback',
+        emailRedirectTo: 'com.splitly.app://callback',
       );
 
       // Try to create profile — but don't fail sign up if this fails
@@ -71,10 +71,26 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      await _supabase.auth.signInWithPassword(
+      final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
+
+      // Safety-net: create profile if it's missing (e.g. it failed silently
+      // during signUp) — same pattern used for Google sign-in.
+      if (response.user != null) {
+        try {
+          await _createProfileIfNotExists(
+            id: response.user!.id,
+            fullName: (response.user!.userMetadata?['full_name'] as String?)
+                ?? email.split('@')[0],
+          );
+        } catch (_) {
+          // Don't block login if this fails — expense/group actions will
+          // surface the issue clearly if profile is still missing.
+        }
+      }
+
       state = const AsyncValue.data(null);
       return null;
     } on AuthException catch (e) {
@@ -93,24 +109,24 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     try {
       // ⚠️ Replace these with your actual IDs from Google Cloud Console
       // Web Client ID → from Phase A3 "Web Client ID" step
-      const webClientId = '959683813994-1kqqb6jndb77ff37rejincam9u0ckl0k.apps.googleusercontent.com';
+      const webClientId = '280568730972-j7f22jtmkimgdsbqbcilb81ct4qq1eti.apps.googleusercontent.com';
 
       final googleSignIn = GoogleSignIn(
-  serverClientId: webClientId,
-  scopes: [
-    'email',
-    'profile',
-    'openid',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-  ],
-);
+        serverClientId: webClientId,
+        scopes: [
+          'email',
+          'profile',
+          'openid',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+        ],
+      );
 
       final googleUser = await googleSignIn.signIn();
-if (googleUser == null) {
-  state = const AsyncValue.data(null);
-  return null; // user cancelled
-}
+      if (googleUser == null) {
+        state = const AsyncValue.data(null);
+        return null; // user cancelled
+      }
 
       final googleAuth = await googleUser.authentication;
       final accessToken = googleAuth.accessToken;
@@ -145,9 +161,13 @@ if (googleUser == null) {
       return null;
     } on AuthException catch (e) {
       state = const AsyncValue.data(null);
+      // ignore: avoid_print
+      print('=== GOOGLE SIGN-IN AuthException: ${e.message} ===');
       return e.message;
     } catch (e) {
       state = const AsyncValue.data(null);
+      // ignore: avoid_print
+      print('=== GOOGLE SIGN-IN ERROR: $e ===');
       return 'Google sign in failed. Please try again.';
     }
   }
@@ -160,7 +180,7 @@ if (googleUser == null) {
         email,
         // This tells Supabase to redirect back to your app after clicking the link
         // Must match what you added in Supabase → Authentication → URL Configuration
-        redirectTo: 'com.example.splitly://callback',
+        redirectTo: 'com.splitly.app://callback',
       );
       state = const AsyncValue.data(null);
       return null;
@@ -180,6 +200,30 @@ if (googleUser == null) {
       await googleSignIn.signOut();
     } catch (_) {}
     await _supabase.auth.signOut();
+  }
+
+  // ── Delete Account ────────────────────────────────────────────────────────
+  // Anonymizes the profile (name → "Deleted User", strips personal data,
+  // bans login) via a SECURITY DEFINER RPC — shared group/expense history
+  // stays intact for other members. Signs the local session out afterward.
+  Future<String?> deleteAccount() async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.rpc('delete_own_account');
+      await signOut();
+      state = const AsyncValue.data(null);
+      return null;
+    } on PostgrestException catch (e) {
+      state = const AsyncValue.data(null);
+      // ignore: avoid_print
+      print('=== DELETE ACCOUNT ERROR: ${e.message} ===');
+      return 'Something went wrong. Please try again.';
+    } catch (e) {
+      state = const AsyncValue.data(null);
+      // ignore: avoid_print
+      print('=== DELETE ACCOUNT ERROR: $e ===');
+      return 'Something went wrong. Please try again.';
+    }
   }
 
   // ── Private: create profile on first sign up ──────────────────────────────

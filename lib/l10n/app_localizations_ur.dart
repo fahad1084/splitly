@@ -928,4 +928,21 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get reply => 'جواب دیں';
+
+  @override
+  String get deleteAccount => 'اکاؤنٹ ڈیلیٹ کریں';
+
+  @override
+  String get deleteAccountTitle => 'اکاؤنٹ ڈیلیٹ کریں';
+
+  @override
+  String get deleteAccountWarning =>
+      'اس سے آپ مستقل طور پر سائن آؤٹ ہو جائیں گے اور یہ اکاؤنٹ غیر فعال ہو جائے گا۔ جن گروپس کے اخراجات میں آپ شامل ہیں، وہاں آپ کا نام \"Deleted User\" دکھایا جائے گا تاکہ دوسروں کا حساب درست رہے۔ یہ عمل واپس نہیں ہو سکتا۔';
+
+  @override
+  String get deleteAccountConfirmPrompt =>
+      'اپنا اکاؤنٹ مستقل طور پر ڈیلیٹ کرنے کی تصدیق کے لیے DELETE ٹائپ کریں۔';
+
+  @override
+  String get continueLabel => 'جاری رکھیں';
 }

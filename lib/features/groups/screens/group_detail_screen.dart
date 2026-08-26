@@ -6,6 +6,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../balances/controllers/balances_controller.dart';
+import '../../balances/screens/settle_up_sheet.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/screens/add_expense_sheet.dart';
 import '../../expenses/screens/expense_detail_sheet.dart';
@@ -134,6 +135,91 @@ class GroupDetailScreen extends ConsumerWidget {
             // ── Balance summary ───────────────────────────────────────
             SliverToBoxAdapter(
               child: _BalanceSummaryCard(group: group),
+            ),
+
+            // ── Debts within this group ─────────────────────────────────────────────
+            // ── Debts within this group ─────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Consumer(
+                builder: (context, ref, _) {
+                  ref.watch(expensesProvider(group.id));
+                  final summary = ref.watch(groupBalanceSummaryProvider({
+                    'groupId': group.id,
+                    'groupName': group.name,
+                    'currency': group.currency,
+                  }));
+                  if (summary.debts.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.whoOwesWho,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: headingColor)),
+                        const SizedBox(height: 10),
+                        ...summary.debts.map((debt) => Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: dark ? AppColors.primaryDark : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: dark
+                                  ? AppColors.primary.withOpacity(0.2)
+                                  : AppColors.primaryTint,
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${debt.fromUserName} → ${debt.toUserName}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: headingColor,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${debt.currency} ${debt.amount.toStringAsFixed(0)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () => showSettleUpSheet(context, debt),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    l10n.settleUp,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
 
             // ── Members header ────────────────────────────────────────
