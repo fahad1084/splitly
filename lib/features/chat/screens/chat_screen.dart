@@ -47,21 +47,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   // ── @Mentions ────────────────────────────────────────────────────────────
   String? _mentionQuery;
 
+  // Captured once, safely, so dispose() never needs to touch `ref` — reading
+  // `ref` inside dispose() can throw "Cannot use ref after widget was
+  // disposed" depending on unmount order.
+  late final ChatController _chatController;
+
   @override
   void initState() {
     super.initState();
     _msgCtrl.addListener(_onTextChanged);
+    _chatController = ref.read(messagesProvider(widget.group.id).notifier);
   }
 
   void _onTextChanged() {
     _onMentionCheck(_msgCtrl.text);
 
-    final notifier = ref.read(messagesProvider(widget.group.id).notifier);
-    notifier.setTyping(_msgCtrl.text.trim().isNotEmpty);
+    _chatController.setTyping(_msgCtrl.text.trim().isNotEmpty);
 
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 3), () {
-      notifier.setTyping(false);
+      _chatController.setTyping(false);
     });
   }
 
@@ -93,7 +98,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     _msgCtrl.removeListener(_onTextChanged);
     _typingTimer?.cancel();
-    ref.read(messagesProvider(widget.group.id).notifier).setTyping(false);
+    _chatController.setTyping(false);
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
     _audioRecorder.dispose();

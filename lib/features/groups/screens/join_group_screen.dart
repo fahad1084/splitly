@@ -23,12 +23,12 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
           SupabaseConfig.client.auth.currentUser?.id;
       if (userId == null) return 'Not signed in';
 
-      // Find group by invite code
+      // Find group by invite code — via RPC (RLS no longer allows a broad
+      // table scan here for security; the RPC only returns a preview for
+      // an exact invite-code match).
       final List<dynamic> groups = await SupabaseConfig.client
-          .from('groups')
-          .select('id, name')
-          .eq('invite_code', inviteCode.trim().toLowerCase())
-          .eq('is_archived', false);
+          .rpc('get_group_preview_by_invite_code',
+          params: {'p_invite_code': inviteCode.trim().toLowerCase()});
 
       if (groups.isEmpty) {
         state = const AsyncValue.data(null);
