@@ -339,5 +339,11 @@
   "deleteAccountTitle": "اکاؤنٹ ڈیلیٹ کریں",
   "deleteAccountWarning": "اس سے آپ مستقل طور پر سائن آؤٹ ہو جائیں گے اور یہ اکاؤنٹ غیر فعال ہو جائے گا۔ جن گروپس کے اخراجات میں آپ شامل ہیں، وہاں آپ کا نام \"Deleted User\" دکھایا جائے گا تاکہ دوسروں کا حساب درست رہے۔ یہ عمل واپس نہیں ہو سکتا۔",
   "deleteAccountConfirmPrompt": "اپنا اکاؤنٹ مستقل طور پر ڈیلیٹ کرنے کی تصدیق کے لیے DELETE ٹائپ کریں۔",
-  "continueLabel": "جاری رکھیں"
+  "continueLabel": "جاری رکھیں",
+  "customRange": "مخصوص مدت",
+  "repeatThisExpense": "یہ خرچہ دہرائیں",
+  "daily": "روزانہ",
+  "weekly": "ہفتہ وار",
+  "monthly": "ماہانہ",
+  "shareInviteMessage": "\"{groupName}\" میں Splitly پر شامل ہوں! ساتھ مل کر اخراجات تقسیم کرنے کے لیے انوائٹ کوڈ {inviteCode} استعمال کریں۔\n\n_Splitly — Your Circle. Your Hisaab._"
 }

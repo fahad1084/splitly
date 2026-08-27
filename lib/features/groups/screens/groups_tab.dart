@@ -21,6 +21,7 @@ class GroupsTab extends ConsumerWidget {
     final dark = isDark(context);
     final user = ref.watch(currentUserProvider);
     final groupsAsync = ref.watch(groupsProvider);
+    final unreadCounts = ref.watch(unreadCountsProvider).value ?? {};
     final userName =
         user?.userMetadata?['full_name'] as String? ?? 'there';
     final firstName = userName.split(' ').first;
@@ -230,6 +231,7 @@ class GroupsTab extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                         (_, i) => _GroupCard(
                       group: groups[i],
+                      unreadCount: unreadCounts[groups[i].id] ?? 0,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -266,8 +268,10 @@ class GroupsTab extends ConsumerWidget {
 // ── Group Card ────────────────────────────────────────────────────────────────
 class _GroupCard extends StatelessWidget {
   final GroupModel group;
+  final int unreadCount;
   final VoidCallback onTap;
-  const _GroupCard({required this.group, required this.onTap});
+  const _GroupCard(
+      {required this.group, required this.unreadCount, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -290,23 +294,56 @@ class _GroupCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.primaryTint,
-                borderRadius: BorderRadius.circular(14),
-                image: (group.photoUrl != null && group.photoUrl!.isNotEmpty)
-                    ? DecorationImage(
-                  image: NetworkImage(group.photoUrl!),
-                  fit: BoxFit.cover,
-                )
-                    : null,
-              ),
-              child: (group.photoUrl == null || group.photoUrl!.isEmpty)
-                  ? const Icon(Icons.group_rounded,
-                  color: AppColors.primary, size: 24)
-                  : null,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTint,
+                    borderRadius: BorderRadius.circular(14),
+                    image: (group.photoUrl != null && group.photoUrl!.isNotEmpty)
+                        ? DecorationImage(
+                      image: NetworkImage(group.photoUrl!),
+                      fit: BoxFit.cover,
+                    )
+                        : null,
+                  ),
+                  child: (group.photoUrl == null || group.photoUrl!.isEmpty)
+                      ? const Icon(Icons.group_rounded,
+                      color: AppColors.primary, size: 24)
+                      : null,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
+                      constraints:
+                      const BoxConstraints(minWidth: 18),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: dark ? AppColors.primaryDark : Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        unreadCount > 99 ? '99+' : '$unreadCount',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 14),
             Expanded(

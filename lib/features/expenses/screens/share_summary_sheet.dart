@@ -146,35 +146,6 @@ class _ShareSummarySheet extends ConsumerWidget {
           // Share buttons
           Row(
             children: [
-              // WhatsApp
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _shareToWhatsApp(summaryText),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF25D366), // WhatsApp green
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.chat_rounded,
-                            color: Colors.white, size: 18),
-                        const SizedBox(width: 8),
-                        Text(l10n.whatsapp,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
               // Copy
               Expanded(
                 child: GestureDetector(
@@ -211,7 +182,7 @@ class _ShareSummarySheet extends ConsumerWidget {
 
               const SizedBox(width: 12),
 
-              // More options
+              // Share (opens system share sheet — WhatsApp, etc.)
               Expanded(
                 child: GestureDetector(
                   onTap: () => _shareGeneral(summaryText),
@@ -301,13 +272,9 @@ class _ShareSummarySheet extends ConsumerWidget {
     }
 
     buffer.writeln('─────────────────');
-    buffer.writeln('_Sent via Splitly — Your Circle. Your Hisaab._');
+    buffer.writeln('Sent via Splitly — Your Circle. Your Hisaab.');
 
     return buffer.toString();
-  }
-
-  void _shareToWhatsApp(String text) {
-    Share.share(text, subject: 'Splitly Expense Summary');
   }
 
   void _shareGeneral(String text) {

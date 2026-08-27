@@ -40,6 +40,7 @@ dependencies:
   fl_chart: ^0.69.0
   record: 5.0.4
   audioplayers: ^6.1.0
+  image_cropper: ^8.0.2
 
 dev_dependencies:
   flutter_test:

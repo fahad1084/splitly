@@ -340,5 +340,17 @@
   "deleteAccountTitle": "Delete Account",
   "deleteAccountWarning": "This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you're part of, so balances stay accurate for others. This cannot be undone.",
   "deleteAccountConfirmPrompt": "Type DELETE to confirm you want to permanently delete your account.",
-  "continueLabel": "Continue"
+  "continueLabel": "Continue",
+  "customRange": "Custom range",
+  "repeatThisExpense": "Repeat this expense",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "shareInviteMessage": "Join \"{groupName}\" on Splitly! Use invite code {inviteCode} to start splitting expenses together.\n\n_Splitly — Your Circle. Your Hisaab._",
+  "@shareInviteMessage": {
+    "placeholders": {
+      "groupName": {"type": "String"},
+      "inviteCode": {"type": "String"}
+    }
+  }
 }

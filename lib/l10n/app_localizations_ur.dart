@@ -945,4 +945,24 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get continueLabel => 'جاری رکھیں';
+
+  @override
+  String get customRange => 'مخصوص مدت';
+
+  @override
+  String get repeatThisExpense => 'یہ خرچہ دہرائیں';
+
+  @override
+  String get daily => 'روزانہ';
+
+  @override
+  String get weekly => 'ہفتہ وار';
+
+  @override
+  String get monthly => 'ماہانہ';
+
+  @override
+  String shareInviteMessage(String groupName, String inviteCode) {
+    return '\"$groupName\" میں Splitly پر شامل ہوں! ساتھ مل کر اخراجات تقسیم کرنے کے لیے انوائٹ کوڈ $inviteCode استعمال کریں۔\n\n_Splitly — Your Circle. Your Hisaab._';
+  }
 }

@@ -1855,6 +1855,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueLabel;
+
+  /// No description provided for @customRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range'**
+  String get customRange;
+
+  /// No description provided for @repeatThisExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat this expense'**
+  String get repeatThisExpense;
+
+  /// No description provided for @daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @shareInviteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join \"{groupName}\" on Splitly! Use invite code {inviteCode} to start splitting expenses together.\n\n_Splitly — Your Circle. Your Hisaab._'**
+  String shareInviteMessage(String groupName, String inviteCode);
 }
 
 class _AppLocalizationsDelegate

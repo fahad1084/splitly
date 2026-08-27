@@ -14,6 +14,24 @@ final currentUserProvider = Provider<User?>((ref) {
   return SupabaseConfig.client.auth.currentUser;
 });
 
+// ── My profile row (name, avatar_color, avatar_url, phone) ────────────────────
+final myProfileProvider =
+FutureProvider<Map<String, dynamic>?>((ref) async {
+  final userId = SupabaseConfig.client.auth.currentUser?.id;
+  if (userId == null) return null;
+  try {
+    final data = await SupabaseConfig.client
+        .from('profiles')
+        .select('full_name, avatar_color, avatar_url, phone')
+        .eq('id', userId)
+        .maybeSingle();
+    return data;
+  } catch (e) {
+    print('=== FETCH MY PROFILE ERROR: $e ===');
+    return null;
+  }
+});
+
 // ── Auth controller provider ──────────────────────────────────────────────────
 final authControllerProvider =
 StateNotifierProvider<AuthController, AsyncValue<void>>(

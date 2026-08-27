@@ -57,9 +57,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     _msgCtrl.addListener(_onTextChanged);
     _chatController = ref.read(messagesProvider(widget.group.id).notifier);
+
+    // Mark this chat as read — clears its unread badge on the groups list.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _chatController.markAsRead();
+      if (mounted) ref.invalidate(unreadCountsProvider);
+    });
   }
 
   void _onTextChanged() {
+    setState(() {}); // rebuild so the send/mic icon reflects hasText
     _onMentionCheck(_msgCtrl.text);
 
     _chatController.setTyping(_msgCtrl.text.trim().isNotEmpty);
@@ -99,6 +106,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _msgCtrl.removeListener(_onTextChanged);
     _typingTimer?.cancel();
     _chatController.setTyping(false);
+    _chatController.markAsRead(); // catches messages received while open
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
     _audioRecorder.dispose();
@@ -651,16 +659,26 @@ class _MessageBubble extends ConsumerWidget {
             if (!isMe) ...[
               CircleAvatar(
                 radius: 14,
-                backgroundColor: AppColors.primary.withOpacity(0.2),
-                child: Text(
+                backgroundColor: _parseHex(message.senderAvatarColor)
+                    ?.withOpacity(0.2) ??
+                    AppColors.primary.withOpacity(0.2),
+                backgroundImage: (message.senderAvatarUrl != null &&
+                    message.senderAvatarUrl!.isNotEmpty)
+                    ? NetworkImage(message.senderAvatarUrl!)
+                    : null,
+                child: (message.senderAvatarUrl == null ||
+                    message.senderAvatarUrl!.isEmpty)
+                    ? Text(
                   message.senderName.isNotEmpty
                       ? message.senderName[0].toUpperCase()
                       : '?',
-                  style: const TextStyle(
-                      color: AppColors.primary,
+                  style: TextStyle(
+                      color: _parseHex(message.senderAvatarColor) ??
+                          AppColors.primary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500),
-                ),
+                )
+                    : null,
               ),
               const SizedBox(width: 8),
             ],
@@ -1418,5 +1436,13 @@ class _EmptyChat extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+Color? _parseHex(String? hex) {
+  if (hex == null || hex.isEmpty) return null;
+  try {
+    return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+  } catch (_) {
+    return null;
   }
 }

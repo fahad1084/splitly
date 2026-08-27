@@ -10,6 +10,26 @@ AsyncNotifierProvider<GroupsController, List<GroupModel>>(
   GroupsController.new,
 );
 
+// ── Unread message counts per group (for badges on the groups list) ────────
+final unreadCountsProvider =
+FutureProvider<Map<String, int>>((ref) async {
+  try {
+    print('=== FETCHING UNREAD COUNTS ===');
+    final List<dynamic> rows =
+    await SupabaseConfig.client.rpc('get_unread_counts');
+    print('=== UNREAD COUNTS RAW ROWS: $rows ===');
+    final result = {
+      for (final r in rows)
+        r['group_id'] as String: (r['unread_count'] as num).toInt(),
+    };
+    print('=== UNREAD COUNTS RESULT: $result ===');
+    return result;
+  } catch (e) {
+    print('=== FETCH UNREAD COUNTS ERROR: $e ===');
+    return {};
+  }
+});
+
 class GroupsController extends AsyncNotifier<List<GroupModel>> {
   SupabaseClient get _db => SupabaseConfig.client;
 
@@ -242,7 +262,7 @@ FutureProvider.family<List<Map<String, dynamic>>, String>(
       try {
         final List<dynamic> resp = await SupabaseConfig.client
             .from('group_members')
-            .select('*, profiles(id, full_name, avatar_color, phone)')
+            .select('*, profiles(id, full_name, avatar_color, avatar_url, phone)')
             .eq('group_id', groupId);
 
         return resp.map((r) => Map<String, dynamic>.from(r)).toList();

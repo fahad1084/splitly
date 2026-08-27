@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -506,17 +507,54 @@ class GroupDetailScreen extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: group.inviteCode));
-                    Navigator.pop(sheetContext);
-                    showSuccessSnack(context, l10n.inviteCodeCopied);
-                  },
-                  icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: Text(l10n.copyCode),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(
+                            ClipboardData(text: group.inviteCode));
+                        Navigator.pop(sheetContext);
+                        showSuccessSnack(context, l10n.inviteCodeCopied);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.copy_rounded,
+                          size: 18, color: AppColors.primary),
+                      label: Text(l10n.copyCode,
+                          style: const TextStyle(color: AppColors.primary)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        Share.share(
+                          l10n.shareInviteMessage(
+                              group.name, group.inviteCode),
+                          subject: l10n.inviteToGroup(group.name),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.share_rounded, size: 18),
+                      label: Text(l10n.share),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -619,6 +657,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 _confirmLeaveGroup(context, ref);
               },
             ),
+            const SizedBox(height: 8),
 
             _MenuTile(
               icon: Icons.bar_chart_rounded,
@@ -902,6 +941,7 @@ class _MemberTile extends ConsumerWidget {
     final memberUserId = profile['id'] as String? ?? '';
     final avatarColor =
         profile['avatar_color'] as String? ?? '#0F766E';
+    final avatarUrl = profile['avatar_url'] as String?;
     final role = member['role'] as String? ?? 'member';
     final initial = getInitial(name);
     final currentUserId = ref.watch(currentUserProvider)?.id ?? '';
@@ -911,9 +951,7 @@ class _MemberTile extends ConsumerWidget {
       padding:
       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: GestureDetector(
-        onLongPress: (isCurrentUserAdmin && !isSelf)
-            ? () => _showMemberActions(context, ref, name, memberUserId, role)
-            : null,
+        onLongPress: null,
         child: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: 14, vertical: 12),
@@ -935,14 +973,22 @@ class _MemberTile extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: _parseColor(avatarColor),
                   shape: BoxShape.circle,
+                  image: (avatarUrl != null && avatarUrl.isNotEmpty)
+                      ? DecorationImage(
+                    image: NetworkImage(avatarUrl),
+                    fit: BoxFit.cover,
+                  )
+                      : null,
                 ),
-                child: Center(
+                child: (avatarUrl == null || avatarUrl.isEmpty)
+                    ? Center(
                   child: Text(initial,
                       style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
                           fontSize: 16)),
-                ),
+                )
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -970,8 +1016,15 @@ class _MemberTile extends ConsumerWidget {
                           color: AppColors.primaryDark)),
                 ),
               if (isCurrentUserAdmin && !isSelf)
-                Icon(Icons.more_vert_rounded,
-                    size: 18, color: AppColors.primaryLight),
+                GestureDetector(
+                  onTap: () => _showMemberActions(
+                      context, ref, name, memberUserId, role),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.more_vert_rounded,
+                        size: 18, color: AppColors.primaryLight),
+                  ),
+                ),
             ],
           ),
         ),
@@ -983,6 +1036,9 @@ class _MemberTile extends ConsumerWidget {
       String name, String memberUserId, String role) {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
+    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final borderColor =
+    dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
 
     showModalBottomSheet(
       context: context,
@@ -999,28 +1055,50 @@ class _MemberTile extends ConsumerWidget {
             Center(
               child: Container(
                 width: 40, height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
-            ListTile(
-              leading: Icon(
-                role == 'admin' ? Icons.remove_moderator_outlined : Icons.admin_panel_settings_outlined,
-                color: AppColors.primary,
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
               ),
-              title: Text(role == 'admin' ? l10n.removeAdmin : l10n.makeAdmin),
+            ),
+
+            _MenuTile(
+              icon: role == 'admin'
+                  ? Icons.remove_moderator_outlined
+                  : Icons.admin_panel_settings_outlined,
+              iconColor: AppColors.primary,
+              label: role == 'admin' ? l10n.removeAdmin : l10n.makeAdmin,
+              textColor: textColor,
+              borderColor: borderColor,
               onTap: () async {
                 Navigator.pop(sheetContext);
                 await ref.read(groupsProvider.notifier).setMemberRole(
                     group.id, memberUserId, role == 'admin' ? 'member' : 'admin');
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.person_remove_outlined, color: AppColors.danger),
-              title: Text(l10n.removeMember, style: const TextStyle(color: AppColors.danger)),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.person_remove_outlined,
+              iconColor: AppColors.danger,
+              label: l10n.removeMember,
+              textColor: AppColors.danger,
+              borderColor: borderColor,
               onTap: () async {
                 Navigator.pop(sheetContext);
                 final confirmed = await showDialog<bool>(

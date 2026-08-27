@@ -77,6 +77,8 @@ class ExpensesController
     required List<Map<String, dynamic>> members,
     required String currency,
     String? notes,
+    bool isRecurring = false,
+    String? recurEvery, // 'daily' | 'weekly' | 'monthly'
   }) async {
     try {
       final expenseId = const Uuid().v4();
@@ -89,6 +91,22 @@ class ExpensesController
         members: members,
       );
 
+      DateTime? nextRecurAt;
+      if (isRecurring && recurEvery != null) {
+        final now = DateTime.now();
+        switch (recurEvery) {
+          case 'daily':
+            nextRecurAt = now.add(const Duration(days: 1));
+            break;
+          case 'weekly':
+            nextRecurAt = now.add(const Duration(days: 7));
+            break;
+          case 'monthly':
+          default:
+            nextRecurAt = DateTime(now.year, now.month + 1, now.day);
+        }
+      }
+
       // Insert expense
       await SupabaseConfig.client.from('expenses').insert({
         'id': expenseId,
@@ -100,6 +118,9 @@ class ExpensesController
         'category': category,
         'split_type': splitType,
         'notes': notes?.trim(),
+        'is_recurring': isRecurring,
+        'recur_every': isRecurring ? recurEvery : null,
+        'next_recur_at': nextRecurAt?.toUtc().toIso8601String(),
       });
 
       // Insert splits

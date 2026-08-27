@@ -52,6 +52,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   String _splitType = 'equal';
   String? _paidBy;
   bool _isLoading = false;
+  bool _isRecurring = false;
+  String _recurEvery = 'monthly'; // daily | weekly | monthly
 
   List<Map<String, dynamic>> _members = [];
 
@@ -97,6 +99,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
           'name': profile['full_name'] as String? ?? 'Unknown',
           'avatar_color':
           profile['avatar_color'] as String? ?? '#0F766E',
+          'avatar_url': profile['avatar_url'] as String?,
           'included': true,
           'custom_amount': 0.0,
           'percentage': 0.0,
@@ -179,6 +182,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       notes: _notesCtrl.text.trim().isEmpty
           ? null
           : _notesCtrl.text.trim(),
+      isRecurring: _isRecurring,
+      recurEvery: _isRecurring ? _recurEvery : null,
     );
 
     if (!mounted) return;
@@ -229,6 +234,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                 'name': profile['full_name'] as String? ?? 'Unknown',
                 'avatar_color':
                 profile['avatar_color'] as String? ?? '#0F766E',
+                'avatar_url': profile['avatar_url'] as String?,
                 'included': true,
                 'custom_amount': 0.0,
                 'percentage': 0.0,
@@ -304,12 +310,17 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     RegExp(r'^\d+\.?\d{0,2}')),
               ],
               onChanged: (_) => setState(() {}), // rebuild for equal split
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w500,
-                  color: headingColor),
+                  color: AppColors.primary),
               decoration: InputDecoration(
                 labelText: l10n.amount,
+                labelStyle: TextStyle(
+                    color: AppColors.primary.withOpacity(0.7),
+                    fontSize: 15),
+                floatingLabelStyle: const TextStyle(
+                    color: AppColors.primary, fontSize: 13),
                 hintText: '0.00',
                 hintStyle: TextStyle(
                     color: AppColors.primaryLight.withOpacity(0.4),
@@ -484,13 +495,20 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           CircleAvatar(
                             radius: 12,
                             backgroundColor: color,
-                            child: Text(
+                            backgroundImage: (m['avatar_url'] != null &&
+                                (m['avatar_url'] as String).isNotEmpty)
+                                ? NetworkImage(m['avatar_url'] as String)
+                                : null,
+                            child: (m['avatar_url'] == null ||
+                                (m['avatar_url'] as String).isEmpty)
+                                ? Text(
                               getInitial(m['name'] as String),
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w500),
-                            ),
+                            )
+                                : null,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -522,27 +540,38 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     fontWeight: FontWeight.w500,
                     color: headingColor)),
             const SizedBox(height: 10),
-            Container(
-              decoration: BoxDecoration(
-                color: subBg,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                controller: _splitTabCtrl,
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.primary,
-                indicator: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(10),
+            Row(
+              children: [
+                Expanded(
+                  child: _SplitTypeBox(
+                    label: l10n.equal,
+                    selected: _splitType == 'equal',
+                    onTap: () {
+                      _splitTabCtrl.animateTo(0);
+                    },
+                  ),
                 ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                tabs: [
-                  Tab(text: l10n.equal),
-                  Tab(text: l10n.custom),
-                  Tab(text: l10n.percentSymbol),
-                ],
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _SplitTypeBox(
+                    label: l10n.custom,
+                    selected: _splitType == 'custom',
+                    onTap: () {
+                      _splitTabCtrl.animateTo(1);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _SplitTypeBox(
+                    label: l10n.percentSymbol,
+                    selected: _splitType == 'percentage',
+                    onTap: () {
+                      _splitTabCtrl.animateTo(2);
+                    },
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 12),
@@ -587,156 +616,200 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: dark ? AppColors.primaryDark : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
                       color: included
-                          ? AppColors.primaryTint
-                          : AppColors.primaryTint.withOpacity(0.3),
-                      width: 0.5,
+                          ? (dark
+                          ? AppColors.primary.withOpacity(0.15)
+                          : AppColors.primaryTint)
+                          : (dark
+                          ? AppColors.primaryDark
+                          : Colors.white),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: included
+                            ? AppColors.primary.withOpacity(0.3)
+                            : AppColors.primaryTint.withOpacity(0.3),
+                        width: 0.5,
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Checkbox
-                      GestureDetector(
-                        onTap: () => setState(
-                                () => _members[i]['included'] = !included),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          width: 20, height: 20,
-                          decoration: BoxDecoration(
-                            color: included
-                                ? AppColors.primary
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
+                    child: Row(
+                      children: [
+                        // Checkbox
+                        GestureDetector(
+                          onTap: () => setState(
+                                  () => _members[i]['included'] = !included),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: 20, height: 20,
+                            decoration: BoxDecoration(
                               color: included
                                   ? AppColors.primary
-                                  : AppColors.primaryLight,
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: included
+                                    ? AppColors.primary
+                                    : AppColors.primaryLight,
+                              ),
                             ),
+                            child: included
+                                ? const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 14)
+                                : null,
                           ),
-                          child: included
-                              ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 14)
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        // Avatar
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: color,
+                          backgroundImage: (m['avatar_url'] != null &&
+                              (m['avatar_url'] as String).isNotEmpty)
+                              ? NetworkImage(m['avatar_url'] as String)
+                              : null,
+                          child: (m['avatar_url'] == null ||
+                              (m['avatar_url'] as String).isEmpty)
+                              ? Text(
+                            getInitial(m['name'] as String),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500),
+                          )
                               : null,
                         ),
-                      ),
 
-                      const SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
-                      // Avatar
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: color,
-                        child: Text(
-                          getInitial(m['name'] as String),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      // Name
-                      Expanded(
-                        child: Text(
-                          m['name'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: included
-                                ? headingColor
-                                : headingColor.withOpacity(0.4),
-                          ),
-                        ),
-                      ),
-
-                      // Amount per split type
-                      if (_splitType == 'equal')
-                        Text(
-                          included
-                              ? '${widget.group.currency} ${equalShare.toStringAsFixed(0)}'
-                              : '—',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: included
-                                ? AppColors.primary
-                                : AppColors.primaryLight
-                                .withOpacity(0.4),
-                          ),
-                        ),
-
-                      if (_splitType == 'custom' && included)
-                        SizedBox(
-                          width: 90,
-                          child: TextField(
-                            keyboardType:
-                            const TextInputType.numberWithOptions(
-                                decimal: true),
-                            textAlign: TextAlign.right,
+                        // Name
+                        Expanded(
+                          child: Text(
+                            m['name'] as String,
                             style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.primary),
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              hintStyle: TextStyle(
-                                  color: AppColors.primaryLight
-                                      .withOpacity(0.4),
-                                  fontSize: 13),
-                              prefixText: '${widget.group.currency} ',
-                              prefixStyle: TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.primaryLight),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: included
+                                  ? headingColor
+                                  : headingColor.withOpacity(0.4),
                             ),
-                            onChanged: (v) => setState(() =>
-                            _members[i]['custom_amount'] =
-                                double.tryParse(v) ?? 0.0),
                           ),
                         ),
 
-                      if (_splitType == 'percentage' && included)
-                        SizedBox(
-                          width: 60,
-                          child: TextField(
-                            keyboardType:
-                            const TextInputType.numberWithOptions(
-                                decimal: true),
-                            textAlign: TextAlign.right,
+                        // Amount per split type
+                        if (_splitType == 'equal')
+                          Text(
+                            included
+                                ? '${widget.group.currency} ${equalShare.toStringAsFixed(0)}'
+                                : '—',
                             style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.primary),
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              hintStyle: TextStyle(
-                                  color: AppColors.primaryLight
-                                      .withOpacity(0.4),
-                                  fontSize: 13),
-                              suffixText: l10n.percentSymbol,
-                              suffixStyle: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: included
+                                  ? AppColors.primary
+                                  : AppColors.primaryLight
+                                  .withOpacity(0.4),
                             ),
-                            onChanged: (v) => setState(() =>
-                            _members[i]['percentage'] =
-                                double.tryParse(v) ?? 0.0),
                           ),
-                        ),
-                    ],
+
+                        if (_splitType == 'custom' && included)
+                          Container(
+                            width: 90,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: dark
+                                  ? AppColors.primary.withOpacity(0.15)
+                                  : AppColors.primaryTint,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.6),
+                                  width: 1.2),
+                            ),
+                            child: TextField(
+                              keyboardType:
+                              const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.primary),
+                              decoration: InputDecoration(
+                                hintText: '0',
+                                hintStyle: TextStyle(
+                                    color: AppColors.primaryLight
+                                        .withOpacity(0.4),
+                                    fontSize: 13),
+                                prefixText: '${widget.group.currency} ',
+                                prefixStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.primaryLight),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              onChanged: (v) => setState(() =>
+                              _members[i]['custom_amount'] =
+                                  double.tryParse(v) ?? 0.0),
+                            ),
+                          ),
+
+                        if (_splitType == 'percentage' && included)
+                          Container(
+                            width: 68,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: dark
+                                  ? AppColors.primary.withOpacity(0.15)
+                                  : AppColors.primaryTint,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.6),
+                                  width: 1.2),
+                            ),
+                            child: TextField(
+                              keyboardType:
+                              const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.primary),
+                              decoration: InputDecoration(
+                                hintText: '0',
+                                hintStyle: TextStyle(
+                                    color: AppColors.primaryLight
+                                        .withOpacity(0.4),
+                                    fontSize: 13),
+                                suffixText: l10n.percentSymbol,
+                                suffixStyle: TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 13),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              onChanged: (v) => setState(() =>
+                              _members[i]['percentage'] =
+                                  double.tryParse(v) ?? 0.0),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -751,6 +824,65 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
               prefixIcon: Icons.notes_rounded,
             ),
 
+            const SizedBox(height: 14),
+
+            // ── Recurring toggle ─────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: dark ? AppColors.primaryDark.withOpacity(0.4) : AppColors.primaryTint.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.repeat_rounded,
+                          color: AppColors.primary, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(l10n.repeatThisExpense,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: dark
+                                    ? AppColors.primaryTint
+                                    : AppColors.primaryDark)),
+                      ),
+                      Switch(
+                        value: _isRecurring,
+                        activeColor: AppColors.primary,
+                        onChanged: (v) => setState(() => _isRecurring = v),
+                      ),
+                    ],
+                  ),
+                  if (_isRecurring) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _RecurChip(
+                          label: l10n.daily,
+                          selected: _recurEvery == 'daily',
+                          onTap: () => setState(() => _recurEvery = 'daily'),
+                        ),
+                        const SizedBox(width: 8),
+                        _RecurChip(
+                          label: l10n.weekly,
+                          selected: _recurEvery == 'weekly',
+                          onTap: () => setState(() => _recurEvery = 'weekly'),
+                        ),
+                        const SizedBox(width: 8),
+                        _RecurChip(
+                          label: l10n.monthly,
+                          selected: _recurEvery == 'monthly',
+                          onTap: () => setState(() => _recurEvery = 'monthly'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
             const SizedBox(height: 28),
 
             // ── Submit ────────────────────────────────────────────────
@@ -761,6 +893,83 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
               icon: Icons.add_rounded,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+class _RecurChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _RecurChip(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.primaryLight,
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: selected ? Colors.white : AppColors.primaryLight,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SplitTypeBox extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _SplitTypeBox(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = isDark(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary
+              : (dark ? AppColors.primaryDark : AppColors.primaryTint),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? AppColors.primary
+                : AppColors.primaryTint,
+            width: selected ? 0 : 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: selected
+                ? Colors.white
+                : (dark ? AppColors.primaryTint : AppColors.primary),
+          ),
         ),
       ),
     );

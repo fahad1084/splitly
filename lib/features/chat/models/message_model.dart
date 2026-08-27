@@ -3,6 +3,8 @@ class MessageModel {
   final String groupId;
   final String senderId;
   final String senderName;
+  final String? senderAvatarUrl;
+  final String? senderAvatarColor;
   final String content;
   final String? expenseRef;
   final String? attachmentUrl;
@@ -18,6 +20,8 @@ class MessageModel {
     required this.groupId,
     required this.senderId,
     required this.senderName,
+    this.senderAvatarUrl,
+    this.senderAvatarColor,
     required this.content,
     this.expenseRef,
     this.attachmentUrl,
@@ -40,6 +44,8 @@ class MessageModel {
       groupId: map['group_id'] as String,
       senderId: map['sender_id'] as String,
       senderName: map['sender_name'] as String? ?? 'Unknown',
+      senderAvatarUrl: map['sender_avatar_url'] as String?,
+      senderAvatarColor: map['sender_avatar_color'] as String?,
       content: map['content'] as String,
       expenseRef: map['expense_ref'] as String?,
       attachmentUrl: map['attachment_url'] as String?,

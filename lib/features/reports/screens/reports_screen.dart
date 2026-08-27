@@ -19,7 +19,8 @@ class ReportsScreen extends ConsumerStatefulWidget {
 class _ReportsScreenState extends ConsumerState<ReportsScreen>
     with SingleTickerProviderStateMixin {
   int _selectedGroupIndex = 0;
-  String _selectedPeriod = 'month'; // month, week, all
+  String _selectedPeriod = 'month'; // month, week, all, custom
+  DateTimeRange? _customRange;
   late TabController _tabCtrl;
 
   @override
@@ -60,7 +61,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                 color: AppColors.primaryTint, size: 16),
           ),
         ),
-          title: Text(l10n.spendingReports,
+        title: Text(l10n.spendingReports,
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -168,6 +169,113 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                         selected: _selectedPeriod == 'all',
                         onTap: () =>
                             setState(() => _selectedPeriod = 'all')),
+                    const SizedBox(width: 8),
+                    _PeriodChip(
+                        label: _customRange == null
+                            ? l10n.customRange
+                            : '${_formatShort(_customRange!.start)} – ${_formatShort(_customRange!.end)}',
+                        value: 'custom',
+                        selected: _selectedPeriod == 'custom',
+                        onTap: () async {
+                          final now = DateTime.now();
+                          final picked = await showDateRangePicker(
+                            context: context,
+                            firstDate: DateTime(now.year - 5),
+                            lastDate: now,
+                            initialDateRange: _customRange ??
+                                DateTimeRange(
+                                    start: now.subtract(
+                                        const Duration(days: 30)),
+                                    end: now),
+                            builder: (ctx, child) => Theme(
+                              data: Theme.of(ctx).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: AppColors.primary,
+                                  onPrimary: Colors.white,
+                                  primaryContainer: AppColors.primaryTint,
+                                  onPrimaryContainer: AppColors.primaryDark,
+                                  secondary: AppColors.primary,
+                                  onSecondary: Colors.white,
+                                  secondaryContainer: AppColors.primaryTint,
+                                  onSecondaryContainer: AppColors.primaryDark,
+                                  surface: Colors.white,
+                                  onSurface: AppColors.primaryDark,
+                                  outline: AppColors.primaryTint,
+                                ),
+                                datePickerTheme: DatePickerThemeData(
+                                  backgroundColor: Colors.white,
+                                  headerBackgroundColor:
+                                  AppColors.primaryDark,
+                                  headerForegroundColor:
+                                  AppColors.primaryTint,
+                                  rangePickerBackgroundColor: Colors.white,
+                                  rangePickerHeaderBackgroundColor:
+                                  AppColors.primaryDark,
+                                  rangePickerHeaderForegroundColor:
+                                  AppColors.primaryTint,
+                                  rangeSelectionBackgroundColor:
+                                  AppColors.primaryTint,
+                                  todayForegroundColor:
+                                  WidgetStateProperty.all(
+                                      AppColors.primary),
+                                  todayBorder: const BorderSide(
+                                      color: AppColors.primary, width: 1),
+                                  dayForegroundColor:
+                                  WidgetStateProperty.resolveWith(
+                                          (states) {
+                                        if (states.contains(
+                                            WidgetState.selected)) {
+                                          return Colors.white;
+                                        }
+                                        return AppColors.primaryDark;
+                                      }),
+                                  dayBackgroundColor:
+                                  WidgetStateProperty.resolveWith(
+                                          (states) {
+                                        if (states.contains(
+                                            WidgetState.selected)) {
+                                          return AppColors.primary;
+                                        }
+                                        return null;
+                                      }),
+                                  yearForegroundColor:
+                                  WidgetStateProperty.resolveWith(
+                                          (states) {
+                                        if (states.contains(
+                                            WidgetState.selected)) {
+                                          return Colors.white;
+                                        }
+                                        return AppColors.primaryDark;
+                                      }),
+                                  yearBackgroundColor:
+                                  WidgetStateProperty.resolveWith(
+                                          (states) {
+                                        if (states.contains(
+                                            WidgetState.selected)) {
+                                          return AppColors.primary;
+                                        }
+                                        return null;
+                                      }),
+                                  confirmButtonStyle: TextButton.styleFrom(
+                                    foregroundColor: AppColors.primary,
+                                  ),
+                                  cancelButtonStyle: TextButton.styleFrom(
+                                    foregroundColor:
+                                    AppColors.primaryDark
+                                        .withOpacity(0.6),
+                                  ),
+                                ),
+                              ),
+                              child: child!,
+                            ),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              _customRange = picked;
+                              _selectedPeriod = 'custom';
+                            });
+                          }
+                        }),
                   ],
                 ),
               ),
@@ -221,9 +329,29 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
         e.createdAt.year == now.year &&
             e.createdAt.month == now.month)
             .toList();
+      case 'custom':
+        if (_customRange == null) return expenses;
+        // Include the entire end day (up to 23:59:59) since the picker
+        // returns midnight for the end date.
+        final start = _customRange!.start;
+        final end = _customRange!.end.add(const Duration(
+            hours: 23, minutes: 59, seconds: 59));
+        return expenses
+            .where((e) =>
+        e.createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
+            e.createdAt.isBefore(end))
+            .toList();
       default:
         return expenses;
     }
+  }
+
+  String _formatShort(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${d.day} ${months[d.month - 1]}';
   }
 }
 
@@ -295,18 +423,18 @@ class _TotalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-          Text(l10n.totalSpentLabel,
+                Text(l10n.totalSpentLabel,
                     style: TextStyle(
                         fontSize: 12,
                         color: AppColors.primaryLight)),
                 const SizedBox(height: 4),
                 Text(
                   l10n.expensesCountLabel(expenses.length),                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primaryTint,
-                    letterSpacing: -0.5,
-                  ),
+                  fontSize: 28,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primaryTint,
+                  letterSpacing: -0.5,
+                ),
                 ),
               ],
             ),
@@ -322,7 +450,7 @@ class _TotalCard extends StatelessWidget {
               Text(
                 expenses.isEmpty
                     ? '-'
-    :'$currency ${(total / expenses.length).toStringAsFixed(0)} ${l10n.avgLabel}',
+                    :'$currency ${(total / expenses.length).toStringAsFixed(0)} ${l10n.avgLabel}',
                 style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.accent,
@@ -805,13 +933,13 @@ class _EmptyState extends StatelessWidget {
                 size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 20),
-        Text(l10n.noGroupsYet,
+          Text(l10n.noGroupsYet,
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
-        Text(l10n.createGroupAddExpensesDesc,
+          Text(l10n.createGroupAddExpensesDesc,
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 14, color: AppColors.primary, height: 1.5)),
@@ -840,13 +968,13 @@ class _NoDataState extends StatelessWidget {
                 size: 32, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
-        Text(l10n.noExpensesInPeriod,
+          Text(l10n.noExpensesInPeriod,
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
-        Text(l10n.tryDifferentPeriod,
+          Text(l10n.tryDifferentPeriod,
               style: TextStyle(fontSize: 13, color: AppColors.primary)),
         ],
       ),

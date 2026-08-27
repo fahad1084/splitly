@@ -11,6 +11,8 @@ class ExpenseModel {
   final String? receiptUrl;
   final String? notes;
   final DateTime createdAt;
+  final bool isRecurring;
+  final String? recurEvery;
   final List<ExpenseSplit> splits;
 
   const ExpenseModel({
@@ -26,6 +28,8 @@ class ExpenseModel {
     this.receiptUrl,
     this.notes,
     required this.createdAt,
+    this.isRecurring = false,
+    this.recurEvery,
     required this.splits,
   });
 
@@ -47,6 +51,8 @@ class ExpenseModel {
       receiptUrl: map['receipt_url'] as String?,
       notes: map['notes'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
+      isRecurring: map['is_recurring'] as bool? ?? false,
+      recurEvery: map['recur_every'] as String?,
       splits: splitsList,
     );
   }

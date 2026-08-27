@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../controllers/groups_controller.dart';
 
 const _avatarColors = [
   '#0F766E', '#134E4A', '#14B8A6',
@@ -25,7 +29,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameCtrl;
   late TextEditingController _phoneCtrl;
   String _selectedColor = '#0F766E';
+  String? _avatarUrl;
   bool _isLoading = false;
+  bool _isUploadingAvatar = false;
   bool _loadingProfile = true;
 
   @override
@@ -43,7 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       final data = await SupabaseConfig.client
           .from('profiles')
-          .select('full_name, phone, avatar_color')
+          .select('full_name, phone, avatar_color, avatar_url')
           .eq('id', userId)
           .single();
 
@@ -52,6 +58,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _nameCtrl.text = data['full_name'] as String? ?? '';
           _phoneCtrl.text = data['phone'] as String? ?? '';
           _selectedColor = data['avatar_color'] as String? ?? '#0F766E';
+          _avatarUrl = data['avatar_url'] as String?;
           _loadingProfile = false;
         });
       }
@@ -72,6 +79,76 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
       return AppColors.primary;
+    }
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    final l10n = AppLocalizations.of(context)!;
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 90,
+      maxWidth: 1200,
+    );
+    if (picked == null) return;
+
+    // Let the user crop to a centered square before uploading — avoids
+    // off-center or wrong-aspect-ratio photos looking odd in the circle.
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      compressQuality: 80,
+      compressFormat: ImageCompressFormat.jpg,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: l10n.editProfileTitle,
+          toolbarColor: AppColors.primaryDark,
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: AppColors.primary,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(
+          title: l10n.editProfileTitle,
+          aspectRatioLockEnabled: true,
+        ),
+      ],
+    );
+    if (cropped == null) return;
+
+    setState(() => _isUploadingAvatar = true);
+    try {
+      final ext = cropped.path.split('.').last;
+      final path = '$userId/avatar.$ext';
+
+      await SupabaseConfig.client.storage
+          .from('avatars')
+          .upload(path, File(cropped.path),
+          fileOptions: const FileOptions(upsert: true));
+
+      final url =
+      SupabaseConfig.client.storage.from('avatars').getPublicUrl(path);
+      final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+
+      await SupabaseConfig.client
+          .from('profiles')
+          .update({'avatar_url': bustedUrl}).eq('id', userId);
+
+      if (mounted) {
+        setState(() => _avatarUrl = bustedUrl);
+        // Refresh anywhere else this avatar is shown — profile tab and
+        // every group's member list — since they cache their own data.
+        ref.invalidate(myProfileProvider);
+        ref.invalidate(groupMembersProvider);
+      }
+    } catch (e) {
+      print('=== AVATAR UPLOAD ERROR: $e ===');
+      if (mounted) showErrorSnack(context, l10n.failedToUpdatePhoto);
+    } finally {
+      if (mounted) setState(() => _isUploadingAvatar = false);
     }
   }
 
@@ -133,24 +210,67 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 // ── Avatar preview ──────────────────────────────
                 Center(
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: _parseColor(_selectedColor),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _nameCtrl.text.isNotEmpty
-                            ? _nameCtrl.text[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: _parseColor(_selectedColor),
+                          shape: BoxShape.circle,
+                          image: (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                              ? DecorationImage(
+                            image: NetworkImage(_avatarUrl!),
+                            fit: BoxFit.cover,
+                          )
+                              : null,
+                        ),
+                        child: (_avatarUrl == null || _avatarUrl!.isEmpty)
+                            ? Center(
+                          child: Text(
+                            _nameCtrl.text.isNotEmpty
+                                ? _nameCtrl.text[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                          ),
+                        )
+                            : null,
                       ),
-                    ),
+                      Positioned(
+                        bottom: -2,
+                        right: -2,
+                        child: GestureDetector(
+                          onTap: _isUploadingAvatar
+                              ? null
+                              : _pickAndUploadAvatar,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                                  width: 2),
+                            ),
+                            child: _isUploadingAvatar
+                                ? const Padding(
+                              padding: EdgeInsets.all(6),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primaryDark),
+                            )
+                                : const Icon(Icons.camera_alt_rounded,
+                                size: 14, color: AppColors.primaryDark),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -203,41 +323,43 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
                 const SizedBox(height: 20),
 
-                // ── Avatar color picker ──────────────────────────
-                Text(l10n.chooseAvatarColor,
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: textColor)),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: _avatarColors.map((hex) {
-                    final selected = _selectedColor == hex;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = hex),
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: _parseColor(hex),
-                          shape: BoxShape.circle,
-                          border: selected
-                              ? Border.all(
-                              color: AppColors.accent, width: 3)
+                // ── Avatar color picker (only shown when no photo set) ──
+                if (_avatarUrl == null || _avatarUrl!.isEmpty) ...[
+                  Text(l10n.chooseAvatarColor,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: textColor)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _avatarColors.map((hex) {
+                      final selected = _selectedColor == hex;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedColor = hex),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: _parseColor(hex),
+                            shape: BoxShape.circle,
+                            border: selected
+                                ? Border.all(
+                                color: AppColors.accent, width: 3)
+                                : null,
+                          ),
+                          child: selected
+                              ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 20)
                               : null,
                         ),
-                        child: selected
-                            ? const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 20)
-                            : null,
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                const SizedBox(height: 32),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                ] else
+                  const SizedBox(height: 12),
 
                 SplitlyButton(
                   label: l10n.saveChanges,

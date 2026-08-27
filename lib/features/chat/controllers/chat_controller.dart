@@ -32,6 +32,21 @@ class ChatController
     return messages;
   }
 
+  // ── Mark this group's chat as read (for unread badges) ────────────────────
+  Future<void> markAsRead() async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await SupabaseConfig.client.from('chat_read_status').upsert({
+        'group_id': _groupId,
+        'user_id': userId,
+        'last_read_at': DateTime.now().toUtc().toIso8601String(),
+      });
+    } catch (e) {
+      print('=== MARK AS READ ERROR: $e ===');
+    }
+  }
+
 // ── Fetch messages with sender names + reply info ──────────────────────────
   Future<List<MessageModel>> _fetchMessages() async {
     try {
@@ -48,12 +63,20 @@ class ChatController
       rows.map((r) => r['sender_id'] as String).toSet().toList();
       final List<dynamic> profiles = await SupabaseConfig.client
           .from('profiles')
-          .select('id, full_name')
+          .select('id, full_name, avatar_url, avatar_color')
           .inFilter('id', senderIds);
 
       final nameMap = <String, String>{
         for (final p in profiles)
           p['id'] as String: p['full_name'] as String,
+      };
+      final avatarUrlMap = <String, String?>{
+        for (final p in profiles)
+          p['id'] as String: p['avatar_url'] as String?,
+      };
+      final avatarColorMap = <String, String?>{
+        for (final p in profiles)
+          p['id'] as String: p['avatar_color'] as String?,
       };
 
       // Build a lookup for reply-to messages (id → content + sender)
@@ -75,6 +98,8 @@ class ChatController
         return MessageModel.fromMap({
           ...map,
           'sender_name': nameMap[r['sender_id']] ?? 'Unknown',
+          'sender_avatar_url': avatarUrlMap[r['sender_id']],
+          'sender_avatar_color': avatarColorMap[r['sender_id']],
           'reply_to_content': replyContent,
           'reply_to_sender': replySender,
         });
@@ -106,13 +131,15 @@ class ChatController
         try {
           final profile = await SupabaseConfig.client
               .from('profiles')
-              .select('full_name')
+              .select('full_name, avatar_url, avatar_color')
               .eq('id', newRow['sender_id'])
               .single();
 
           final message = MessageModel.fromMap({
             ...newRow,
             'sender_name': profile['full_name'] ?? 'Unknown',
+            'sender_avatar_url': profile['avatar_url'],
+            'sender_avatar_color': profile['avatar_color'],
           });
 
           // Add to current list

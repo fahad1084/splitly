@@ -123,15 +123,28 @@ class ExpenseTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    expense.title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: dark
-                          ? AppColors.primaryTint
-                          : AppColors.primaryDark,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          expense.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: dark
+                                ? AppColors.primaryTint
+                                : AppColors.primaryDark,
+                          ),
+                        ),
+                      ),
+                      if (expense.isRecurring) ...[
+                        const SizedBox(width: 6),
+                        Icon(Icons.repeat_rounded,
+                            size: 13,
+                            color: AppColors.primary.withOpacity(0.7)),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 3),
                   Text(

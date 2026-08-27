@@ -946,4 +946,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueLabel => 'Continue';
+
+  @override
+  String get customRange => 'Custom range';
+
+  @override
+  String get repeatThisExpense => 'Repeat this expense';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String shareInviteMessage(String groupName, String inviteCode) {
+    return 'Join \"$groupName\" on Splitly! Use invite code $inviteCode to start splitting expenses together.\n\n_Splitly — Your Circle. Your Hisaab._';
+  }
 }

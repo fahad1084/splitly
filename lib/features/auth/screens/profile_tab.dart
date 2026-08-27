@@ -19,10 +19,16 @@ class ProfileTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final user = ref.watch(currentUserProvider);
+    final myProfile = ref.watch(myProfileProvider).value;
 
     final fullName =
-        user?.userMetadata?['full_name'] as String? ?? 'Splitly User';
+        (myProfile?['full_name'] as String?) ??
+            (user?.userMetadata?['full_name'] as String?) ??
+            'Splitly User';
     final email = user?.email ?? '';
+    final avatarUrl = myProfile?['avatar_url'] as String?;
+    final avatarColorHex =
+        (myProfile?['avatar_color'] as String?) ?? '#0F766E';
     final avatarLetter =
     fullName.isNotEmpty ? fullName[0].toUpperCase() : 'S';
 
@@ -56,17 +62,25 @@ class ProfileTab extends ConsumerWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
+              decoration: BoxDecoration(
+                color: _parseHexColor(avatarColorHex),
                 shape: BoxShape.circle,
+                image: (avatarUrl != null && avatarUrl.isNotEmpty)
+                    ? DecorationImage(
+                  image: NetworkImage(avatarUrl),
+                  fit: BoxFit.cover,
+                )
+                    : null,
               ),
-              child: Center(
+              child: (avatarUrl == null || avatarUrl.isEmpty)
+                  ? Center(
                 child: Text(avatarLetter,
                     style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w500,
                         color: Colors.white)),
-              ),
+              )
+                  : null,
             ),
 
             const SizedBox(height: 16),
@@ -734,5 +748,13 @@ class _LangTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Color _parseHexColor(String hex) {
+  try {
+    return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+  } catch (_) {
+    return AppColors.primary;
   }
 }

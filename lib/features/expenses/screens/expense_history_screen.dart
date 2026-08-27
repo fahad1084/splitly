@@ -15,7 +15,10 @@ final selectedCategoryFilterProvider =
 StateProvider<String?>((ref) => null); // null = all
 
 final selectedDateFilterProvider =
-StateProvider<String>((ref) => 'all'); // all, today, week, month
+StateProvider<String>((ref) => 'all'); // all, today, week, month, custom
+
+final customDateRangeProvider =
+StateProvider<DateTimeRange?>((ref) => null);
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
@@ -109,6 +112,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                 _DateChip(label: l10n.thisWeek, value: 'week', ref: ref),
                 _DateChip(
                     label: l10n.thisMonth, value: 'month', ref: ref),
+                _CustomRangeChip(ref: ref),
               ],
             ),
           ),
@@ -156,6 +160,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                   expenses: expenses,
                   categoryFilter: categoryFilter,
                   dateFilter: dateFilter,
+                  customRange: ref.watch(customDateRangeProvider),
                   searchQuery: searchQuery,
                 );
 
@@ -163,6 +168,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                   return _EmptyFilterState(
                     hasFilters: categoryFilter != null ||
                         dateFilter != 'all' ||
+                        ref.watch(customDateRangeProvider) != null ||
                         searchQuery.isNotEmpty,
                   );
                 }
@@ -254,6 +260,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
     required List<ExpenseModel> expenses,
     required String? categoryFilter,
     required String dateFilter,
+    required DateTimeRange? customRange,
     required String searchQuery,
   }) {
     var result = expenses;
@@ -284,6 +291,16 @@ class ExpenseHistoryScreen extends ConsumerWidget {
         return e.createdAt.year == now.year &&
             e.createdAt.month == now.month;
       }).toList();
+    } else if (dateFilter == 'custom' && customRange != null) {
+      final start = customRange.start;
+      final end = customRange.end
+          .add(const Duration(hours: 23, minutes: 59, seconds: 59));
+      result = result
+          .where((e) =>
+      e.createdAt
+          .isAfter(start.subtract(const Duration(seconds: 1))) &&
+          e.createdAt.isBefore(end))
+          .toList();
     }
 
     // Search filter
@@ -388,6 +405,126 @@ class _DateChip extends ConsumerWidget {
             fontWeight: FontWeight.w500,
             color: selected ? Colors.white : AppColors.primaryLight,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Custom date-range chip ──────────────────────────────────────────────────
+class _CustomRangeChip extends ConsumerWidget {
+  final WidgetRef ref;
+  const _CustomRangeChip({required this.ref});
+
+  String _fmt(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${d.day} ${months[d.month - 1]}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = ref.watch(selectedDateFilterProvider) == 'custom';
+    final range = ref.watch(customDateRangeProvider);
+    return GestureDetector(
+      onTap: () async {
+        final now = DateTime.now();
+        final picked = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(now.year - 5),
+          lastDate: now,
+          initialDateRange: range ??
+              DateTimeRange(
+                  start: now.subtract(const Duration(days: 30)),
+                  end: now),
+          builder: (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.primary,
+                onPrimary: Colors.white,
+                primaryContainer: AppColors.primaryTint,
+                onPrimaryContainer: AppColors.primaryDark,
+                secondary: AppColors.primary,
+                onSecondary: Colors.white,
+                secondaryContainer: AppColors.primaryTint,
+                onSecondaryContainer: AppColors.primaryDark,
+                surface: Colors.white,
+                onSurface: AppColors.primaryDark,
+                outline: AppColors.primaryTint,
+              ),
+              datePickerTheme: DatePickerThemeData(
+                backgroundColor: Colors.white,
+                headerBackgroundColor: AppColors.primaryDark,
+                headerForegroundColor: AppColors.primaryTint,
+                rangePickerBackgroundColor: Colors.white,
+                rangePickerHeaderBackgroundColor: AppColors.primaryDark,
+                rangePickerHeaderForegroundColor: AppColors.primaryTint,
+                rangeSelectionBackgroundColor: AppColors.primaryTint,
+                todayForegroundColor:
+                WidgetStateProperty.all(AppColors.primary),
+                todayBorder:
+                const BorderSide(color: AppColors.primary, width: 1),
+                dayForegroundColor: WidgetStateProperty.resolveWith(
+                        (states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.white;
+                      }
+                      return AppColors.primaryDark;
+                    }),
+                dayBackgroundColor: WidgetStateProperty.resolveWith(
+                        (states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return AppColors.primary;
+                      }
+                      return null;
+                    }),
+                confirmButtonStyle:
+                TextButton.styleFrom(foregroundColor: AppColors.primary),
+                cancelButtonStyle: TextButton.styleFrom(
+                    foregroundColor: AppColors.primaryDark.withOpacity(0.6)),
+              ),
+            ),
+            child: child!,
+          ),
+        );
+        if (picked != null) {
+          ref.read(customDateRangeProvider.notifier).state = picked;
+          ref.read(selectedDateFilterProvider.notifier).state = 'custom';
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.primaryLight,
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.date_range_rounded,
+                size: 14,
+                color: selected ? Colors.white : AppColors.primaryLight),
+            const SizedBox(width: 4),
+            Text(
+              selected && range != null
+                  ? '${_fmt(range.start)} – ${_fmt(range.end)}'
+                  : l10n.customRange,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: selected ? Colors.white : AppColors.primaryLight,
+              ),
+            ),
+          ],
         ),
       ),
     );
