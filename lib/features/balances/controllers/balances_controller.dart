@@ -100,9 +100,13 @@ GroupBalanceSummary _calculateGroupBalance({
     }
   }
 
-  // Simplify debts using greedy algorithm
-  final debts = _simplifyDebts(
-    netMap: netMap,
+  // Pairwise direct debts — every debt shown is a DIRECT relationship
+  // between two people (never rerouted through an uninvolved third
+  // person just to minimize transaction count, unlike a global
+  // "simplify debts" algorithm — this keeps the numbers intuitive and
+  // traceable to real expenses between those exact two people).
+  final debts = _pairwiseDebts(
+    expenses: expenses,
     nameMap: nameMap,
     groupId: groupId,
     groupName: groupName,
@@ -120,53 +124,62 @@ GroupBalanceSummary _calculateGroupBalance({
   );
 }
 
-// ── Debt simplification (minimizes number of transactions) ───────────────────
-List<DebtModel> _simplifyDebts({
-  required Map<String, double> netMap,
+// ── Pairwise direct debts (no global rerouting) ───────────────────────────────
+List<DebtModel> _pairwiseDebts({
+  required List expenses,
   required Map<String, String> nameMap,
   required String groupId,
   required String groupName,
   required String currency,
 }) {
-  final debts = <DebtModel>[];
-  final balances = Map<String, double>.from(netMap);
+  // ledger[debtor][creditor] = total amount debtor owes creditor,
+  // accumulated across every expense between exactly these two people.
+  final ledger = <String, Map<String, double>>{};
 
-  while (true) {
-    // Find max creditor (most owed to) and max debtor (owes most)
-    String? maxCreditor;
-    String? maxDebtor;
-    double maxCredit = 0.01; // threshold to avoid tiny rounding amounts
-    double maxDebt = 0.01;
+  void addOwed(String debtor, String creditor, double amount) {
+    ledger.putIfAbsent(debtor, () => {});
+    ledger[debtor]![creditor] = (ledger[debtor]![creditor] ?? 0) + amount;
+  }
 
-    for (final entry in balances.entries) {
-      if (entry.value > maxCredit) {
-        maxCredit = entry.value;
-        maxCreditor = entry.key;
-      }
-      if (entry.value < -maxDebt) {
-        maxDebt = entry.value.abs();
-        maxDebtor = entry.key;
-      }
+  for (final expense in expenses) {
+    final payer = expense.paidBy;
+    for (final split in expense.splits) {
+      if (split.isSettled) continue;
+      if (split.userId == payer) continue; // payer doesn't owe themselves
+      addOwed(split.userId, payer, split.amountOwed);
     }
+  }
 
-    if (maxCreditor == null || maxDebtor == null) break;
+  final debts = <DebtModel>[];
+  final seenPairs = <String>{};
 
-    final amount = maxCredit < maxDebt ? maxCredit : maxDebt;
-    final rounded = double.parse(amount.toStringAsFixed(2));
+  for (final a in ledger.keys) {
+    for (final b in ledger[a]!.keys) {
+      final pairKey = ([a, b]..sort()).join('|');
+      if (seenPairs.contains(pairKey)) continue;
+      seenPairs.add(pairKey);
 
-    debts.add(DebtModel(
-      fromUserId: maxDebtor,
-      fromUserName: nameMap[maxDebtor] ?? 'Unknown',
-      toUserId: maxCreditor,
-      toUserName: nameMap[maxCreditor] ?? 'Unknown',
-      amount: rounded,
-      currency: currency,
-      groupId: groupId,
-      groupName: groupName,
-    ));
+      final aOwesB = ledger[a]?[b] ?? 0;
+      final bOwesA = ledger[b]?[a] ?? 0;
+      final net = aOwesB - bOwesA;
 
-    balances[maxCreditor] = (balances[maxCreditor] ?? 0) - amount;
-    balances[maxDebtor] = (balances[maxDebtor] ?? 0) + amount;
+      if (net.abs() < 0.01) continue; // fully settled between these two
+
+      final debtorId = net > 0 ? a : b;
+      final creditorId = net > 0 ? b : a;
+      final amount = double.parse(net.abs().toStringAsFixed(2));
+
+      debts.add(DebtModel(
+        fromUserId: debtorId,
+        fromUserName: nameMap[debtorId] ?? 'Unknown',
+        toUserId: creditorId,
+        toUserName: nameMap[creditorId] ?? 'Unknown',
+        amount: amount,
+        currency: currency,
+        groupId: groupId,
+        groupName: groupName,
+      ));
+    }
   }
 
   return debts;

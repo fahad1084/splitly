@@ -95,8 +95,12 @@ async function sendFcm(
       body: JSON.stringify({
         message: {
           token,
-          notification: { title, body },
-          data,
+          // Data-only message (no top-level "notification" key) — this
+          // stops Android/iOS from auto-displaying a bare-bones system
+          // notification. Instead the client builds it manually via
+          // flutter_local_notifications, giving full control over the
+          // large icon (sender's avatar, WhatsApp-style).
+          data: { ...data, title, body },
           android: { priority: "high" },
         },
       }),
@@ -124,50 +128,71 @@ serve(async (req) => {
     let actorId: string | null = null;
     let title = "";
     let body = "";
+    let notificationType = "";
     let dataPayload: Record<string, string> = {};
 
     if (table === "messages") {
       groupId = record.group_id;
       actorId = record.sender_id;
+      notificationType = "message";
       const { data: sender } = await supabase.from("profiles")
-        .select("full_name").eq("id", actorId).maybeSingle();
+        .select("full_name, avatar_url").eq("id", actorId).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name").eq("id", groupId).maybeSingle();
       title = group?.name ?? "New message";
       body = `${sender?.full_name ?? "Someone"}: ${record.content ?? "Sent an attachment"}`;
-      dataPayload = { type: "message", group_id: groupId ?? "" };
+      dataPayload = {
+        type: "message",
+        group_id: groupId ?? "",
+        avatar_url: sender?.avatar_url ?? "",
+      };
     } else if (table === "expenses") {
       groupId = record.group_id;
       actorId = record.paid_by;
+      notificationType = "expense";
       const { data: payer } = await supabase.from("profiles")
-        .select("full_name").eq("id", actorId).maybeSingle();
+        .select("full_name, avatar_url").eq("id", actorId).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name, currency").eq("id", groupId).maybeSingle();
       title = group?.name ?? "New expense";
       body = `${payer?.full_name ?? "Someone"} added "${record.title}" — ${group?.currency ?? ""} ${record.amount}`;
-      dataPayload = { type: "expense", group_id: groupId ?? "" };
+      dataPayload = {
+        type: "expense",
+        group_id: groupId ?? "",
+        avatar_url: payer?.avatar_url ?? "",
+      };
     } else if (table === "settlements") {
       groupId = record.group_id;
       actorId = record.paid_by;
+      notificationType = "settlement";
       const { data: fromP } = await supabase.from("profiles")
-        .select("full_name").eq("id", record.paid_by).maybeSingle();
+        .select("full_name, avatar_url").eq("id", record.paid_by).maybeSingle();
       const { data: toP } = await supabase.from("profiles")
         .select("full_name").eq("id", record.paid_to).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name, currency").eq("id", groupId).maybeSingle();
       title = group?.name ?? "Settlement";
       body = `${fromP?.full_name ?? "Someone"} settled ${group?.currency ?? ""} ${record.amount} with ${toP?.full_name ?? "someone"}`;
-      dataPayload = { type: "settlement", group_id: groupId ?? "" };
+      dataPayload = {
+        type: "settlement",
+        group_id: groupId ?? "",
+        avatar_url: fromP?.avatar_url ?? "",
+      };
     } else if (table === "group_members") {
       groupId = record.group_id;
       actorId = record.user_id;
+      notificationType = "member_joined";
       const { data: joiner } = await supabase.from("profiles")
-        .select("full_name").eq("id", actorId).maybeSingle();
+        .select("full_name, avatar_url").eq("id", actorId).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name").eq("id", groupId).maybeSingle();
       title = group?.name ?? "New member";
       body = `${joiner?.full_name ?? "Someone"} joined the group`;
-      dataPayload = { type: "member_joined", group_id: groupId ?? "" };
+      dataPayload = {
+        type: "member_joined",
+        group_id: groupId ?? "",
+        avatar_url: joiner?.avatar_url ?? "",
+      };
     } else {
       return new Response(JSON.stringify({ skipped: true }), { status: 200 });
     }
@@ -176,27 +201,86 @@ serve(async (req) => {
       return new Response(JSON.stringify({ skipped: true }), { status: 200 });
     }
 
-    // Recipients = other members of the group (exclude the actor)
+    const prefColumn: Record<string, string> = {
+      message: "notify_messages",
+      expense: "notify_expenses",
+      settlement: "notify_settlements",
+      member_joined: "notify_members",
+    };
+
+    // Recipients depend on the event type:
+    // - message / member_joined → the whole group (excluding the actor)
+    // - expense → only the people actually included in that expense's split
+    // - settlement → only the other party in that specific settlement
+    let recipientIds: string[];
+
+    if (notificationType === "expense") {
+      const { data: splitRows } = await supabase
+        .from("expense_splits")
+        .select("user_id")
+        .eq("expense_id", record.id);
+      recipientIds = (splitRows ?? [])
+        .map((r: any) => r.user_id as string)
+        .filter((id: string) => id !== actorId);
+    } else if (notificationType === "settlement") {
+      recipientIds = [record.paid_by, record.paid_to]
+        .filter((id: string) => id && id !== actorId);
+    } else {
+      const { data: allMembers } = await supabase
+        .from("group_members")
+        .select("user_id")
+        .eq("group_id", groupId);
+      recipientIds = (allMembers ?? [])
+        .map((r: any) => r.user_id as string)
+        .filter((id: string) => id !== actorId);
+    }
+
+    // De-duplicate (e.g. a person could appear twice in edge cases)
+    recipientIds = [...new Set(recipientIds)];
+
+    if (recipientIds.length === 0) {
+      return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
+    }
+
     const { data: members } = await supabase
-      .from("group_members")
-      .select("user_id, profiles(fcm_token)")
-      .eq("group_id", groupId)
-      .neq("user_id", actorId ?? "");
+      .from("profiles")
+      .select(`id, fcm_token, ${prefColumn[notificationType]}`)
+      .in("id", recipientIds);
 
     if (!members) {
       return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
     }
 
     let sent = 0;
+    const historyRows: Record<string, unknown>[] = [];
+
     for (const m of members as any[]) {
-      const token = m.profiles?.fcm_token;
+      const prefEnabled = m[prefColumn[notificationType]] ?? true;
+      if (!prefEnabled) continue; // this user muted this notification category
+
+      // Always log to history (in-app inbox), even if they have no push
+      // token (e.g. denied permission) — they can still see it in-app.
+      historyRows.push({
+        user_id: m.id,
+        type: notificationType,
+        title,
+        body,
+        group_id: groupId,
+        entity_id: record.id ?? null,
+      });
+
+      const token = m.fcm_token;
       if (token) {
         await sendFcm(token, title, body, dataPayload);
         sent++;
       }
     }
 
-    return new Response(JSON.stringify({ sent }), { status: 200 });
+    if (historyRows.length > 0) {
+      await supabase.from("notifications").insert(historyRows);
+    }
+
+    return new Response(JSON.stringify({ sent, logged: historyRows.length }), { status: 200 });
   } catch (e) {
     console.error("Edge function error:", e);
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,6 +14,29 @@ Future<void> firebaseMessagingBackgroundHandler(
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FCMService._showFromData(message.data);
+}
+
+// ── Download raw image bytes for a notification's large icon ───────────────
+// Returns null on any failure — caller falls back to no large icon (just
+// the app's small icon), never crashes the notification pipeline.
+Future<Uint8List?> _downloadAvatarBytes(String? url) async {
+  if (url == null || url.isEmpty) return null;
+  try {
+    final client = HttpClient();
+    final request = await client.getUrl(Uri.parse(url));
+    final response = await request.close();
+    if (response.statusCode != 200) return null;
+    final bytes = await response.fold<List<int>>(
+      <int>[],
+          (previous, element) => previous..addAll(element),
+    );
+    client.close();
+    return Uint8List.fromList(bytes);
+  } catch (e) {
+    print('=== AVATAR DOWNLOAD ERROR: $e ===');
+    return null;
+  }
 }
 
 class FCMService {
@@ -75,26 +100,12 @@ class FCMService {
 
   // ── Listen for messages ───────────────────────────────────────────────────
   void _listenForMessages() {
-    // App is OPEN — show local notification
+    // App is OPEN — build and show local notification from data payload
+    // (messages are now data-only, so message.notification is always null —
+    // we build the visible notification ourselves, WhatsApp-style, with the
+    // sender's avatar as the large icon).
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final notification = message.notification;
-      if (notification != null) {
-        _localNotifications.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
-              importance: Importance.high,
-              priority: Priority.high,
-              color: const Color(0xFF0F766E),
-            ),
-          ),
-        );
-      }
+      FCMService._showFromData(message.data);
     });
 
     // App opened FROM notification
@@ -102,6 +113,47 @@ class FCMService {
       print('Notification opened app: ${message.data}');
       // TODO: navigate to relevant screen based on message.data
     });
+  }
+
+  // ── Build + show the actual notification from a data-only FCM payload ────
+  // Static + top-level-callable so the background isolate (which has no
+  // access to the running app's instance) can use it too.
+  static Future<void> _showFromData(Map<String, dynamic> data) async {
+    final title = data['title'] as String? ?? 'Splitly';
+    final body = data['body'] as String? ?? '';
+    final avatarUrl = data['avatar_url'] as String?;
+
+    final localNotifications = FlutterLocalNotificationsPlugin();
+    const androidSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    await localNotifications.initialize(
+      const InitializationSettings(android: androidSettings),
+    );
+    await localNotifications
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(_channel);
+
+    final avatarBytes = await _downloadAvatarBytes(avatarUrl);
+
+    await localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          color: const Color(0xFF0F766E),
+          largeIcon: avatarBytes != null
+              ? ByteArrayAndroidBitmap(avatarBytes)
+              : null,
+        ),
+      ),
+    );
   }
 
   // ── Save FCM token to Supabase ────────────────────────────────────────────

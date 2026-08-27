@@ -1891,6 +1891,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join \"{groupName}\" on Splitly! Use invite code {inviteCode} to start splitting expenses together.\n\n_Splitly — Your Circle. Your Hisaab._'**
   String shareInviteMessage(String groupName, String inviteCode);
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @notificationSettingsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what you get notified about across all your groups.'**
+  String get notificationSettingsDesc;
+
+  /// No description provided for @notifyNewMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'New messages'**
+  String get notifyNewMessages;
+
+  /// No description provided for @notifyNewExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'New expenses'**
+  String get notifyNewExpenses;
+
+  /// No description provided for @notifySettlements.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlements'**
+  String get notifySettlements;
+
+  /// No description provided for @notifyNewMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'New members joining'**
+  String get notifyNewMembers;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
 }
 
 class _AppLocalizationsDelegate

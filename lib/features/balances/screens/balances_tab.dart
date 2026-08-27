@@ -61,6 +61,9 @@ class BalancesTab extends ConsumerWidget {
             }));
           }).toList();
 
+          final currentUserId =
+              SupabaseConfig.client.auth.currentUser?.id ?? '';
+
           // Overall totals
           double totalOwed = 0;
           double totalOwe = 0;
@@ -71,6 +74,14 @@ class BalancesTab extends ConsumerWidget {
             totalOwe += s.youOwe;
             allDebts.addAll(s.debts);
           }
+
+          // Privacy-first: only show debts the current user is actually
+          // part of — not every debt across every group.
+          final myDebts = allDebts
+              .where((d) =>
+          d.fromUserId == currentUserId ||
+              d.toUserId == currentUserId)
+              .toList();
 
           final currency = groups.first.currency;
 
@@ -110,17 +121,17 @@ class BalancesTab extends ConsumerWidget {
                   ),
                 ),
 
-                allDebts.isEmpty
+                myDebts.isEmpty
                     ? const SliverToBoxAdapter(
                     child: _SettledState())
                     : SliverList(
                   delegate: SliverChildBuilderDelegate(
                         (_, i) => _DebtTile(
-                      debt: allDebts[i],
+                      debt: myDebts[i],
                       onSettle: () => showSettleUpSheet(
-                          context, allDebts[i]),
+                          context, myDebts[i]),
                     ),
-                    childCount: allDebts.length,
+                    childCount: myDebts.length,
                   ),
                 ),
 
@@ -457,11 +468,6 @@ class _GroupBalanceCard extends StatelessWidget {
                         : AppColors.primaryDark,
                   ),
                 ),
-              ),
-              Text(
-                '${summary.currency} ${summary.totalSpent.toStringAsFixed(0)}',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.primaryLight),
               ),
             ],
           ),

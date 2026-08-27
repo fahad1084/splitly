@@ -966,4 +966,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String shareInviteMessage(String groupName, String inviteCode) {
     return 'Join \"$groupName\" on Splitly! Use invite code $inviteCode to start splitting expenses together.\n\n_Splitly — Your Circle. Your Hisaab._';
   }
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get notificationSettingsDesc =>
+      'Choose what you get notified about across all your groups.';
+
+  @override
+  String get notifyNewMessages => 'New messages';
+
+  @override
+  String get notifyNewExpenses => 'New expenses';
+
+  @override
+  String get notifySettlements => 'Settlements';
+
+  @override
+  String get notifyNewMembers => 'New members joining';
+
+  @override
+  String get noNotificationsYet => 'No notifications yet';
+
+  @override
+  String get markAllRead => 'Mark all read';
 }

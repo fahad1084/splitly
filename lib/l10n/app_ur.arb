@@ -345,5 +345,13 @@
   "daily": "روزانہ",
   "weekly": "ہفتہ وار",
   "monthly": "ماہانہ",
-  "shareInviteMessage": "\"{groupName}\" میں Splitly پر شامل ہوں! ساتھ مل کر اخراجات تقسیم کرنے کے لیے انوائٹ کوڈ {inviteCode} استعمال کریں۔\n\n_Splitly — Your Circle. Your Hisaab._"
+  "shareInviteMessage": "\"{groupName}\" میں Splitly پر شامل ہوں! ساتھ مل کر اخراجات تقسیم کرنے کے لیے انوائٹ کوڈ {inviteCode} استعمال کریں۔\n\n_Splitly — Your Circle. Your Hisaab._",
+  "notificationSettings": "نوٹیفیکیشن سیٹنگز",
+  "notificationSettingsDesc": "منتخب کریں کہ آپ اپنے تمام گروپس میں کن چیزوں کی اطلاع چاہتے ہیں۔",
+  "notifyNewMessages": "نئے پیغامات",
+  "notifyNewExpenses": "نئے اخراجات",
+  "notifySettlements": "سیٹلمنٹس",
+  "notifyNewMembers": "نئے ممبران کا شامل ہونا",
+  "noNotificationsYet": "ابھی تک کوئی نوٹیفیکیشن نہیں",
+  "markAllRead": "سب پڑھا ہوا نشان زد کریں"
 }

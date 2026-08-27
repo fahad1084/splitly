@@ -144,12 +144,21 @@ class GroupDetailScreen extends ConsumerWidget {
               child: Consumer(
                 builder: (context, ref, _) {
                   ref.watch(expensesProvider(group.id));
+                  final currentUserId =
+                      ref.watch(currentUserProvider)?.id ?? '';
                   final summary = ref.watch(groupBalanceSummaryProvider({
                     'groupId': group.id,
                     'groupName': group.name,
                     'currency': group.currency,
                   }));
-                  if (summary.debts.isEmpty) return const SizedBox.shrink();
+                  // Privacy-first: only show debts the current user is
+                  // actually part of — not every debt in the whole group.
+                  final myDebts = summary.debts
+                      .where((d) =>
+                  d.fromUserId == currentUserId ||
+                      d.toUserId == currentUserId)
+                      .toList();
+                  if (myDebts.isEmpty) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                     child: Column(
@@ -161,7 +170,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.w500,
                                 color: headingColor)),
                         const SizedBox(height: 10),
-                        ...summary.debts.map((debt) => Container(
+                        ...myDebts.map((debt) => Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
@@ -195,24 +204,26 @@ class GroupDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () => showSettleUpSheet(context, debt),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    l10n.settleUp,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                              if (debt.fromUserId == currentUserId ||
+                                  debt.toUserId == currentUserId)
+                                GestureDetector(
+                                  onTap: () => showSettleUpSheet(context, debt),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      l10n.settleUp,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         )),
@@ -342,7 +353,7 @@ class GroupDetailScreen extends ConsumerWidget {
               ),
             ),
 
-            // ── Expenses list or empty state ──────────────────────────
+            // ── Expenses list (recent only) or empty state ─────────────
             expensesAsync.when(
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
@@ -357,28 +368,33 @@ class GroupDetailScreen extends ConsumerWidget {
                       style: TextStyle(color: AppColors.danger)),
                 ),
               ),
-              data: (expenses) => expenses.isEmpty
-                  ? SliverFillRemaining(
-                hasScrollBody: false,
-                child: _ExpensesEmptyState(group: group),
-              )
-                  : SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (_, i) => GestureDetector(
-                    onTap: () => showExpenseDetailSheet(
-                        context, expenses[i], group),
-                    child: ExpenseTile(
-                      expense: expenses[i],
-                      currentUserId: currentUserId,
-                      onDelete: () => ref
-                          .read(expensesProvider(group.id)
-                          .notifier)
-                          .deleteExpense(expenses[i].id),
+              data: (expenses) {
+                if (expenses.isEmpty) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _ExpensesEmptyState(group: group),
+                  );
+                }
+                const previewCount = 5;
+                final recent = expenses.take(previewCount).toList();
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (_, i) => GestureDetector(
+                      onTap: () => showExpenseDetailSheet(
+                          context, recent[i], group),
+                      child: ExpenseTile(
+                        expense: recent[i],
+                        currentUserId: currentUserId,
+                        onDelete: () => ref
+                            .read(expensesProvider(group.id)
+                            .notifier)
+                            .deleteExpense(recent[i].id),
+                      ),
                     ),
+                    childCount: recent.length,
                   ),
-                  childCount: expenses.length,
-                ),
-              ),
+                );
+              },
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 100)),

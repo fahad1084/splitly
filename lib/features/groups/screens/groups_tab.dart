@@ -11,6 +11,8 @@ import '../models/group_model.dart';
 import '../screens/create_group_sheet.dart';
 import '../screens/group_detail_screen.dart';
 import '../screens/join_group_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
+import '../../notifications/controllers/notifications_controller.dart';
 
 class GroupsTab extends ConsumerWidget {
   const GroupsTab({super.key});
@@ -58,10 +60,38 @@ class GroupsTab extends ConsumerWidget {
             tooltip: l10n.joinAGroup,
             onPressed: () => showJoinGroupSheet(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.primaryTint),
-            onPressed: () {},
+          Builder(
+            builder: (_) {
+              final unreadCount =
+                  ref.watch(unreadNotificationCountProvider).value ?? 0;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: AppColors.primaryTint),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const NotificationsScreen()),
+                    ),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           const SizedBox(width: 4),
         ],

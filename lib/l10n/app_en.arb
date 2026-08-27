@@ -352,5 +352,13 @@
       "groupName": {"type": "String"},
       "inviteCode": {"type": "String"}
     }
-  }
+  },
+  "notificationSettings": "Notification Settings",
+  "notificationSettingsDesc": "Choose what you get notified about across all your groups.",
+  "notifyNewMessages": "New messages",
+  "notifyNewExpenses": "New expenses",
+  "notifySettlements": "Settlements",
+  "notifyNewMembers": "New members joining",
+  "noNotificationsYet": "No notifications yet",
+  "markAllRead": "Mark all read"
 }
