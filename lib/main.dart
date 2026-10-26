@@ -222,7 +222,6 @@ class _AuthGateState extends State<AuthGate> {
     // Groups
     _container.invalidate(groupsProvider);
     _container.invalidate(unreadCountsProvider);
-    _container.invalidate(archivedGroupsProvider);
     _container.invalidate(groupDetailProvider);
     _container.invalidate(groupMembersProvider);
 
