@@ -51,7 +51,7 @@ begin; set local role authenticated; select set_config('request.jwt.claims', '{"
 select * from public.join_group_by_code('zzzz9999');
 rollback;
 
-\echo '== ATTACK-2a B leaves and re-inserts self as admin (expect DELETE 1, then ERROR row-level security)'
+\echo '== ATTACK-2a B deletes own membership row and re-inserts as admin (expect DELETE 0 — leave only via leave_group — then ERROR row-level security)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 delete from public.group_members where group_id = :G and user_id = :B;
 insert into public.group_members (group_id, user_id, role) values (:G, :B, 'admin');
@@ -80,7 +80,7 @@ select public.add_expense(:G, :A, 'Dinner', 100,
 commit;
 \set E '''' :eid ''''
 
-\echo '== ATTACK-3a B (debtor) marks own split settled (expect UPDATE 0)'
+\echo '== ATTACK-3a B (debtor) marks own split settled (expect ERROR permission denied — splits are never updated directly)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 update public.expense_splits set is_settled = true where expense_id = :E and user_id = :B;
 rollback;
@@ -90,15 +90,15 @@ begin; set local role authenticated; select set_config('request.jwt.claims', '{"
 update public.expense_splits set amount_owed = 1 where expense_id = :E and user_id = :B;
 rollback;
 
-\echo '== ATTACK-3c B records a settlement paid to A (expect ERROR row-level security)'
+\echo '== ATTACK-3c B inserts a settlement directly (expect ERROR permission denied — record_settlement only)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 insert into public.settlements (group_id, paid_by, paid_to, amount) values (:G, :B, :A, 50);
 rollback;
 
-\echo '== OK-4 A (creditor) settles B''s split + records settlement (expect UPDATE 1, INSERT 0 1)'
+\echo '== OK-4 A (creditor) records that B paid 50 via record_settlement (expect status confirmed)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
-update public.expense_splits set is_settled = true, settled_at = now() where expense_id = :E and user_id = :B;
-insert into public.settlements (group_id, paid_by, paid_to, amount) values (:G, :B, :A, 50);
+select public.record_settlement(:G, :B, :A, 50) as sid \gset
+select status from public.settlements where id = :'sid';
 rollback;
 
 \echo '== ATTACK-4a B adds expense paid by outsider C (expect ERROR PAYER_NOT_MEMBER)'
@@ -200,12 +200,12 @@ rollback;
 \echo '== OK-8 cron (no JWT, as postgres) can still run the recurring job (expect empty result, no error)'
 select public.generate_recurring_expenses();
 
-\echo '== OK-9 admin A promotes B (expect UPDATE 1), then B leaves (expect DELETE 1)'
+\echo '== OK-9 admin A promotes B (expect UPDATE 1), then B tries to leave while owing A 50 (expect ERROR HAS_UNSETTLED_DEBTS)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
 update public.group_members set role = 'admin' where group_id = '99999999-0000-0000-0000-000000000009' and user_id = 'bbbbbbbb-0000-0000-0000-00000000000b';
 rollback;
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
-delete from public.group_members where group_id = '99999999-0000-0000-0000-000000000009' and user_id = 'bbbbbbbb-0000-0000-0000-00000000000b';
+select public.leave_group('99999999-0000-0000-0000-000000000009');
 rollback;
 
 \echo '== OK-10 admin A removes B (expect DELETE 1)'
@@ -275,7 +275,7 @@ select (select count(*) from public.expenses where id = :E) as expenses,
        (select count(*) from public.expense_splits where expense_id = :E) as splits;
 rollback;
 
-\echo '== TX-9 storage: B deletes A''s chat file (expect DELETE 0), A deletes own (expect DELETE 1)'
+\echo '== TX-9 storage blocks SQL deletes (expect ERROR "Use the Storage API" twice — delete rules are tested through the Storage API instead)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 delete from storage.objects where bucket_id = 'chat-attachments' and name = '99999999-0000-0000-0000-000000000009/photo.jpg';
 rollback;

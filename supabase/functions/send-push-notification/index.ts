@@ -162,21 +162,32 @@ serve(async (req) => {
         avatar_url: payer?.avatar_url ?? "",
       };
     } else if (table === "settlements") {
+      // record_settlement() inserts either:
+      //  - 'pending'   — the debtor says "I paid" → ask the receiver to confirm
+      //  - 'confirmed' — the receiver says "I got paid" → tell the debtor
+      // Confirm / cancel are UPDATEs (no webhook); those RPCs write the
+      // in-app notification themselves.
+      if (record.status !== "pending" && record.status !== "confirmed") {
+        return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+      }
       groupId = record.group_id;
-      actorId = record.paid_by;
+      actorId = record.created_by ?? record.paid_by;
       notificationType = "settlement";
       const { data: fromP } = await supabase.from("profiles")
         .select("full_name, avatar_url").eq("id", record.paid_by).maybeSingle();
       const { data: toP } = await supabase.from("profiles")
-        .select("full_name").eq("id", record.paid_to).maybeSingle();
+        .select("full_name, avatar_url").eq("id", record.paid_to).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name, currency").eq("id", groupId).maybeSingle();
+      const money = `${group?.currency ?? ""} ${Number(record.amount).toFixed(2)}`;
       title = group?.name ?? "Settlement";
-      body = `${fromP?.full_name ?? "Someone"} settled ${group?.currency ?? ""} ${record.amount} with ${toP?.full_name ?? "someone"}`;
+      body = record.status === "pending"
+        ? `${fromP?.full_name ?? "Someone"} says they paid you ${money}. Please confirm.`
+        : `${toP?.full_name ?? "Someone"} recorded your payment of ${money}`;
       dataPayload = {
         type: "settlement",
         group_id: groupId ?? "",
-        avatar_url: fromP?.avatar_url ?? "",
+        avatar_url: (actorId === record.paid_to ? toP?.avatar_url : fromP?.avatar_url) ?? "",
       };
     } else if (table === "group_members") {
       groupId = record.group_id;

@@ -1,9 +1,10 @@
 // supabase/functions/send-debt-reminders/index.ts
 //
-// Runs once daily via pg_cron (see debt_reminders_migration.sql).
-// Computes pairwise net debts across every group (mirroring the client's
-// balances_controller.dart logic), and sends a reminder push + logs an
-// in-app notification for any debt that:
+// Runs once daily via pg_cron (see supabase/setup/webhooks_and_cron.sql).
+// Gets every pairwise net debt from the database function
+// debts_for_reminders() — the SAME balance math the app uses (group_debts,
+// supabase/migrations/20261027140000_money_ledger.sql) — and sends a
+// reminder push + logs an in-app notification for any debt that:
 //   - has existed for at least 3 days (avoids nagging right after an
 //     expense is added), and
 //   - hasn't already had a reminder sent in the last 7 days.
@@ -85,115 +86,64 @@ serve(async (req) => {
   }
 
   try {
-    const { data: groups } = await supabase.from("groups")
-      .select("id, name, currency").eq("is_archived", false);
-    if (!groups) return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
+    // One query: every open debt in every non-archived group, already
+    // netted per pair, plus how long it has existed (`since`).
+    const { data: debts, error } = await supabase.rpc("debts_for_reminders");
+    if (error) throw error;
+    if (!debts) return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
 
     let sent = 0;
+    const now = Date.now();
 
-    for (const group of groups) {
-      const { data: expenses } = await supabase.from("expenses")
-        .select("id, paid_by, created_at").eq("group_id", group.id);
-      if (!expenses || expenses.length === 0) continue;
+    for (const d of debts as any[]) {
+      const ageDays = (now - new Date(d.since).getTime()) / (1000 * 60 * 60 * 24);
+      if (ageDays < REMINDER_MIN_AGE_DAYS) continue;
 
-      const expenseIds = expenses.map((e: any) => e.id);
-      const { data: splits } = await supabase.from("expense_splits")
-        .select("expense_id, user_id, amount_owed, is_settled")
-        .in("expense_id", expenseIds)
-        .eq("is_settled", false);
-      if (!splits || splits.length === 0) continue;
+      const { data: lastSent } = await supabase.from("debt_reminders_sent")
+        .select("last_reminded_at")
+        .eq("group_id", d.group_id)
+        .eq("debtor_id", d.debtor_id)
+        .eq("creditor_id", d.creditor_id)
+        .maybeSingle();
 
-      const expenseById: Record<string, any> = {};
-      for (const e of expenses) expenseById[e.id] = e;
-
-      // ledger[debtor][creditor] = { amount, oldestCreatedAt }
-      const ledger: Record<string, Record<string, { amount: number; oldest: string }>> = {};
-
-      for (const s of splits) {
-        const expense = expenseById[s.expense_id];
-        if (!expense) continue;
-        const debtor = s.user_id;
-        const creditor = expense.paid_by;
-        if (debtor === creditor) continue;
-
-        ledger[debtor] ??= {};
-        const existing = ledger[debtor][creditor];
-        const amount = (existing?.amount ?? 0) + Number(s.amount_owed);
-        const oldest = existing
-          ? (expense.created_at < existing.oldest ? expense.created_at : existing.oldest)
-          : expense.created_at;
-        ledger[debtor][creditor] = { amount, oldest };
+      if (lastSent) {
+        const daysSince =
+          (now - new Date(lastSent.last_reminded_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSince < REMINDER_COOLDOWN_DAYS) continue;
       }
 
-      const seenPairs = new Set<string>();
-      const now = Date.now();
+      const { data: debtorProfile } = await supabase.from("profiles")
+        .select("fcm_token, notify_debt_reminders").eq("id", d.debtor_id).maybeSingle();
+      const { data: creditorProfile } = await supabase.from("profiles")
+        .select("full_name").eq("id", d.creditor_id).maybeSingle();
 
-      for (const a of Object.keys(ledger)) {
-        for (const b of Object.keys(ledger[a])) {
-          const pairKey = [a, b].sort().join("|");
-          if (seenPairs.has(pairKey)) continue;
-          seenPairs.add(pairKey);
+      if (debtorProfile?.notify_debt_reminders === false) continue;
 
-          const aOwesB = ledger[a]?.[b]?.amount ?? 0;
-          const bOwesA = ledger[b]?.[a]?.amount ?? 0;
-          const net = aOwesB - bOwesA;
-          if (Math.abs(net) < 0.01) continue;
+      const title = d.group_name;
+      const body = `Reminder: you owe ${creditorProfile?.full_name ?? "someone"} ${d.currency} ${Number(d.amount).toFixed(2)}`;
 
-          const debtorId = net > 0 ? a : b;
-          const creditorId = net > 0 ? b : a;
-          const amount = Math.round(Math.abs(net) * 100) / 100;
-          const oldest = net > 0 ? ledger[a][b].oldest : ledger[b][a].oldest;
+      await supabase.from("notifications").insert({
+        user_id: d.debtor_id,
+        type: "debt_reminder",
+        title,
+        body,
+        group_id: d.group_id,
+      });
 
-          const ageDays = (now - new Date(oldest).getTime()) / (1000 * 60 * 60 * 24);
-          if (ageDays < REMINDER_MIN_AGE_DAYS) continue;
-
-          const { data: lastSent } = await supabase.from("debt_reminders_sent")
-            .select("last_reminded_at")
-            .eq("group_id", group.id)
-            .eq("debtor_id", debtorId)
-            .eq("creditor_id", creditorId)
-            .maybeSingle();
-
-          if (lastSent) {
-            const daysSince =
-              (now - new Date(lastSent.last_reminded_at).getTime()) / (1000 * 60 * 60 * 24);
-            if (daysSince < REMINDER_COOLDOWN_DAYS) continue;
-          }
-
-          const { data: debtorProfile } = await supabase.from("profiles")
-            .select("fcm_token, notify_debt_reminders").eq("id", debtorId).maybeSingle();
-          const { data: creditorProfile } = await supabase.from("profiles")
-            .select("full_name").eq("id", creditorId).maybeSingle();
-
-          if (debtorProfile?.notify_debt_reminders === false) continue;
-
-          const title = group.name;
-          const body = `Reminder: you owe ${creditorProfile?.full_name ?? "someone"} ${group.currency} ${amount}`;
-
-          await supabase.from("notifications").insert({
-            user_id: debtorId,
-            type: "debt_reminder",
-            title,
-            body,
-            group_id: group.id,
-          });
-
-          if (debtorProfile?.fcm_token) {
-            await sendFcm(debtorProfile.fcm_token, title, body, {
-              type: "debt_reminder",
-              group_id: group.id,
-            });
-            sent++;
-          }
-
-          await supabase.from("debt_reminders_sent").upsert({
-            group_id: group.id,
-            debtor_id: debtorId,
-            creditor_id: creditorId,
-            last_reminded_at: new Date().toISOString(),
-          });
-        }
+      if (debtorProfile?.fcm_token) {
+        await sendFcm(debtorProfile.fcm_token, title, body, {
+          type: "debt_reminder",
+          group_id: d.group_id,
+        });
+        sent++;
       }
+
+      await supabase.from("debt_reminders_sent").upsert({
+        group_id: d.group_id,
+        debtor_id: d.debtor_id,
+        creditor_id: d.creditor_id,
+        last_reminded_at: new Date().toISOString(),
+      });
     }
 
     return new Response(JSON.stringify({ sent }), { status: 200 });

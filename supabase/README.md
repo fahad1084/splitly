@@ -15,9 +15,41 @@ Everything the Flutter app needs on the server side is in this folder.
 ### What the database contains
 
 - **Tables:** `profiles`, `groups`, `group_members`, `expenses`, `expense_splits`, `settlements`, `messages`, `typing_status`, `chat_read_status`, `notifications`, `debt_reminders_sent`
-- **RPC functions called by the app:** `delete_own_account`, `delete_group_permanently`, `get_unread_counts`, `get_group_preview_by_invite_code`
-- **Helper functions used by RLS:** `get_my_group_ids`, `is_group_creator`, `is_authenticated`
+- **RPC functions called by the app:**
+  - groups: `create_group`, `join_group_by_code`, `leave_group`, `delete_group_permanently`
+  - expenses: `add_expense`, `delete_expense`
+  - money: `get_my_debts`, `record_settlement`, `confirm_settlement`, `cancel_settlement`
+  - other: `get_unread_counts`, `delete_own_account`, `get_group_preview_by_invite_code` (old, not used any more)
+- **The balance math (the only copy):** `group_debts(group_id)`. Balance between two people = their expense splits − their **confirmed** settlements. `expense_splits.is_settled` is not used for money any more.
+- **For the reminder Edge Function only:** `debts_for_reminders` (service role).
+- **Helper functions used by RLS:** `get_my_group_ids`, `is_group_member`, `is_group_admin`, `is_group_creator`, `is_authenticated`
 - **Cron function:** `generate_recurring_expenses`, which creates the next copy of each recurring expense once a day.
+- **No `REVOKE EXECUTE`.** On this Postgres version, a "permission denied for function" error crashes the database server, so every function checks its caller itself.
+
+### Tests (local database only)
+
+- `tests/security_attacks.sql`: attack and "normal use" checks for RLS and the RPCs.
+- `tests/money_tests.sql`: balances, partial payments, pending/confirm/cancel, leaving with debts, exact splits.
+
+Each file needs a **fresh** local database. Run these one at a time:
+
+```bash
+supabase start
+```
+
+```bash
+supabase db reset
+```
+
+```bash
+psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f supabase/tests/money_tests.sql
+```
+
+Run `supabase db reset` again before the other test file. When you're done:
+
+```bash
+supabase stop
+```
 
 ---
 
