@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
+import '../../notifications/controllers/fcm_service.dart';
 
 // ── Auth state stream ─────────────────────────────────────────────────────────
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -213,6 +214,9 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
 
   // ── Sign Out ──────────────────────────────────────────────────────────────
   Future<void> signOut() async {
+    // Clear this device's push token while the session is still valid,
+    // so the logged-out user's notifications stop coming to this phone.
+    await FCMService().clearTokenFromSupabase();
     try {
       final googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();

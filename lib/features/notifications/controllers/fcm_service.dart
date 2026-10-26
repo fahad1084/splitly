@@ -61,7 +61,7 @@ class FCMService {
     await _requestPermission();
     await _setupLocalNotifications();
     _listenForMessages();
-    await _saveTokenToSupabase();
+    await saveTokenToSupabase();
 
     // Listen for token refresh and save again
     _messaging.onTokenRefresh.listen((newToken) {
@@ -157,17 +157,51 @@ class FCMService {
   }
 
   // ── Save FCM token to Supabase ────────────────────────────────────────────
-  // Called on init and on token refresh
+  // Called on init, on every sign-in, and on token refresh
   // Token is stored in profiles.fcm_token column
-  Future<void> _saveTokenToSupabase() async {
+  Future<void> saveTokenToSupabase() async {
     try {
       final token = await _messaging.getToken();
       if (token != null) {
         await _saveToken(token);
-        print('FCM Token saved to Supabase: $token');
+        print('FCM Token saved to Supabase');
       }
     } catch (e) {
       print('FCM token save error: $e');
+    }
+  }
+
+  // ── Clear FCM token from Supabase ─────────────────────────────────────────
+  // Must run BEFORE auth.signOut() — RLS needs the session to update the row.
+  // Only clears the column if it still holds THIS device's token, so a newer
+  // login on another device keeps its pushes.
+  Future<void> clearTokenFromSupabase() async {
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final token = await _messaging.getToken();
+      if (token == null) return;
+      await SupabaseConfig.client
+          .from('profiles')
+          .update({'fcm_token': null})
+          .eq('id', userId)
+          .eq('fcm_token', token);
+    } catch (e) {
+      print('Clear token error: $e');
+    }
+  }
+
+  // ── Delete this device's FCM token at Firebase ────────────────────────────
+  // Called after sign-out. Even if clearing the DB column failed (offline,
+  // expired session), the old token stops working, so the logged-out user's
+  // pushes can no longer reach this device. A fresh token is created by
+  // getToken() on the next sign-in.
+  Future<void> deleteDeviceToken() async {
+    try {
+      await _messaging.deleteToken();
+    } catch (e) {
+      print('Delete device token error: $e');
     }
   }
 

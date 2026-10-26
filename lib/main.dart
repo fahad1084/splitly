@@ -11,7 +11,14 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/reset_password_screen.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/home_screen.dart';
+import 'features/auth/controllers/auth_controller.dart';
+import 'features/balances/controllers/balances_controller.dart';
+import 'features/chat/controllers/chat_controller.dart';
+import 'features/expenses/controllers/expenses_controller.dart';
+import 'features/expenses/screens/expense_history_screen.dart';
+import 'features/groups/controllers/groups_controller.dart';
 import 'features/notifications/controllers/fcm_service.dart';
+import 'features/notifications/controllers/notifications_controller.dart';
 import 'firebase_options.dart';
 import 'features/security/controllers/app_lock_controller.dart';
 import 'features/security/screens/unlock_screen.dart';
@@ -135,9 +142,15 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   bool _isPasswordRecovery = false;
 
+  // The root ProviderContainer. NOT a widget `ref`: this widget's route is
+  // removed after the first navigation, but the auth listener below keeps
+  // running for the whole app lifetime — a widget ref would throw then.
+  late final ProviderContainer _container;
+
   @override
   void initState() {
     super.initState();
+    _container = ProviderScope.containerOf(context, listen: false);
 
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
@@ -160,9 +173,14 @@ class _AuthGateState extends State<AuthGate> {
         _navigate(const ResetPasswordScreen());
         break;
 
+      // tokenRefreshed is NOT handled here on purpose: Supabase renews the
+      // token about once an hour, and rebuilding the stack on it kicked the
+      // user out of whatever screen they were on (and re-triggered app lock).
       case AuthChangeEvent.signedIn:
-      case AuthChangeEvent.tokenRefreshed:
         if (_isPasswordRecovery) return;
+        // Throw away anything cached from a previous user before Home builds
+        _resetUserData();
+        FCMService().saveTokenToSupabase();
         // ✅ Wrapped with app lock check
         _navigate(const _AppLockWrapper(child: HomeScreen()));
         break;
@@ -182,11 +200,53 @@ class _AuthGateState extends State<AuthGate> {
       case AuthChangeEvent.signedOut:
         _isPasswordRecovery = false;
         _navigate(const LoginScreen());
+        _resetUserData();
+        FCMService().deleteDeviceToken();
         break;
 
       default:
         break;
     }
+  }
+
+  // Clears every provider that holds the signed-in user's data, so the next
+  // user on this device never sees the previous user's groups, chats, etc.
+  // Families (expensesProvider, messagesProvider, ...) are invalidated as a
+  // whole — every group's instance at once. Chat instances close their
+  // realtime channel in onDispose.
+  void _resetUserData() {
+    // Auth / profile
+    _container.invalidate(currentUserProvider);
+    _container.invalidate(myProfileProvider);
+
+    // Groups
+    _container.invalidate(groupsProvider);
+    _container.invalidate(unreadCountsProvider);
+    _container.invalidate(archivedGroupsProvider);
+    _container.invalidate(groupDetailProvider);
+    _container.invalidate(groupMembersProvider);
+
+    // Expenses + balances
+    _container.invalidate(expensesProvider);
+    _container.invalidate(groupBalancesProvider);
+    _container.invalidate(allBalancesProvider);
+    _container.invalidate(groupBalanceSummaryProvider);
+
+    // Chat
+    _container.invalidate(messagesProvider);
+    _container.invalidate(typingUsersProvider);
+
+    // Notifications
+    _container.invalidate(notificationsProvider);
+    _container.invalidate(unreadNotificationCountProvider);
+    _container.invalidate(notificationPrefsProvider);
+
+    // UI state — next user starts on the Groups tab with no filters
+    _container.invalidate(bottomNavIndexProvider);
+    _container.invalidate(selectedCategoryFilterProvider);
+    _container.invalidate(selectedDateFilterProvider);
+    _container.invalidate(customDateRangeProvider);
+    _container.invalidate(searchQueryProvider);
   }
 
   @override
