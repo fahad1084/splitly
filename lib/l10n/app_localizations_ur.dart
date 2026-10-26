@@ -428,7 +428,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get settleUpInfo =>
-      'اس سے ان دونوں کے درمیان متعلقہ خرچے طے شدہ کے طور پر نشان زد ہو جائیں گے۔';
+      'آپ رقم کا کچھ حصہ بھی ادا کر سکتے ہیں۔ صرف رقم وصول کرنے والا ہی اس کی تصدیق کر سکتا ہے۔';
 
   @override
   String get confirmSettlement => 'تصفیہ کی تصدیق کریں';
@@ -1022,4 +1022,96 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get groupDeleted => 'گروپ ڈیلیٹ ہو گیا';
+
+  @override
+  String get payments => 'ادائیگیاں';
+
+  @override
+  String get noPaymentsYet => 'ابھی تک کوئی ادائیگی نہیں';
+
+  @override
+  String get iPaid => 'میں نے ادا کر دیا';
+
+  @override
+  String get markAsReceived => 'وصول ہو گیا';
+
+  @override
+  String upToAmount(String amount) {
+    return 'زیادہ سے زیادہ $amount';
+  }
+
+  @override
+  String settlePendingInfo(String name) {
+    return '$name سے تصدیق کرنے کو کہا جائے گا۔ تب تک ادائیگی زیرِ التوا دکھائی دے گی۔';
+  }
+
+  @override
+  String get settleReceiverInfo =>
+      'یہ فوراً شمار ہو جائے گی، کیونکہ رقم آپ ہی وصول کر رہے ہیں۔';
+
+  @override
+  String get paymentWaitingConfirmation =>
+      'ادائیگی درج ہو گئی — تصدیق کا انتظار ہے';
+
+  @override
+  String get paymentConfirmed => 'ادائیگی کی تصدیق ہو گئی ✅';
+
+  @override
+  String get paymentCancelled => 'ادائیگی منسوخ ہو گئی';
+
+  @override
+  String get confirmPayment => 'تصدیق کریں';
+
+  @override
+  String get cancelPayment => 'ادائیگی منسوخ کریں';
+
+  @override
+  String get statusPending => 'زیرِ التوا';
+
+  @override
+  String get statusConfirmed => 'تصدیق شدہ';
+
+  @override
+  String get statusCancelled => 'منسوخ';
+
+  @override
+  String get statusEarlier => 'پرانی';
+
+  @override
+  String amountPending(String amount) {
+    return '$amount زیرِ التوا';
+  }
+
+  @override
+  String paymentsWaitingForYou(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ادائیگیاں آپ کی تصدیق کی منتظر ہیں',
+      one: '1 ادائیگی آپ کی تصدیق کی منتظر ہے',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get amountMoreThanOwed => 'یہ باقی واجب الادا رقم سے زیادہ ہے';
+
+  @override
+  String get nothingOwedHere => 'اب آپ کے درمیان کوئی رقم واجب الادا نہیں';
+
+  @override
+  String get cantLeaveYet => 'آپ ابھی گروپ نہیں چھوڑ سکتے';
+
+  @override
+  String get settleTheseFirst => 'پہلے یہ حساب برابر کریں:';
+
+  @override
+  String youOweUser(String name, String amount) {
+    return 'آپ نے $name کو $amount دینے ہیں';
+  }
+
+  @override
+  String userOwesYou(String name, String amount) {
+    return '$name نے آپ کو $amount دینے ہیں';
+  }
 }

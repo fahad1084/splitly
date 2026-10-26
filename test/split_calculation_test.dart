@@ -59,6 +59,24 @@ void main() {
       expect(_totalPaisa(s), 10000);
     });
 
+    test('33.33 x 3 % (= 99.99%) of 100 still splits the WHOLE 100', () {
+      final s = calculateSplits(
+          amount: 100,
+          splitType: 'percentage',
+          members: [_m('a', pct: 33.33), _m('b', pct: 33.33), _m('c', pct: 33.33)]);
+      expect(_amounts(s), [33.34, 33.33, 33.33]);
+      expect(_totalPaisa(s), 10000);
+    });
+
+    test('70 / 30 % of 999.99 adds up exactly', () {
+      final s = calculateSplits(
+          amount: 999.99,
+          splitType: 'percentage',
+          members: [_m('a', pct: 70), _m('b', pct: 30)]);
+      expect(_totalPaisa(s), 99999);
+      expect(_amounts(s), [700.0, 299.99]);
+    });
+
     test('50 / 50 % of 0.01 → one paisa to the first member', () {
       final s = calculateSplits(
           amount: 0.01,
@@ -75,6 +93,26 @@ void main() {
           splitType: 'custom',
           members: [_m('a', custom: 70), _m('b', custom: 30.004)]);
       expect(_amounts(s), [70.0, 30.0]);
+    });
+  });
+
+  group('percentagesAddUp', () {
+    test('33.33 x 3 is accepted', () {
+      expect(percentagesAddUp([33.33, 33.33, 33.33]), isTrue);
+    });
+    test('50 + 50 and 33.33 + 33.33 + 33.34 are accepted', () {
+      expect(percentagesAddUp([50, 50]), isTrue);
+      expect(percentagesAddUp([33.33, 33.33, 33.34]), isTrue);
+    });
+    test('99% or 101% is rejected', () {
+      expect(percentagesAddUp([50, 49]), isFalse);
+      expect(percentagesAddUp([50, 51]), isFalse);
+    });
+    test('33.33 + 33.33 (2 people, 66.66%) is rejected', () {
+      expect(percentagesAddUp([33.33, 33.33]), isFalse);
+    });
+    test('nobody → rejected', () {
+      expect(percentagesAddUp([]), isFalse);
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
@@ -6,6 +7,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/balances_controller.dart';
 import '../models/balance_model.dart';
+import '../../expenses/controllers/expenses_controller.dart';
 import '../../../core/utils/string_utils.dart';
 
 void showSettleUpSheet(BuildContext context, DebtModel debt) {
@@ -29,26 +31,63 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
   bool _isLoading = false;
   final currentUserId =
       SupabaseConfig.client.auth.currentUser?.id ?? '';
+  late final TextEditingController _amountCtrl;
+
+  // The most that can be paid now: the debt minus payments already
+  // waiting for confirmation (the database checks the same rule).
+  int get _maxPaisa =>
+      toPaisa(widget.debt.amount) - toPaisa(widget.debt.pendingAmount);
+
+  bool get _iAmReceiving => widget.debt.toUserId == currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountCtrl = TextEditingController(
+        text: fromPaisa(_maxPaisa > 0 ? _maxPaisa : 0).toStringAsFixed(2));
+  }
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _settle() async {
     final l10n = AppLocalizations.of(context)!;
+    final amount = double.tryParse(_amountCtrl.text.trim());
+    if (amount == null || toPaisa(amount) <= 0) {
+      showErrorSnack(context, l10n.pleaseEnterValidAmount);
+      return;
+    }
+    if (toPaisa(amount) > _maxPaisa) {
+      showErrorSnack(context, l10n.amountMoreThanOwed);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    final error = await ref.read(settleUpProvider.notifier).settleUp(
+    final error = await ref.read(settleUpProvider.notifier).recordSettlement(
       groupId: widget.debt.groupId,
       paidBy: widget.debt.fromUserId,
       paidTo: widget.debt.toUserId,
-      amount: widget.debt.amount,
-      currency: widget.debt.currency,
+      amount: amount,
     );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (error != null) {
-      showErrorSnack(context, error);
+      showErrorSnack(context, switch (error) {
+        'AMOUNT_TOO_HIGH' => l10n.amountMoreThanOwed,
+        'INVALID_AMOUNT' => l10n.pleaseEnterValidAmount,
+        'NO_DEBT' => l10n.nothingOwedHere,
+        _ => l10n.somethingWentWrong,
+      });
     } else {
-      showSuccessSnack(context, l10n.settlementRecorded);
+      // Receiver → counts at once. Debtor → waits for the receiver.
+      showSuccessSnack(context,
+          _iAmReceiving ? l10n.settlementRecorded : l10n.paymentWaitingConfirmation);
       Navigator.pop(context);
     }
   }
@@ -70,8 +109,11 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
         borderRadius:
         const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-      child: Column(
+      // Lift the sheet above the keyboard (the amount can be edited)
+      padding: EdgeInsets.fromLTRB(
+          24, 16, 24, 40 + MediaQuery.of(context).viewInsets.bottom),
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Drag handle
@@ -198,13 +240,38 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                         ),
                       ),
                       const SizedBox(height: 6),
+                      // Editable: partial payments are allowed
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: TextField(
+                          controller: _amountCtrl,
+                          textAlign: TextAlign.center,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,2}')),
+                          ],
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.success,
+                            letterSpacing: -1,
+                          ),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            prefixText: '${widget.debt.currency} ',
+                            prefixStyle: const TextStyle(
+                                fontSize: 18, color: AppColors.success),
+                          ),
+                        ),
+                      ),
                       Text(
-                        '${widget.debt.currency} ${widget.debt.amount.toStringAsFixed(0)}',
+                        l10n.upToAmount(
+                            '${widget.debt.currency} ${fromPaisa(_maxPaisa).toStringAsFixed(2)}'),
                         style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.success,
-                          letterSpacing: -1,
+                          fontSize: 12,
+                          color: AppColors.primaryLight,
                         ),
                       ),
                     ],
@@ -230,7 +297,9 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.settleUpInfo,
+                    _iAmReceiving
+                        ? l10n.settleReceiverInfo
+                        : l10n.settlePendingInfo(widget.debt.toUserName),
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primary,
@@ -246,7 +315,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
 
           // Confirm button
           SplitlyButton(
-            label: l10n.confirmSettlement,
+            label: _iAmReceiving ? l10n.markAsReceived : l10n.iPaid,
             isLoading: _isLoading,
             onPressed: _settle,
             icon: Icons.check_rounded,
@@ -261,6 +330,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
             onPressed: () => Navigator.pop(context),
           ),
         ],
+        ),
       ),
     );
   }

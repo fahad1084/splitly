@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../balances/controllers/balances_controller.dart';
 import '../models/group_model.dart';
 import 'dart:io';
 
@@ -187,6 +188,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
+    ref.invalidate(myDebtsProvider); // pull-to-refresh reloads balances too
     try {
       state = AsyncValue.data(await _fetchGroups());
     } catch (e, st) {
@@ -210,20 +212,22 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
   }
 
   // ── Leave a group (current user removes self) ───────────────────────────
+  // Through leave_group(): the database refuses while you still owe or are
+  // owed money in this group. Returns null on success, or an error code
+  // ('HAS_UNSETTLED_DEBTS', ... see settleErrorCode).
   Future<String?> leaveGroup(String groupId) async {
     final userId = _db.auth.currentUser?.id;
-    if (userId == null) return 'Not signed in';
+    if (userId == null) return 'UNKNOWN';
     try {
-      await _db
-          .from('group_members')
-          .delete()
-          .eq('group_id', groupId)
-          .eq('user_id', userId);
+      await _db.rpc('leave_group', params: {'p_group_id': groupId});
       await refresh();
       return null;
+    } on PostgrestException catch (e) {
+      print('=== LEAVE GROUP ERROR: ${e.message} ===');
+      return settleErrorCode(e.message);
     } catch (e) {
       print('=== LEAVE GROUP ERROR: $e ===');
-      return 'Failed to leave group: $e';
+      return 'UNKNOWN';
     }
   }
 

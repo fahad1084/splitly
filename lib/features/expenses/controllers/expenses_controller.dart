@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../models/expense_model.dart';
+import '../../balances/controllers/balances_controller.dart';
 
 // ── Expenses per group ────────────────────────────────────────────────────────
 final expensesProvider =
@@ -104,6 +105,7 @@ class ExpensesController
         'p_recur_every': isRecurring ? recurEvery : null,
       });
 
+      ref.invalidate(myDebtsProvider); // balances come from the database
       state = AsyncValue.data(await _fetchExpenses());
       return null;
     } on PostgrestException catch (e) {
@@ -122,6 +124,7 @@ class ExpensesController
       // One call — the splits are deleted together with the expense
       await SupabaseConfig.client
           .rpc('delete_expense', params: {'p_expense_id': expenseId});
+      ref.invalidate(myDebtsProvider);
       state = AsyncValue.data(await _fetchExpenses());
       return null;
     } catch (e) {
@@ -136,6 +139,7 @@ class ExpensesController
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
+    ref.invalidate(myDebtsProvider); // pull-to-refresh reloads balances too
     try {
       state = AsyncValue.data(await _fetchExpenses());
     } catch (e, st) {
@@ -185,10 +189,15 @@ List<Map<String, dynamic>> calculateSplits({
           .toList();
 
     case 'percentage':
-      shares = included.map((m) {
-        final pct = (m['percentage'] as num?)?.toDouble() ?? 0.0;
-        return (totalPaisa * pct / 100).floor();
-      }).toList();
+      // Percentages as whole hundredths (33.33% → 3333). Each share is the
+      // person's part of the total by their weight, rounded down; so
+      // 33.33/33.33/33.33 (= 99.99%) still splits the WHOLE amount.
+      final weights = included
+          .map((m) => toPaisa((m['percentage'] as num?)?.toDouble() ?? 0.0))
+          .toList();
+      final totalWeight = weights.fold<int>(0, (a, b) => a + b);
+      if (totalWeight <= 0) return [];
+      shares = weights.map((w) => totalPaisa * w ~/ totalWeight).toList();
       break;
 
     default:
@@ -211,6 +220,16 @@ List<Map<String, dynamic>> calculateSplits({
   ];
 }
 
+// ── Do the percentages add up to 100%? ────────────────────────────────────────
+// Each person types a percentage with up to 2 decimals, so 3 people can only
+// get to 33.33 × 3 = 99.99%. Accept a total within 0.01% per person of 100%;
+// calculateSplits() then shares out the whole amount anyway.
+bool percentagesAddUp(List<double> percentages) {
+  if (percentages.isEmpty) return false;
+  final totalHundredths = percentages.fold<int>(0, (sum, p) => sum + toPaisa(p));
+  return (totalHundredths - 10000).abs() <= percentages.length;
+}
+
 // ── Server error → code the UI can translate ─────────────────────────────────
 // add_expense / delete_expense raise these codes as the error message
 // (see supabase/migrations/20261027130000_transactions.sql).
@@ -224,33 +243,3 @@ const _expenseErrorCodes = {
 String expenseErrorCode(String message) =>
     _expenseErrorCodes.contains(message) ? message : 'UNKNOWN';
 
-// ── Balance calculation per group ─────────────────────────────────────────────
-final groupBalancesProvider =
-FutureProvider.family<Map<String, double>, String>((ref, groupId) async {
-  final expensesAsync = ref.watch(expensesProvider(groupId));
-  final expenses = expensesAsync.value ?? [];
-  final currentUserId =
-      SupabaseConfig.client.auth.currentUser?.id ?? '';
-
-  // net balance: positive = owed to you, negative = you owe
-  double netBalance = 0;
-  for (final expense in expenses) {
-    if (expense.paidBy == currentUserId) {
-      // You paid — others owe you
-      for (final split in expense.splits) {
-        if (split.userId != currentUserId && !split.isSettled) {
-          netBalance += split.amountOwed;
-        }
-      }
-    } else {
-      // Someone else paid — you owe your share
-      for (final split in expense.splits) {
-        if (split.userId == currentUserId && !split.isSettled) {
-          netBalance -= split.amountOwed;
-        }
-      }
-    }
-  }
-
-  return {'net': netBalance};
-});

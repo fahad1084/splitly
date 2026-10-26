@@ -228,8 +228,8 @@ class _AuthGateState extends State<AuthGate> {
 
     // Expenses + balances
     _container.invalidate(expensesProvider);
-    _container.invalidate(groupBalancesProvider);
-    _container.invalidate(allBalancesProvider);
+    _container.invalidate(myDebtsProvider);
+    _container.invalidate(settlementsProvider);
     _container.invalidate(groupBalanceSummaryProvider);
 
     // Chat

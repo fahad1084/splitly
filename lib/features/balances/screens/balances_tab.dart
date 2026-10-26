@@ -7,7 +7,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../balances/models/balance_model.dart';
 import '../../balances/screens/settle_up_sheet.dart';
-import '../../expenses/controllers/expenses_controller.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../../core/services/home_widget_service.dart';
 
@@ -47,19 +46,9 @@ class BalancesTab extends ConsumerWidget {
         data: (groups) {
           if (groups.isEmpty) return const _EmptyState();
 
-          // ── Pre-load expenses for ALL groups ──────────────────────
-          // This ensures balances calculate correctly on first open
-          for (final group in groups) {
-            ref.watch(expensesProvider(group.id));
-          }
-
-          // Build summaries
+          // Build summaries (the debts come from the database in one call)
           final summaries = groups.map((group) {
-            return ref.watch(groupBalanceSummaryProvider({
-              'groupId': group.id,
-              'groupName': group.name,
-              'currency': group.currency,
-            }));
+            return ref.watch(groupBalanceSummaryProvider(group.balanceKey));
           }).toList();
 
           final currentUserId =
@@ -392,7 +381,7 @@ class _DebtTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${debt.currency} ${debt.amount.toStringAsFixed(0)}',
+                '${debt.currency} ${debt.amount.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -401,10 +390,18 @@ class _DebtTile extends StatelessWidget {
                       : AppColors.success,
                 ),
               ),
+              // Recorded but not confirmed yet (not subtracted above)
+              if (debt.pendingAmount > 0)
+                Text(
+                  l10n.amountPending(
+                      '${debt.currency} ${debt.pendingAmount.toStringAsFixed(2)}'),
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.accentDark),
+                ),
               const SizedBox(height: 6),
-              // Only the person RECEIVING the money can mark it as paid
-              // (the database enforces the same rule).
-              if (iAmReceiving)
+              // Both people can record a payment; when the debtor does,
+              // the receiver has to confirm it.
+              if (iAmPaying || iAmReceiving)
                 GestureDetector(
                   onTap: onSettle,
                   child: Container(

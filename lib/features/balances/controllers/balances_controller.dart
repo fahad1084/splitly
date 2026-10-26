@@ -1,191 +1,149 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
-import '../../groups/controllers/groups_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../balances/models/balance_model.dart';
 
-// ── All group balances for current user ───────────────────────────────────────
-final allBalancesProvider =
-FutureProvider<List<GroupBalanceSummary>>((ref) async {
-  final groups = ref.watch(groupsProvider).value ?? [];
-  final currentUserId =
-      SupabaseConfig.client.auth.currentUser?.id ?? '';
+// ─────────────────────────────────────────────────────────────────────────────
+// The balance math lives in the DATABASE (group_debts() in
+// supabase/migrations/20261027140000_money_ledger.sql): what people owe from
+// expense splits, minus CONFIRMED settlements, netted per pair. The app,
+// leave_group() and the reminder Edge Function all use that one function.
+// This file only loads its result and arranges it for the screens.
+// ─────────────────────────────────────────────────────────────────────────────
 
-  final summaries = <GroupBalanceSummary>[];
+// ── All debts in all my groups (ONE database call + one for names) ────────────
+final myDebtsProvider = FutureProvider<List<DebtRow>>((ref) async {
+  final db = SupabaseConfig.client;
+  if (db.auth.currentUser == null) return [];
 
-  for (final group in groups) {
-    final expenses =
-        ref.watch(expensesProvider(group.id)).value ?? [];
+  final List<dynamic> rows = await db.rpc('get_my_debts');
+  if (rows.isEmpty) return [];
 
-    final summary = _calculateGroupBalance(
-      groupId: group.id,
-      groupName: group.name,
-      currency: group.currency,
-      expenses: expenses,
-      currentUserId: currentUserId,
+  final ids = <String>{
+    for (final r in rows) ...[r['debtor_id'] as String, r['creditor_id'] as String],
+  };
+  final List<dynamic> profiles = await db
+      .from('profiles')
+      .select('id, full_name')
+      .inFilter('id', ids.toList());
+  final names = <String, String>{
+    for (final p in profiles)
+      p['id'] as String: p['full_name'] as String? ?? 'Unknown',
+  };
+
+  return rows.map((r) {
+    final debtor = r['debtor_id'] as String;
+    final creditor = r['creditor_id'] as String;
+    return DebtRow(
+      groupId: r['group_id'] as String,
+      debtorId: debtor,
+      debtorName: names[debtor] ?? 'Unknown',
+      creditorId: creditor,
+      creditorName: names[creditor] ?? 'Unknown',
+      amount: (r['amount'] as num).toDouble(),
+      pendingAmount: (r['pending_amount'] as num?)?.toDouble() ?? 0,
     );
-    summaries.add(summary);
-  }
-
-  return summaries;
+  }).toList();
 });
 
 // ── Single group balance ──────────────────────────────────────────────────────
+// Keyed by a Dart record, which compares by VALUE — so the same group always
+// gets the same provider (a Map key created a new provider on every build).
+typedef GroupBalanceKey = ({String id, String name, String currency});
+
 final groupBalanceSummaryProvider =
-Provider.family<GroupBalanceSummary, Map<String, dynamic>>(
-        (ref, args) {
-      final groupId = args['groupId'] as String;
-      final groupName = args['groupName'] as String;
-      final currency = args['currency'] as String;
-      final currentUserId =
-          SupabaseConfig.client.auth.currentUser?.id ?? '';
+Provider.family<GroupBalanceSummary, GroupBalanceKey>((ref, group) {
+  final expenses = ref.watch(expensesProvider(group.id)).value ?? [];
+  final rows = ref.watch(myDebtsProvider).value ?? [];
+  final currentUserId = SupabaseConfig.client.auth.currentUser?.id ?? '';
 
-      final expenses =
-          ref.watch(expensesProvider(groupId)).value ?? [];
+  return buildGroupSummary(
+    groupId: group.id,
+    groupName: group.name,
+    currency: group.currency,
+    totalSpentPaisa:
+    expenses.fold<int>(0, (sum, e) => sum + toPaisa(e.amount)),
+    rows: rows,
+    currentUserId: currentUserId,
+  );
+});
 
-      return _calculateGroupBalance(
-        groupId: groupId,
-        groupName: groupName,
-        currency: currency,
-        expenses: expenses,
-        currentUserId: currentUserId,
-      );
-    });
-
-// ── Core balance calculation algorithm ───────────────────────────────────────
-GroupBalanceSummary _calculateGroupBalance({
+// ── Arrange the database's debts for one group (pure, unit-tested) ────────────
+// youAreOwed / youOwe show the current user's NET position in the group
+// (only one of them is non-zero), worked out in whole paisa.
+GroupBalanceSummary buildGroupSummary({
   required String groupId,
   required String groupName,
   required String currency,
-  required List expenses,
+  required int totalSpentPaisa,
+  required List<DebtRow> rows,
   required String currentUserId,
 }) {
-  double totalSpent = 0;
-  double youAreOwed = 0;
-  double youOwe = 0;
+  final debts = <DebtModel>[];
+  var netPaisa = 0; // positive = others owe me
 
-  // net[userId] = positive means they are owed, negative means they owe
-  final netMap = <String, double>{};
-  final nameMap = <String, String>{};
-
-  for (final expense in expenses) {
-    totalSpent += expense.amount;
-    nameMap[expense.paidBy] = expense.paidByName;
-
-    for (final split in expense.splits) {
-      if (split.isSettled) continue;
-      nameMap[split.userId] = split.userName;
-
-      if (expense.paidBy == split.userId) continue; // payer doesn't owe themselves
-
-      // The payer is owed this split amount
-      netMap[expense.paidBy] =
-          (netMap[expense.paidBy] ?? 0) + split.amountOwed;
-
-      // The split person owes this amount
-      netMap[split.userId] =
-          (netMap[split.userId] ?? 0) - split.amountOwed;
-    }
+  for (final r in rows.where((r) => r.groupId == groupId)) {
+    if (r.creditorId == currentUserId) netPaisa += toPaisa(r.amount);
+    if (r.debtorId == currentUserId) netPaisa -= toPaisa(r.amount);
+    debts.add(DebtModel(
+      fromUserId: r.debtorId,
+      fromUserName: r.debtorName,
+      toUserId: r.creditorId,
+      toUserName: r.creditorName,
+      amount: r.amount,
+      currency: currency,
+      groupId: groupId,
+      groupName: groupName,
+      pendingAmount: r.pendingAmount,
+    ));
   }
-
-  // Calculate current user's totals
-  for (final entry in netMap.entries) {
-    if (entry.key == currentUserId) {
-      if (entry.value > 0) {
-        youAreOwed = entry.value;
-      } else {
-        youOwe = entry.value.abs();
-      }
-    }
-  }
-
-  // Pairwise direct debts — every debt shown is a DIRECT relationship
-  // between two people (never rerouted through an uninvolved third
-  // person just to minimize transaction count, unlike a global
-  // "simplify debts" algorithm — this keeps the numbers intuitive and
-  // traceable to real expenses between those exact two people).
-  final debts = _pairwiseDebts(
-    expenses: expenses,
-    nameMap: nameMap,
-    groupId: groupId,
-    groupName: groupName,
-    currency: currency,
-  );
 
   return GroupBalanceSummary(
     groupId: groupId,
     groupName: groupName,
     currency: currency,
-    totalSpent: totalSpent,
-    youAreOwed: youAreOwed,
-    youOwe: youOwe,
+    totalSpent: fromPaisa(totalSpentPaisa),
+    youAreOwed: netPaisa > 0 ? fromPaisa(netPaisa) : 0,
+    youOwe: netPaisa < 0 ? fromPaisa(-netPaisa) : 0,
     debts: debts,
   );
 }
 
-// ── Pairwise direct debts (no global rerouting) ───────────────────────────────
-List<DebtModel> _pairwiseDebts({
-  required List expenses,
-  required Map<String, String> nameMap,
-  required String groupId,
-  required String groupName,
-  required String currency,
-}) {
-  // ledger[debtor][creditor] = total amount debtor owes creditor,
-  // accumulated across every expense between exactly these two people.
-  final ledger = <String, Map<String, double>>{};
+// ── Payment history of one group ──────────────────────────────────────────────
+// 'migrated' rows are hidden: they only carry over what was already settled
+// before payments were tracked (old payments still show, as 'legacy').
+final settlementsProvider =
+FutureProvider.family<List<SettlementModel>, String>((ref, groupId) async {
+  final db = SupabaseConfig.client;
+  final List<dynamic> rows = await db
+      .from('settlements')
+      .select('id, group_id, paid_by, paid_to, amount, currency, status, created_at')
+      .eq('group_id', groupId)
+      .neq('kind', 'migrated')
+      .order('created_at', ascending: false);
+  if (rows.isEmpty) return [];
 
-  void addOwed(String debtor, String creditor, double amount) {
-    ledger.putIfAbsent(debtor, () => {});
-    ledger[debtor]![creditor] = (ledger[debtor]![creditor] ?? 0) + amount;
-  }
+  final ids = <String>{
+    for (final r in rows) ...[r['paid_by'] as String, r['paid_to'] as String],
+  };
+  final List<dynamic> profiles = await db
+      .from('profiles')
+      .select('id, full_name')
+      .inFilter('id', ids.toList());
+  final names = <String, String>{
+    for (final p in profiles)
+      p['id'] as String: p['full_name'] as String? ?? 'Unknown',
+  };
 
-  for (final expense in expenses) {
-    final payer = expense.paidBy;
-    for (final split in expense.splits) {
-      if (split.isSettled) continue;
-      if (split.userId == payer) continue; // payer doesn't owe themselves
-      addOwed(split.userId, payer, split.amountOwed);
-    }
-  }
-
-  final debts = <DebtModel>[];
-  final seenPairs = <String>{};
-
-  for (final a in ledger.keys) {
-    for (final b in ledger[a]!.keys) {
-      final pairKey = ([a, b]..sort()).join('|');
-      if (seenPairs.contains(pairKey)) continue;
-      seenPairs.add(pairKey);
-
-      final aOwesB = ledger[a]?[b] ?? 0;
-      final bOwesA = ledger[b]?[a] ?? 0;
-      final net = aOwesB - bOwesA;
-
-      if (net.abs() < 0.01) continue; // fully settled between these two
-
-      final debtorId = net > 0 ? a : b;
-      final creditorId = net > 0 ? b : a;
-      final amount = double.parse(net.abs().toStringAsFixed(2));
-
-      debts.add(DebtModel(
-        fromUserId: debtorId,
-        fromUserName: nameMap[debtorId] ?? 'Unknown',
-        toUserId: creditorId,
-        toUserName: nameMap[creditorId] ?? 'Unknown',
-        amount: amount,
-        currency: currency,
-        groupId: groupId,
-        groupName: groupName,
-      ));
-    }
-  }
-
-  return debts;
-}
+  return rows
+      .map((r) => SettlementModel.fromMap(Map<String, dynamic>.from(r), names))
+      .toList();
+});
 
 // ── Settle Up Controller ──────────────────────────────────────────────────────
+// Each action is ONE database call; the database checks who may do it and
+// that the amount is never more than is still owed.
 final settleUpProvider =
 StateNotifierProvider<SettleUpController, AsyncValue<void>>(
       (ref) => SettleUpController(ref),
@@ -195,56 +153,58 @@ class SettleUpController extends StateNotifier<AsyncValue<void>> {
   final Ref _ref;
   SettleUpController(this._ref) : super(const AsyncValue.data(null));
 
-  Future<String?> settleUp({
+  // The debtor recording "I paid" → pending until the receiver confirms.
+  // The receiver recording "I got paid" → confirmed at once.
+  Future<String?> recordSettlement({
     required String groupId,
     required String paidBy,   // person paying
     required String paidTo,   // person receiving
     required double amount,
-    required String currency,
-  }) async {
+  }) {
+    return _run(groupId, () => SupabaseConfig.client.rpc('record_settlement', params: {
+      'p_group_id': groupId,
+      'p_paid_by': paidBy,
+      'p_paid_to': paidTo,
+      'p_amount': fromPaisa(toPaisa(amount)),
+    }));
+  }
+
+  Future<String?> confirmSettlement(String groupId, String settlementId) {
+    return _run(groupId, () => SupabaseConfig.client.rpc('confirm_settlement',
+        params: {'p_settlement_id': settlementId}));
+  }
+
+  Future<String?> cancelSettlement(String groupId, String settlementId) {
+    return _run(groupId, () => SupabaseConfig.client.rpc('cancel_settlement',
+        params: {'p_settlement_id': settlementId}));
+  }
+
+  // Returns null on success, or an error code (see settleErrorCode).
+  Future<String?> _run(String groupId, Future<dynamic> Function() call) async {
     state = const AsyncValue.loading();
     try {
-      final settlementId = const Uuid().v4();
-
-      // 1 — Insert settlement record
-      await SupabaseConfig.client.from('settlements').insert({
-        'id': settlementId,
-        'group_id': groupId,
-        'paid_by': paidBy,
-        'paid_to': paidTo,
-        'amount': amount,
-        'currency': currency,
-      });
-
-      // 2 — Mark relevant expense splits as settled
-      // Get all unsettled splits where paidBy owes paidTo
-      final List<dynamic> expenses = await SupabaseConfig.client
-          .from('expenses')
-          .select('id')
-          .eq('group_id', groupId)
-          .eq('paid_by', paidTo); // expenses paid by the creditor
-
-      if (expenses.isNotEmpty) {
-        final expenseIds =
-        expenses.map((e) => e['id'] as String).toList();
-
-        await SupabaseConfig.client
-            .from('expense_splits')
-            .update({'is_settled': true, 'settled_at': DateTime.now().toIso8601String()})
-            .eq('user_id', paidBy)
-            .eq('is_settled', false)
-            .inFilter('expense_id', expenseIds);
-      }
-
-      // 3 — Refresh expenses
-      _ref.invalidate(expensesProvider(groupId));
-
+      await call();
+      _ref.invalidate(myDebtsProvider);
+      _ref.invalidate(settlementsProvider(groupId));
       state = const AsyncValue.data(null);
       return null;
+    } on PostgrestException catch (e) {
+      print('=== SETTLE UP ERROR: ${e.message} ===');
+      state = const AsyncValue.data(null);
+      return settleErrorCode(e.message);
     } catch (e) {
       print('=== SETTLE UP ERROR: $e ===');
       state = const AsyncValue.data(null);
-      return 'Error: $e';
+      return 'UNKNOWN';
     }
   }
 }
+
+// ── Server error → code the UI can translate ─────────────────────────────────
+const _settleErrorCodes = {
+  'NOT_A_MEMBER', 'NOT_ALLOWED', 'INVALID_AMOUNT', 'NO_DEBT',
+  'AMOUNT_TOO_HIGH', 'NOT_FOUND', 'NOT_PENDING', 'HAS_UNSETTLED_DEBTS',
+};
+
+String settleErrorCode(String message) =>
+    _settleErrorCodes.contains(message) ? message : 'UNKNOWN';

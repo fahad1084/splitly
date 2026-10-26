@@ -430,7 +430,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settleUpInfo =>
-      'This will mark all related expense splits as settled between these two people.';
+      'You can pay part of it. Only the person receiving the money can confirm it.';
 
   @override
   String get confirmSettlement => 'Confirm Settlement';
@@ -1023,4 +1023,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupDeleted => 'Group deleted';
+
+  @override
+  String get payments => 'Payments';
+
+  @override
+  String get noPaymentsYet => 'No payments yet';
+
+  @override
+  String get iPaid => 'I paid';
+
+  @override
+  String get markAsReceived => 'Mark as received';
+
+  @override
+  String upToAmount(String amount) {
+    return 'Up to $amount';
+  }
+
+  @override
+  String settlePendingInfo(String name) {
+    return '$name will be asked to confirm. Until then the payment shows as pending.';
+  }
+
+  @override
+  String get settleReceiverInfo =>
+      'This counts right away, because you are the one receiving the money.';
+
+  @override
+  String get paymentWaitingConfirmation =>
+      'Payment recorded — waiting for confirmation';
+
+  @override
+  String get paymentConfirmed => 'Payment confirmed ✅';
+
+  @override
+  String get paymentCancelled => 'Payment cancelled';
+
+  @override
+  String get confirmPayment => 'Confirm';
+
+  @override
+  String get cancelPayment => 'Cancel payment';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusConfirmed => 'Confirmed';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
+  String get statusEarlier => 'Earlier';
+
+  @override
+  String amountPending(String amount) {
+    return '$amount pending';
+  }
+
+  @override
+  String paymentsWaitingForYou(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count payments are waiting for your confirmation',
+      one: '1 payment is waiting for your confirmation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get amountMoreThanOwed => 'That is more than is still owed';
+
+  @override
+  String get nothingOwedHere => 'Nothing is owed between you any more';
+
+  @override
+  String get cantLeaveYet => 'You can\'t leave yet';
+
+  @override
+  String get settleTheseFirst => 'Settle these first:';
+
+  @override
+  String youOweUser(String name, String amount) {
+    return 'You owe $name $amount';
+  }
+
+  @override
+  String userOwesYou(String name, String amount) {
+    return '$name owes you $amount';
+  }
 }

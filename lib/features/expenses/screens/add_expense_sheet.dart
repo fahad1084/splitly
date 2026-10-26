@@ -165,10 +165,12 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
     }
 
     if (_splitType == 'percentage') {
-      final total = _members
+      // 33.33 / 33.33 / 33.33 is accepted (see percentagesAddUp)
+      final percentages = _members
           .where((m) => m['included'] as bool)
-          .fold(0.0, (sum, m) => sum + (m['percentage'] as double));
-      if ((total - 100).abs() > 0.01) {
+          .map((m) => m['percentage'] as double)
+          .toList();
+      if (!percentagesAddUp(percentages)) {
         showErrorSnack(context, l10n.percentagesMustAddTo100);
         return;
       }

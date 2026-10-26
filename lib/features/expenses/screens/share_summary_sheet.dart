@@ -35,11 +35,7 @@ class _ShareSummarySheet extends ConsumerWidget {
 
     final expenses =
         ref.watch(expensesProvider(group.id)).value ?? [];
-    final summary = ref.watch(groupBalanceSummaryProvider({
-      'groupId': group.id,
-      'groupName': group.name,
-      'currency': group.currency,
-    }));
+    final summary = ref.watch(groupBalanceSummaryProvider(group.balanceKey));
 
     final currentUserId =
         SupabaseConfig.client.auth.currentUser?.id ?? '';

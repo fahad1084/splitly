@@ -899,7 +899,7 @@ abstract class AppLocalizations {
   /// No description provided for @settleUpInfo.
   ///
   /// In en, this message translates to:
-  /// **'This will mark all related expense splits as settled between these two people.'**
+  /// **'You can pay part of it. Only the person receiving the money can confirm it.'**
   String get settleUpInfo;
 
   /// No description provided for @confirmSettlement.
@@ -1999,6 +1999,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Group deleted'**
   String get groupDeleted;
+
+  /// No description provided for @payments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments'**
+  String get payments;
+
+  /// No description provided for @noPaymentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No payments yet'**
+  String get noPaymentsYet;
+
+  /// No description provided for @iPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'I paid'**
+  String get iPaid;
+
+  /// No description provided for @markAsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as received'**
+  String get markAsReceived;
+
+  /// No description provided for @upToAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {amount}'**
+  String upToAmount(String amount);
+
+  /// No description provided for @settlePendingInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will be asked to confirm. Until then the payment shows as pending.'**
+  String settlePendingInfo(String name);
+
+  /// No description provided for @settleReceiverInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'This counts right away, because you are the one receiving the money.'**
+  String get settleReceiverInfo;
+
+  /// No description provided for @paymentWaitingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment recorded — waiting for confirmation'**
+  String get paymentWaitingConfirmation;
+
+  /// No description provided for @paymentConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed ✅'**
+  String get paymentConfirmed;
+
+  /// No description provided for @paymentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled'**
+  String get paymentCancelled;
+
+  /// No description provided for @confirmPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirmPayment;
+
+  /// No description provided for @cancelPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel payment'**
+  String get cancelPayment;
+
+  /// No description provided for @statusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// No description provided for @statusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get statusConfirmed;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get statusCancelled;
+
+  /// No description provided for @statusEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get statusEarlier;
+
+  /// No description provided for @amountPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} pending'**
+  String amountPending(String amount);
+
+  /// No description provided for @paymentsWaitingForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 payment is waiting for your confirmation} other{{count} payments are waiting for your confirmation}}'**
+  String paymentsWaitingForYou(int count);
+
+  /// No description provided for @amountMoreThanOwed.
+  ///
+  /// In en, this message translates to:
+  /// **'That is more than is still owed'**
+  String get amountMoreThanOwed;
+
+  /// No description provided for @nothingOwedHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is owed between you any more'**
+  String get nothingOwedHere;
+
+  /// No description provided for @cantLeaveYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t leave yet'**
+  String get cantLeaveYet;
+
+  /// No description provided for @settleTheseFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Settle these first:'**
+  String get settleTheseFirst;
+
+  /// No description provided for @youOweUser.
+  ///
+  /// In en, this message translates to:
+  /// **'You owe {name} {amount}'**
+  String youOweUser(String name, String amount);
+
+  /// No description provided for @userOwesYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} owes you {amount}'**
+  String userOwesYou(String name, String amount);
 }
 
 class _AppLocalizationsDelegate

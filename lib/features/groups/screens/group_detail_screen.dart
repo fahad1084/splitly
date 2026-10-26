@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../balances/screens/settle_up_sheet.dart';
+import '../../balances/screens/settlement_history_screen.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/screens/add_expense_sheet.dart';
 import '../../expenses/screens/expense_detail_sheet.dart';
@@ -147,11 +148,7 @@ class GroupDetailScreen extends ConsumerWidget {
                   ref.watch(expensesProvider(group.id));
                   final currentUserId =
                       ref.watch(currentUserProvider)?.id ?? '';
-                  final summary = ref.watch(groupBalanceSummaryProvider({
-                    'groupId': group.id,
-                    'groupName': group.name,
-                    'currency': group.currency,
-                  }));
+                  final summary = ref.watch(groupBalanceSummaryProvider(group.balanceKey));
                   // Privacy-first: only show debts the current user is
                   // actually part of — not every debt in the whole group.
                   final myDebts = summary.debts
@@ -159,12 +156,53 @@ class GroupDetailScreen extends ConsumerWidget {
                   d.fromUserId == currentUserId ||
                       d.toUserId == currentUserId)
                       .toList();
-                  if (myDebts.isEmpty) return const SizedBox.shrink();
+                  // Payments other people recorded that only I can confirm
+                  final waitingForMe = (ref
+                      .watch(settlementsProvider(group.id))
+                      .value ??
+                      [])
+                      .where((s) => s.isPending && s.paidTo == currentUserId)
+                      .length;
+                  if (myDebts.isEmpty && waitingForMe == 0) {
+                    return const SizedBox.shrink();
+                  }
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (waitingForMe > 0)
+                          GestureDetector(
+                            onTap: () => _openPayments(context),
+                            child: Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.hourglass_top_rounded,
+                                      size: 18, color: AppColors.accentDark),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      l10n.paymentsWaitingForYou(waitingForMe),
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: headingColor),
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right_rounded,
+                                      color: AppColors.accentDark),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (myDebts.isNotEmpty) ...[
                         Text(l10n.whoOwesWho,
                             style: TextStyle(
                                 fontSize: 15,
@@ -196,19 +234,34 @@ class GroupDetailScreen extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                              Text(
-                                '${debt.currency} ${debt.amount.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.danger,
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${debt.currency} ${debt.amount.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.danger,
+                                    ),
+                                  ),
+                                  // Recorded but not confirmed yet — not
+                                  // subtracted from the amount above
+                                  if (debt.pendingAmount > 0)
+                                    Text(
+                                      l10n.amountPending(
+                                          '${debt.currency} ${debt.pendingAmount.toStringAsFixed(2)}'),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.accentDark,
+                                      ),
+                                    ),
+                                ],
                               ),
                               const SizedBox(width: 10),
-                              // Only the person RECEIVING the money can
-                              // mark it as paid (enforced by RLS too).
-                              if (debt.toUserId == currentUserId)
-                                GestureDetector(
+                              // Both people can record a payment: the
+                              // debtor's needs the receiver to confirm.
+                              GestureDetector(
                                   onTap: () => showSettleUpSheet(context, debt),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -229,6 +282,7 @@ class GroupDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         )),
+                        ],
                       ],
                     ),
                   );
@@ -436,6 +490,14 @@ class GroupDetailScreen extends ConsumerWidget {
     } else {
       showSuccessSnack(context, l10n.groupPhotoUpdated);
     }
+  }
+
+  void _openPayments(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => SettlementHistoryScreen(group: group)),
+    );
   }
 
   void _showInviteDialog(BuildContext context) {
@@ -687,6 +749,19 @@ class GroupDetailScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             _MenuTile(
+              icon: Icons.payments_outlined,
+              iconColor: AppColors.primary,
+              label: l10n.payments,
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _openPayments(context);
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
               icon: Icons.exit_to_app_rounded,
               iconColor: AppColors.danger,
               label: l10n.leaveGroup,
@@ -788,8 +863,10 @@ class GroupDetailScreen extends ConsumerWidget {
               Navigator.pop(dialogContext);
               final error = await ref.read(groupsProvider.notifier).leaveGroup(group.id);
               if (context.mounted) {
-                if (error != null) {
-                  showErrorSnack(context, error);
+                if (error == 'HAS_UNSETTLED_DEBTS') {
+                  _showCantLeave(context, ref);
+                } else if (error != null) {
+                  showErrorSnack(context, l10n.somethingWentWrong);
                 } else {
                   showSuccessSnack(context, l10n.youLeftGroup);
                   Navigator.pop(context);
@@ -797,6 +874,55 @@ class GroupDetailScreen extends ConsumerWidget {
               }
             },
             child: Text(l10n.leave, style: TextStyle(color: AppColors.danger)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Leaving is blocked while money is owed either way — show exactly what
+  // is still open (the same numbers the database used to block it).
+  void _showCantLeave(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+    final me = ref.read(currentUserProvider)?.id ?? '';
+    final summary = ref.read(groupBalanceSummaryProvider(group.balanceKey));
+    String money(double v) => '${group.currency} ${v.toStringAsFixed(2)}';
+    final lines = [
+      for (final d in summary.debts)
+        if (d.fromUserId == me)
+          l10n.youOweUser(d.toUserName, money(d.amount))
+        else if (d.toUserId == me)
+          l10n.userOwesYou(d.fromUserName, money(d.amount)),
+    ];
+    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(l10n.cantLeaveYet, style: TextStyle(color: textColor)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.settleTheseFirst, style: TextStyle(color: textColor)),
+            const SizedBox(height: 8),
+            for (final line in lines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• $line',
+                    style: TextStyle(
+                        color: textColor, fontWeight: FontWeight.w500)),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(MaterialLocalizations.of(context).okButtonLabel,
+                style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
@@ -867,11 +993,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     ref.watch(expensesProvider(group.id));
-    final summary = ref.watch(groupBalanceSummaryProvider({
-      'groupId': group.id,
-      'groupName': group.name,
-      'currency': group.currency,
-    }));
+    final summary = ref.watch(groupBalanceSummaryProvider(group.balanceKey));
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),

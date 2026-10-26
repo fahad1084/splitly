@@ -25,6 +25,10 @@ class GroupModel {
     this.memberCount,
   });
 
+  // Key for groupBalanceSummaryProvider (a record compares by value)
+  ({String id, String name, String currency}) get balanceKey =>
+      (id: id, name: name, currency: currency);
+
   factory GroupModel.fromMap(Map<String, dynamic> map) {
     return GroupModel(
       id: map['id'] as String,
