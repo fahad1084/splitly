@@ -950,7 +950,7 @@ class _MessageBubble extends ConsumerWidget {
 }
 
 // ── Image bubble (tap to view full screen) ────────────────────────────────────
-class _ImageBubble extends StatelessWidget {
+class _ImageBubble extends ConsumerWidget {
   final MessageModel message;
   final bool isMe;
   final bool dark;
@@ -958,12 +958,40 @@ class _ImageBubble extends StatelessWidget {
       {required this.message, required this.isMe, required this.dark});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Chat files are private — load them through a signed URL
+    final signedUrl =
+        ref.watch(attachmentSignedUrlProvider(message.attachmentUrl!));
+
+    const loading = SizedBox(
+      width: 160,
+      height: 160,
+      child: ColoredBox(
+        color: AppColors.primaryTint,
+        child: Center(
+          child: CircularProgressIndicator(
+              color: AppColors.primary, strokeWidth: 2),
+        ),
+      ),
+    );
+    const broken = SizedBox(
+      width: 160,
+      height: 160,
+      child: ColoredBox(
+        color: AppColors.primaryTint,
+        child: Icon(Icons.broken_image_outlined, color: AppColors.primary),
+      ),
+    );
+
+    final url = signedUrl.valueOrNull;
+
     return GestureDetector(
-      onTap: () => Navigator.push(
+      onTap: url == null
+          ? null
+          : () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => _FullScreenImage(url: message.attachmentUrl!),
+          builder: (_) => _FullScreenImage(url: url),
         ),
       ),
       child: ClipRRect(
@@ -973,26 +1001,15 @@ class _ImageBubble extends StatelessWidget {
             maxWidth: MediaQuery.of(context).size.width * 0.6,
             maxHeight: 220,
           ),
-          child: Image.network(
-            message.attachmentUrl!,
-            fit: BoxFit.cover,
-            loadingBuilder: (_, child, progress) => progress == null
-                ? child
-                : Container(
-              width: 160,
-              height: 160,
-              color: AppColors.primaryTint,
-              child: const Center(
-                child: CircularProgressIndicator(
-                    color: AppColors.primary, strokeWidth: 2),
-              ),
-            ),
-            errorBuilder: (_, __, ___) => Container(
-              width: 160,
-              height: 160,
-              color: AppColors.primaryTint,
-              child: const Icon(Icons.broken_image_outlined,
-                  color: AppColors.primary),
+          child: signedUrl.when(
+            loading: () => loading,
+            error: (_, __) => broken,
+            data: (url) => Image.network(
+              url,
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, progress) =>
+              progress == null ? child : loading,
+              errorBuilder: (_, __, ___) => broken,
             ),
           ),
         ),
@@ -1063,8 +1080,16 @@ class _AudioBubbleState extends State<_AudioBubble> {
       await _player.pause();
       setState(() => _isPlaying = false);
     } else {
-      await _player.play(UrlSource(widget.message.attachmentUrl!));
-      setState(() => _isPlaying = true);
+      final l10n = AppLocalizations.of(context)!;
+      try {
+        // Private bucket — get a fresh signed URL each time we play
+        final url =
+        await createChatAttachmentUrl(widget.message.attachmentUrl!);
+        await _player.play(UrlSource(url));
+        if (mounted) setState(() => _isPlaying = true);
+      } catch (_) {
+        if (mounted) showErrorSnack(context, l10n.somethingWentWrong);
+      }
     }
   }
 

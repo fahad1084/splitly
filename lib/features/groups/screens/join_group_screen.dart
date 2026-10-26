@@ -21,41 +21,28 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
     try {
       final userId =
           SupabaseConfig.client.auth.currentUser?.id;
-      if (userId == null) return 'Not signed in';
+      if (userId == null) {
+        state = const AsyncValue.data(null);
+        return 'Not signed in';
+      }
 
-      // Find group by invite code — via RPC (RLS no longer allows a broad
-      // table scan here for security; the RPC only returns a preview for
-      // an exact invite-code match).
-      final List<dynamic> groups = await SupabaseConfig.client
-          .rpc('get_group_preview_by_invite_code',
+      // One RPC checks the invite code and adds us as a 'member' — direct
+      // inserts into group_members are blocked by RLS, so the code can't be
+      // skipped. No row back = invalid code.
+      final List<dynamic> rows = await SupabaseConfig.client
+          .rpc('join_group_by_code',
           params: {'p_invite_code': inviteCode.trim().toLowerCase()});
 
-      if (groups.isEmpty) {
+      if (rows.isEmpty) {
         state = const AsyncValue.data(null);
         return 'INVALID_CODE'; // handled in UI with l10n
       }
 
-      final groupId = groups.first['id'] as String;
-      final groupName = groups.first['name'] as String;
-
-      // Check if already a member
-      final List<dynamic> existing = await SupabaseConfig.client
-          .from('group_members')
-          .select('id')
-          .eq('group_id', groupId)
-          .eq('user_id', userId);
-
-      if (existing.isNotEmpty) {
+      final groupName = rows.first['group_name'] as String;
+      if (rows.first['already_member'] == true) {
         state = const AsyncValue.data(null);
         return 'ALREADY_MEMBER::$groupName'; // handled in UI with l10n
       }
-
-      // Join the group
-      await SupabaseConfig.client.from('group_members').insert({
-        'group_id': groupId,
-        'user_id': userId,
-        'role': 'member',
-      });
 
       // Refresh groups list
       await _ref.read(groupsProvider.notifier).refresh();

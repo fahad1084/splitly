@@ -204,8 +204,9 @@ class GroupDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              if (debt.fromUserId == currentUserId ||
-                                  debt.toUserId == currentUserId)
+                              // Only the person RECEIVING the money can
+                              // mark it as paid (enforced by RLS too).
+                              if (debt.toUserId == currentUserId)
                                 GestureDetector(
                                   onTap: () => showSettleUpSheet(context, debt),
                                   child: Container(

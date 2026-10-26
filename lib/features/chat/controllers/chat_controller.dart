@@ -232,16 +232,14 @@ class ChatController
           .from('chat-attachments')
           .upload(path, imageFile);
 
-      final url = SupabaseConfig.client.storage
-          .from('chat-attachments')
-          .getPublicUrl(path);
-
+      // The bucket is private: store the storage PATH, and show it later
+      // through a signed URL (see attachmentSignedUrlProvider).
       await SupabaseConfig.client.from('messages').insert({
         'id': const Uuid().v4(),
         'group_id': _groupId,
         'sender_id': userId,
         'content': caption,          // ✅ caption goes here now
-        'attachment_url': url,
+        'attachment_url': path,
         'attachment_type': 'image',
       });
       return null;
@@ -265,16 +263,12 @@ class ChatController
           .from('chat-attachments')
           .upload(path, audioFile);
 
-      final url = SupabaseConfig.client.storage
-          .from('chat-attachments')
-          .getPublicUrl(path);
-
       await SupabaseConfig.client.from('messages').insert({
         'id': const Uuid().v4(),
         'group_id': _groupId,
         'sender_id': userId,
         'content': '',
-        'attachment_url': url,
+        'attachment_url': path, // private bucket — see sendImage
         'attachment_type': 'audio',
         'audio_duration': durationSeconds,
       });
@@ -305,4 +299,31 @@ final typingUsersProvider = StreamProvider.family<List<String>, String>((ref, gr
         .map((r) => r['user_name'] as String? ?? 'Someone')
         .toList();
   });
+});
+// ── Signed URL for a chat attachment (private bucket) ───────────────────────
+// messages.attachment_url holds either a storage path ("{groupId}/{file}",
+// new messages) or an old public URL (messages sent before the bucket became
+// private). Both are turned into the storage path, then into a signed URL
+// that only works for group members and expires after 1 hour.
+const _chatAttachmentsBucket = 'chat-attachments';
+const _signedUrlExpirySeconds = 60 * 60;
+
+String chatAttachmentPath(String stored) {
+  const marker = '/$_chatAttachmentsBucket/';
+  final i = stored.indexOf(marker);
+  if (!stored.startsWith('http') || i == -1) return stored;
+  return Uri.decodeComponent(stored.substring(i + marker.length).split('?').first);
+}
+
+Future<String> createChatAttachmentUrl(String stored) {
+  return SupabaseConfig.client.storage
+      .from(_chatAttachmentsBucket)
+      .createSignedUrl(chatAttachmentPath(stored), _signedUrlExpirySeconds);
+}
+
+// autoDispose: a signed URL expires, so don't keep it after the bubble that
+// shows it is gone — the next time it is shown, a fresh URL is created.
+final attachmentSignedUrlProvider =
+FutureProvider.autoDispose.family<String, String>((ref, stored) {
+  return createChatAttachmentUrl(stored);
 });

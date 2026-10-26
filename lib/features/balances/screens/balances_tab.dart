@@ -392,7 +392,9 @@ class _DebtTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              if (iAmPaying || iAmReceiving)
+              // Only the person RECEIVING the money can mark it as paid
+              // (the database enforces the same rule).
+              if (iAmReceiving)
                 GestureDetector(
                   onTap: onSettle,
                   child: Container(
