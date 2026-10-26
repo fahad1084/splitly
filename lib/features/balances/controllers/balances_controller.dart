@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../balances/models/balance_model.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The balance math lives in the DATABASE (group_debts() in
@@ -189,11 +190,11 @@ class SettleUpController extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       return null;
     } on PostgrestException catch (e) {
-      print('=== SETTLE UP ERROR: ${e.message} ===');
+      logDebug('=== SETTLE UP ERROR: ${e.message} ===');
       state = const AsyncValue.data(null);
       return settleErrorCode(e.message);
     } catch (e) {
-      print('=== SETTLE UP ERROR: $e ===');
+      logDebug('=== SETTLE UP ERROR: $e ===');
       state = const AsyncValue.data(null);
       return 'UNKNOWN';
     }

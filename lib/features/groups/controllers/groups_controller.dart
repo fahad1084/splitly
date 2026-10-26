@@ -5,6 +5,7 @@ import '../../../core/utils/string_utils.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../models/group_model.dart';
 import 'dart:io';
+import 'package:splitly/core/utils/app_logger.dart';
 
 final groupsProvider =
 AsyncNotifierProvider<GroupsController, List<GroupModel>>(
@@ -15,18 +16,15 @@ AsyncNotifierProvider<GroupsController, List<GroupModel>>(
 final unreadCountsProvider =
 FutureProvider<Map<String, int>>((ref) async {
   try {
-    print('=== FETCHING UNREAD COUNTS ===');
     final List<dynamic> rows =
     await SupabaseConfig.client.rpc('get_unread_counts');
-    print('=== UNREAD COUNTS RAW ROWS: $rows ===');
     final result = {
       for (final r in rows)
         r['group_id'] as String: (r['unread_count'] as num).toInt(),
     };
-    print('=== UNREAD COUNTS RESULT: $result ===');
     return result;
   } catch (e) {
-    print('=== FETCH UNREAD COUNTS ERROR: $e ===');
+    logDebug('=== FETCH UNREAD COUNTS ERROR: $e ===');
     return {};
   }
 });
@@ -60,7 +58,7 @@ FutureProvider<List<GroupModel>>((ref) async {
     }))
         .toList();
   } catch (e) {
-    print('=== FETCH ARCHIVED GROUPS ERROR: $e ===');
+    logDebug('=== FETCH ARCHIVED GROUPS ERROR: $e ===');
     return [];
   }
 });
@@ -75,7 +73,6 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
 
   Future<List<GroupModel>> _fetchGroups() async {
     final userId = _db.auth.currentUser?.id;
-    print('=== FETCH GROUPS userId=$userId ===');
     if (userId == null) return [];
 
     try {
@@ -85,7 +82,6 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           .select('group_id')
           .eq('user_id', userId);
 
-      print('=== memberRows=$memberRows ===');
 
       if (memberRows.isEmpty) return [];
 
@@ -100,7 +96,6 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           .eq('is_archived', false)
           .order('created_at', ascending: false);
 
-      print('=== groupRows=$groupRows ===');
 
       // Count members per group
       final List<dynamic> countRows = await _db
@@ -121,11 +116,10 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         });
       }).toList();
 
-      print('=== FETCH GROUPS result count=${result.length} ===');
       return result;
     } catch (e, st) {
-      print('=== FETCH GROUPS ERROR: $e ===');
-      print('=== STACK: $st ===');
+      logDebug('=== FETCH GROUPS ERROR: $e ===');
+      logDebug('=== STACK: $st ===');
       rethrow;
     }
   }
@@ -136,7 +130,6 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     required String currency,
   }) async {
     final userId = _db.auth.currentUser?.id;
-    print('=== CREATE GROUP userId=$userId ===');
     if (userId == null) return 'Not signed in';
 
     try {
@@ -148,13 +141,12 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         (description?.trim().isEmpty ?? true) ? null : description?.trim(),
         'p_currency': currency,
       });
-      print('=== CREATE GROUP: success ===');
 
       state = AsyncValue.data(await _fetchGroups());
       return null;
     } catch (e, st) {
-      print('=== CREATE GROUP ERROR: $e ===');
-      print('=== STACK: $st ===');
+      logDebug('=== CREATE GROUP ERROR: $e ===');
+      logDebug('=== STACK: $st ===');
       return 'Error: $e';
     }
   }
@@ -181,7 +173,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           params: {'p_group_id': groupId});
       return null;
     } catch (e) {
-      print('=== DELETE GROUP ERROR: $e ===');
+      logDebug('=== DELETE GROUP ERROR: $e ===');
       return 'Error: $e';
     }
   }
@@ -206,7 +198,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           .eq('user_id', userId);
       return null;
     } catch (e) {
-      print('=== REMOVE MEMBER ERROR: $e ===');
+      logDebug('=== REMOVE MEMBER ERROR: $e ===');
       return 'Failed to remove member: $e';
     }
   }
@@ -223,10 +215,10 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       await refresh();
       return null;
     } on PostgrestException catch (e) {
-      print('=== LEAVE GROUP ERROR: ${e.message} ===');
+      logDebug('=== LEAVE GROUP ERROR: ${e.message} ===');
       return settleErrorCode(e.message);
     } catch (e) {
-      print('=== LEAVE GROUP ERROR: $e ===');
+      logDebug('=== LEAVE GROUP ERROR: $e ===');
       return 'UNKNOWN';
     }
   }
@@ -242,7 +234,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           .eq('user_id', userId);
       return null;
     } catch (e) {
-      print('=== SET MEMBER ROLE ERROR: $e ===');
+      logDebug('=== SET MEMBER ROLE ERROR: $e ===');
       return 'Failed to update role: $e';
     }
   }
@@ -287,7 +279,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       state = AsyncValue.data(await _fetchGroups());
       return null;
     } catch (e) {
-      print('=== UPDATE GROUP PHOTO ERROR: $e ===');
+      logDebug('=== UPDATE GROUP PHOTO ERROR: $e ===');
       if (uploadedPath != null) {
         try {
           await _db.storage.from(bucket).remove([uploadedPath]);
@@ -318,7 +310,7 @@ FutureProvider.family<GroupModel?, String>((ref, groupId) async {
       'member_count': countResp.length,
     });
   } catch (e) {
-    print('=== groupDetailProvider ERROR: $e ===');
+    logDebug('=== groupDetailProvider ERROR: $e ===');
     rethrow;
   }
 });
@@ -336,7 +328,7 @@ FutureProvider.family<List<Map<String, dynamic>>, String>(
 
         return resp.map((r) => Map<String, dynamic>.from(r)).toList();
       } catch (e) {
-        print('=== groupMembersProvider ERROR: $e ===');
+        logDebug('=== groupMembersProvider ERROR: $e ===');
         rethrow;
       }
     });

@@ -6,6 +6,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/groups_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Provider to join a group ──────────────────────────────────────────────────
 final joinGroupProvider =
@@ -51,7 +52,7 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       return null; // success
     } catch (e) {
-      print('=== JOIN GROUP ERROR: $e ===');
+      logDebug('=== JOIN GROUP ERROR: $e ===');
       state = const AsyncValue.data(null);
       return 'Error: $e';
     }

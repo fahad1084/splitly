@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:splitly/core/utils/app_logger.dart';
 
 const _kPinKey = 'splitly_app_pin';
 const _kLockEnabledKey = 'splitly_lock_enabled';
@@ -77,7 +77,7 @@ class AppLockController extends StateNotifier<bool> {
         ),
       );
     } catch (e) {
-      if (kDebugMode) print('Biometric auth error: $e');
+      logDebug('Biometric auth error: $e');
       return false;
     }
   }

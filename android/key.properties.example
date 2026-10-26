@@ -1,0 +1,10 @@
+# Copy this file to android/key.properties and fill in your own values.
+# android/key.properties is git-ignored — NEVER commit it or the .jks file.
+#
+# storeFile: full path to your upload keystore, OUTSIDE the project folder.
+# On Windows use forward slashes, e.g. C:/Users/you/keys/splitly-upload.jks
+
+storePassword=your-keystore-password
+keyPassword=your-key-password
+keyAlias=upload
+storeFile=C:/Users/you/keys/splitly-upload.jks

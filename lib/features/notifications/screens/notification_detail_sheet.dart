@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../groups/models/group_model.dart';
 import '../../groups/screens/group_detail_screen.dart';
 import '../controllers/notifications_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 Future<void> showNotificationDetailSheet(
     BuildContext context, AppNotification notification) async {
@@ -96,7 +97,7 @@ class _NotificationDetailSheetState extends State<_NotificationDetailSheet> {
         });
       }
     } catch (e) {
-      print('=== NOTIFICATION DETAIL FETCH ERROR: $e ===');
+      logDebug('=== NOTIFICATION DETAIL FETCH ERROR: $e ===');
       if (mounted) {
         setState(() {
           _loading = false;

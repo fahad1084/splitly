@@ -1,4 +1,5 @@
 import 'package:home_widget/home_widget.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 class HomeWidgetService {
   static Future<void> updateBalance({
@@ -16,7 +17,7 @@ class HomeWidgetService {
         androidName: 'SplitlyWidgetProvider',
       );
     } catch (e) {
-      print('=== HOME WIDGET UPDATE ERROR: $e ===');
+      logDebug('=== HOME WIDGET UPDATE ERROR: $e ===');
     }
   }
 }

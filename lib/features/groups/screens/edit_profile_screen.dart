@@ -11,6 +11,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/groups_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 const _avatarColors = [
   '#0F766E', '#134E4A', '#14B8A6',
@@ -155,7 +156,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ref.invalidate(groupMembersProvider);
       }
     } catch (e) {
-      print('=== AVATAR UPLOAD ERROR: $e ===');
+      logDebug('=== AVATAR UPLOAD ERROR: $e ===');
       if (uploadedPath != null) {
         try {
           await storage.remove([uploadedPath]);

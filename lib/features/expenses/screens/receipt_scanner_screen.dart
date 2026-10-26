@@ -54,14 +54,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
       final recognized = await textRecognizer.processImage(inputImage);
       _rawText = recognized.text;
 
-      print('##### OCR LINES #####');
-      final splitLines = recognized.text.split('\n');
-      for (int i = 0; i < splitLines.length; i++) {
-        print('LINE[$i]: ${splitLines[i]}');
-      }
-
       final found = _findTotal(recognized.text);
-      print('##### FINAL DETECTED AMOUNT: $found #####');
 
       setState(() {
         if (found != null) _amountCtrl.text = found.toStringAsFixed(2);

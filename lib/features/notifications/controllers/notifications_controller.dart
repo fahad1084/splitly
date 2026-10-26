@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../auth/controllers/auth_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Notification model ──────────────────────────────────────────────────────
 class AppNotification {
@@ -58,7 +59,7 @@ FutureProvider<List<AppNotification>>((ref) async {
         .map((r) => AppNotification.fromMap(Map<String, dynamic>.from(r)))
         .toList();
   } catch (e) {
-    print('=== FETCH NOTIFICATIONS ERROR: $e ===');
+    logDebug('=== FETCH NOTIFICATIONS ERROR: $e ===');
     return [];
   }
 });
@@ -89,7 +90,7 @@ FutureProvider<Map<String, bool>>((ref) async {
       'notify_debt_reminders': data?['notify_debt_reminders'] as bool? ?? true,
     };
   } catch (e) {
-    print('=== FETCH NOTIFICATION PREFS ERROR: $e ===');
+    logDebug('=== FETCH NOTIFICATION PREFS ERROR: $e ===');
     return {};
   }
 });
@@ -102,7 +103,7 @@ class NotificationsController {
           .update({'read_at': DateTime.now().toUtc().toIso8601String()})
           .eq('id', notificationId);
     } catch (e) {
-      print('=== MARK NOTIFICATION READ ERROR: $e ===');
+      logDebug('=== MARK NOTIFICATION READ ERROR: $e ===');
     }
   }
 
@@ -114,7 +115,7 @@ class NotificationsController {
           .eq('user_id', userId)
           .isFilter('read_at', null);
     } catch (e) {
-      print('=== MARK ALL NOTIFICATIONS READ ERROR: $e ===');
+      logDebug('=== MARK ALL NOTIFICATIONS READ ERROR: $e ===');
     }
   }
 
@@ -126,7 +127,7 @@ class NotificationsController {
           .from('profiles')
           .update({column: value}).eq('id', userId);
     } catch (e) {
-      print('=== UPDATE NOTIFICATION PREF ERROR: $e ===');
+      logDebug('=== UPDATE NOTIFICATION PREF ERROR: $e ===');
     }
   }
 }

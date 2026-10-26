@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../notifications/controllers/fcm_service.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Auth state stream ─────────────────────────────────────────────────────────
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -28,7 +29,7 @@ FutureProvider<Map<String, dynamic>?>((ref) async {
         .maybeSingle();
     return data;
   } catch (e) {
-    print('=== FETCH MY PROFILE ERROR: $e ===');
+    logDebug('=== FETCH MY PROFILE ERROR: $e ===');
     return null;
   }
 });
@@ -180,13 +181,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       return null;
     } on AuthException catch (e) {
       state = const AsyncValue.data(null);
-      // ignore: avoid_print
-      print('=== GOOGLE SIGN-IN AuthException: ${e.message} ===');
+      logDebug('=== GOOGLE SIGN-IN AuthException: ${e.message} ===');
       return e.message;
     } catch (e) {
       state = const AsyncValue.data(null);
-      // ignore: avoid_print
-      print('=== GOOGLE SIGN-IN ERROR: $e ===');
+      logDebug('=== GOOGLE SIGN-IN ERROR: $e ===');
       return 'Google sign in failed. Please try again.';
     }
   }
@@ -237,13 +236,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       return null;
     } on PostgrestException catch (e) {
       state = const AsyncValue.data(null);
-      // ignore: avoid_print
-      print('=== DELETE ACCOUNT ERROR: ${e.message} ===');
+      logDebug('=== DELETE ACCOUNT ERROR: ${e.message} ===');
       return 'Something went wrong. Please try again.';
     } catch (e) {
       state = const AsyncValue.data(null);
-      // ignore: avoid_print
-      print('=== DELETE ACCOUNT ERROR: $e ===');
+      logDebug('=== DELETE ACCOUNT ERROR: $e ===');
       return 'Something went wrong. Please try again.';
     }
   }

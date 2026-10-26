@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../core/utils/string_utils.dart';
 import '../models/message_model.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Messages provider per group ───────────────────────────────────────────────
 final messagesProvider =
@@ -44,7 +45,7 @@ class ChatController
         'last_read_at': DateTime.now().toUtc().toIso8601String(),
       });
     } catch (e) {
-      print('=== MARK AS READ ERROR: $e ===');
+      logDebug('=== MARK AS READ ERROR: $e ===');
     }
   }
 
@@ -106,7 +107,7 @@ class ChatController
         });
       }).toList();
     } catch (e) {
-      print('=== FETCH MESSAGES ERROR: $e ===');
+      logDebug('=== FETCH MESSAGES ERROR: $e ===');
       return [];
     }
   }
@@ -150,7 +151,7 @@ class ChatController
             state = AsyncValue.data([...current, message]);
           }
         } catch (e) {
-          print('=== REALTIME MESSAGE ERROR: $e ===');
+          logDebug('=== REALTIME MESSAGE ERROR: $e ===');
         }
       },
     )
@@ -174,7 +175,7 @@ class ChatController
       });
       return null;
     } catch (e) {
-      print('=== SEND MESSAGE ERROR: $e ===');
+      logDebug('=== SEND MESSAGE ERROR: $e ===');
       return 'Failed to send message';
     }
   }
@@ -250,7 +251,7 @@ class ChatController
       }
       return null;
     } catch (e) {
-      print('=== SEND IMAGE ERROR: $e ===');
+      logDebug('=== SEND IMAGE ERROR: $e ===');
       return 'Failed to send image';
     }
   }
@@ -285,7 +286,7 @@ class ChatController
       }
       return null;
     } catch (e) {
-      print('=== SEND AUDIO ERROR: $e ===');
+      logDebug('=== SEND AUDIO ERROR: $e ===');
       return 'Failed to send voice message';
     }
   }

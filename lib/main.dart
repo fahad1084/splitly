@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -37,6 +39,20 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // ── Crash reporting (Firebase Crashlytics) ─────────────────────────────────
+  // Off in debug builds so testing doesn't fill the dashboard. Reports
+  // contain the stack trace + device/OS/app version — no names or messages.
+  await FirebaseCrashlytics.instance
+      .setCrashlyticsCollectionEnabled(!kDebugMode);
+  // Errors inside Flutter widgets/frameworks
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  // Everything else (async errors that nothing caught)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await SupabaseConfig.initialize();
   await FCMService().initialize();

@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../firebase_options.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Background handler (must be top-level) ────────────────────────────────────
 @pragma('vm:entry-point')
@@ -34,7 +35,7 @@ Future<Uint8List?> _downloadAvatarBytes(String? url) async {
     client.close();
     return Uint8List.fromList(bytes);
   } catch (e) {
-    print('=== AVATAR DOWNLOAD ERROR: $e ===');
+    logDebug('=== AVATAR DOWNLOAD ERROR: $e ===');
     return null;
   }
 }
@@ -76,7 +77,7 @@ class FCMService {
       badge: true,
       sound: true,
     );
-    print('FCM Permission: ${settings.authorizationStatus}');
+    logDebug('FCM Permission: ${settings.authorizationStatus}');
   }
 
   // ── Setup local notifications ─────────────────────────────────────────────
@@ -110,7 +111,6 @@ class FCMService {
 
     // App opened FROM notification
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification opened app: ${message.data}');
       // TODO: navigate to relevant screen based on message.data
     });
   }
@@ -164,10 +164,10 @@ class FCMService {
       final token = await _messaging.getToken();
       if (token != null) {
         await _saveToken(token);
-        print('FCM Token saved to Supabase');
+        logDebug('FCM Token saved to Supabase');
       }
     } catch (e) {
-      print('FCM token save error: $e');
+      logDebug('FCM token save error: $e');
     }
   }
 
@@ -188,7 +188,7 @@ class FCMService {
           .eq('id', userId)
           .eq('fcm_token', token);
     } catch (e) {
-      print('Clear token error: $e');
+      logDebug('Clear token error: $e');
     }
   }
 
@@ -201,7 +201,7 @@ class FCMService {
     try {
       await _messaging.deleteToken();
     } catch (e) {
-      print('Delete device token error: $e');
+      logDebug('Delete device token error: $e');
     }
   }
 
@@ -215,7 +215,7 @@ class FCMService {
           .update({'fcm_token': token})
           .eq('id', userId);
     } catch (e) {
-      print('Save token error: $e');
+      logDebug('Save token error: $e');
     }
   }
 

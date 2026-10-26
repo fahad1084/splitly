@@ -4,6 +4,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/groups_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // Supported currencies for Splitly
 const _currencies = [
@@ -75,7 +76,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
 
     if (error != null) {
       showErrorSnack(context, error);
-      print('=== CREATE GROUP SHEET ERROR: $error ===');
+      logDebug('=== CREATE GROUP SHEET ERROR: $error ===');
     } else {
       showSuccessSnack(context, l10n.groupCreated);
       Navigator.pop(context);

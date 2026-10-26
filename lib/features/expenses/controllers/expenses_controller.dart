@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../models/expense_model.dart';
 import '../../balances/controllers/balances_controller.dart';
+import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Expenses per group ────────────────────────────────────────────────────────
 final expensesProvider =
@@ -63,7 +64,7 @@ class ExpensesController
         });
       }).toList();
     } catch (e) {
-      print('=== FETCH EXPENSES ERROR: $e ===');
+      logDebug('=== FETCH EXPENSES ERROR: $e ===');
       rethrow;
     }
   }
@@ -109,10 +110,10 @@ class ExpensesController
       state = AsyncValue.data(await _fetchExpenses());
       return null;
     } on PostgrestException catch (e) {
-      print('=== ADD EXPENSE ERROR: ${e.message} ===');
+      logDebug('=== ADD EXPENSE ERROR: ${e.message} ===');
       return expenseErrorCode(e.message);
     } catch (e) {
-      print('=== ADD EXPENSE ERROR: $e ===');
+      logDebug('=== ADD EXPENSE ERROR: $e ===');
       return 'UNKNOWN';
     }
   }
@@ -128,7 +129,7 @@ class ExpensesController
       state = AsyncValue.data(await _fetchExpenses());
       return null;
     } catch (e) {
-      print('=== DELETE EXPENSE ERROR: $e ===');
+      logDebug('=== DELETE EXPENSE ERROR: $e ===');
       // Re-sync so a swiped-away expense comes back if the delete failed
       try {
         state = AsyncValue.data(await _fetchExpenses());
