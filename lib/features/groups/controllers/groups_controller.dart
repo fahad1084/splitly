@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 import '../../../config/supabase/supabase_config.dart';
+import '../../../core/utils/string_utils.dart';
 import '../models/group_model.dart';
 import 'dart:io';
 
@@ -105,29 +105,13 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     if (userId == null) return 'Not signed in';
 
     try {
-      // Generate UUID in Flutter — no need to fetch it back after insert
-      // This avoids the SELECT policy blocking the fetch
-      final groupId = const Uuid().v4();
-      print('=== CREATE GROUP: generated groupId=$groupId ===');
-
-      // Step 1 — insert group with our own UUID
-      print('=== CREATE GROUP: inserting into groups table ===');
-      await _db.from('groups').insert({
-        'id': groupId,
-        'name': name.trim(),
-        'description':
+      // ONE call: the group and the creator's admin membership are saved
+      // in a single database transaction — never a group with no members.
+      await _db.rpc('create_group', params: {
+        'p_name': name.trim(),
+        'p_description':
         (description?.trim().isEmpty ?? true) ? null : description?.trim(),
-        'currency': currency,
-        'created_by': userId,
-      });
-      print('=== CREATE GROUP: group inserted ===');
-
-      // Step 2 — add creator as admin member
-      print('=== CREATE GROUP: inserting into group_members table ===');
-      await _db.from('group_members').insert({
-        'group_id': groupId,
-        'user_id': userId,
-        'role': 'admin',
+        'p_currency': currency,
       });
       print('=== CREATE GROUP: success ===');
 
@@ -207,23 +191,51 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
   }
 
   // ── Update group photo ───────────────────────────────────────────────────
+  // Each upload gets a NEW file name, so if saving the row fails we can
+  // delete just the new file without touching the photo the group already
+  // has. After success the old file is removed (best effort).
   Future<String?> updateGroupPhoto(String groupId, File imageFile) async {
+    const bucket = 'group-photos';
+    String? uploadedPath;
     try {
+      final current = await _db
+          .from('groups')
+          .select('photo_url')
+          .eq('id', groupId)
+          .maybeSingle();
+      final oldPath =
+      storagePathFromUrl(current?['photo_url'] as String?, bucket);
+
       final ext = imageFile.path.split('.').last;
-      final path = '$groupId/photo.$ext';
+      final path =
+          '$groupId/photo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      await _db.storage.from(bucket).upload(path, imageFile);
+      uploadedPath = path;
 
-      await _db.storage
-          .from('group-photos')
-          .upload(path, imageFile, fileOptions: const FileOptions(upsert: true));
+      final url = _db.storage.from(bucket).getPublicUrl(path);
+      // .select() so we can tell "0 rows updated" (not allowed) from success
+      final List<dynamic> updated = await _db
+          .from('groups')
+          .update({'photo_url': url})
+          .eq('id', groupId)
+          .select('id');
+      if (updated.isEmpty) throw Exception('Group photo not updated');
 
-      final url = _db.storage.from('group-photos').getPublicUrl(path);
-      final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+      if (oldPath != null && oldPath != path) {
+        try {
+          await _db.storage.from(bucket).remove([oldPath]);
+        } catch (_) {}
+      }
 
-      await _db.from('groups').update({'photo_url': bustedUrl}).eq('id', groupId);
       state = AsyncValue.data(await _fetchGroups());
       return null;
     } catch (e) {
       print('=== UPDATE GROUP PHOTO ERROR: $e ===');
+      if (uploadedPath != null) {
+        try {
+          await _db.storage.from(bucket).remove([uploadedPath]);
+        } catch (_) {}
+      }
       return 'Failed to update photo: $e';
     }
   }

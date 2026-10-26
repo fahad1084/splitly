@@ -307,10 +307,15 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                   ),
                 );
                 if (confirm == true && context.mounted) {
-                  await ref
+                  final error = await ref
                       .read(expensesProvider(group.id).notifier)
                       .deleteExpense(expense.id);
-                  if (context.mounted) Navigator.pop(context);
+                  if (!context.mounted) return;
+                  if (error != null) {
+                    showErrorSnack(context, l10n.somethingWentWrong);
+                  } else {
+                    Navigator.pop(context);
+                  }
                 }
               },
             ),

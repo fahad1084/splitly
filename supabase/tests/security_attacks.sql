@@ -72,11 +72,13 @@ begin; set local role authenticated; select set_config('request.jwt.claims', '{"
 update public.group_members set role = 'owner' where group_id = :G and user_id = :B;
 rollback;
 
-\echo '== OK-3 A adds expense 100 paid by A, split A 50 / B 50 (expect INSERT 0 1, INSERT 0 2)'
+\echo '== OK-3 A adds expense 100 paid by A, split A 50 / B 50 via add_expense (expect an id)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
-insert into public.expenses (id, group_id, paid_by, title, amount) values (:E, :G, :A, 'Dinner', 100);
-insert into public.expense_splits (expense_id, user_id, amount_owed) values (:E, :A, 50), (:E, :B, 50);
+select public.add_expense(:G, :A, 'Dinner', 100,
+  jsonb_build_array(jsonb_build_object('user_id', :A, 'amount_owed', 50),
+                    jsonb_build_object('user_id', :B, 'amount_owed', 50))) as eid \gset
 commit;
+\set E '''' :eid ''''
 
 \echo '== ATTACK-3a B (debtor) marks own split settled (expect UPDATE 0)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
@@ -99,22 +101,30 @@ update public.expense_splits set is_settled = true, settled_at = now() where exp
 insert into public.settlements (group_id, paid_by, paid_to, amount) values (:G, :B, :A, 50);
 rollback;
 
-\echo '== ATTACK-4a B adds expense paid by outsider C (expect ERROR row-level security)'
+\echo '== ATTACK-4a B adds expense paid by outsider C (expect ERROR PAYER_NOT_MEMBER)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
-insert into public.expenses (group_id, paid_by, title, amount) values (:G, :C, 'Fake', 100);
+select public.add_expense(:G, :C, 'Fake', 100, jsonb_build_array(jsonb_build_object('user_id', :B, 'amount_owed', 100)));
 rollback;
 
-\echo '== ATTACK-4b B adds negative expense (expect ERROR check constraint expenses_amount_positive)'
+\echo '== ATTACK-4b B adds negative expense (expect ERROR INVALID_AMOUNT)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
-insert into public.expenses (group_id, paid_by, title, amount) values (:G, :B, 'Neg', -50);
+select public.add_expense(:G, :B, 'Neg', -50, jsonb_build_array(jsonb_build_object('user_id', :B, 'amount_owed', -50)));
 rollback;
 
-\echo '== ATTACK-4c B puts outsider C into a split (expect ERROR row-level security)'
+\echo '== ATTACK-4c B puts outsider C into a split (expect ERROR SPLIT_USER_NOT_MEMBER)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
-insert into public.expense_splits (expense_id, user_id, amount_owed) values (:E, :C, 10);
+select public.add_expense(:G, :B, 'X', 20, jsonb_build_array(jsonb_build_object('user_id', :B, 'amount_owed', 10), jsonb_build_object('user_id', :C, 'amount_owed', 10)));
 rollback;
 
-\echo '== ATTACK-4d B splits the same person twice (expect ERROR duplicate key expense_splits_expense_user_key)'
+\echo '== ATTACK-4d B splits the same person twice (expect ERROR DUPLICATE_SPLIT)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
+select public.add_expense(:G, :B, 'X', 20, jsonb_build_array(jsonb_build_object('user_id', :B, 'amount_owed', 10), jsonb_build_object('user_id', :B, 'amount_owed', 10)));
+rollback;
+
+\echo '== ATTACK-4f B inserts an expense / a split directly, skipping the RPC (expect ERROR permission denied, twice)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
+insert into public.expenses (group_id, paid_by, title, amount) values (:G, :B, 'Direct', 100);
+rollback;
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 insert into public.expense_splits (expense_id, user_id, amount_owed) values (:E, :B, 10);
 rollback;
@@ -145,8 +155,8 @@ select public.generate_recurring_expenses();
 rollback;
 
 -- storage objects (as postgres) to read back
-insert into storage.objects (bucket_id, name, owner) values
-  ('chat-attachments', '99999999-0000-0000-0000-000000000009/photo.jpg', 'aaaaaaaa-0000-0000-0000-00000000000a')
+insert into storage.objects (bucket_id, name, owner, owner_id) values
+  ('chat-attachments', '99999999-0000-0000-0000-000000000009/photo.jpg', 'aaaaaaaa-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-00000000000a')
 on conflict do nothing;
 
 \echo '== ATTACK-6a chat-attachments bucket is private (expect f)'
@@ -206,4 +216,69 @@ rollback;
 \echo '== ATTACK-2e member B removes creator A (expect DELETE 0)'
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 delete from public.group_members where group_id = '99999999-0000-0000-0000-000000000009' and user_id = 'aaaaaaaa-0000-0000-0000-00000000000a';
+rollback;
+
+
+-- ============================================================================
+-- Step 4 — transactions (20261027130000_transactions.sql)
+-- ============================================================================
+
+\echo '== OK-11 C creates a group with create_group (expect an id, C is admin)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"cccccccc-0000-0000-0000-00000000000c","role":"authenticated"}', true);
+select public.create_group('C group', null, 'USD') is not null as created;
+select role from public.group_members where user_id = :C;
+rollback;
+
+\echo '== TX-1 splits do not add up: 100 vs 99.99 (expect ERROR SPLITS_DONT_ADD_UP, and NO expense saved)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+select public.add_expense(:G, :A, 'Short', 100, jsonb_build_array(
+  jsonb_build_object('user_id', :A, 'amount_owed', 33.33),
+  jsonb_build_object('user_id', :B, 'amount_owed', 66.66)));
+rollback;
+select count(*) as expenses_named_short from public.expenses where title = 'Short';
+
+\echo '== TX-2 nobody in the split (expect ERROR NO_MEMBERS)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+select public.add_expense(:G, :A, 'Empty', 100, '[]'::jsonb);
+rollback;
+
+\echo '== TX-3 outsider C adds to a group they are not in (expect ERROR NOT_A_MEMBER)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"cccccccc-0000-0000-0000-00000000000c","role":"authenticated"}', true);
+select public.add_expense(:G, :C, 'Sneaky', 10, jsonb_build_array(jsonb_build_object('user_id', :C, 'amount_owed', 10)));
+rollback;
+
+\echo '== TX-4 a failing split rolls back the whole expense (expect ERROR, then 0 rows for both)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+-- 2nd split has 3 decimals → INVALID_SPLIT_AMOUNT before anything is written
+select public.add_expense(:G, :A, 'Rollback', 10, jsonb_build_array(
+  jsonb_build_object('user_id', :A, 'amount_owed', 5),
+  jsonb_build_object('user_id', :B, 'amount_owed', 4.999)));
+rollback;
+select (select count(*) from public.expenses where title = 'Rollback') as expenses,
+       (select count(*) from public.expense_splits s join public.expenses e on e.id = s.expense_id where e.title = 'Rollback') as splits;
+
+\echo '== TX-5 monthly recurring on 31 Jan lands on 28/29 Feb (expect 2027-02-28)'
+select (timestamptz '2027-01-31 12:00+00' + interval '1 month')::date as next_after_31_jan;
+
+\echo '== TX-6 currency comes from the group, not the caller (expect PKR)'
+select currency from public.expenses where id = :E;
+
+\echo '== TX-7 B (not the payer) deletes A''s expense (expect ERROR NOT_ALLOWED)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
+select public.delete_expense(:E);
+rollback;
+
+\echo '== TX-8 A (payer) deletes it — splits go too (expect 0 expenses, 0 splits)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+select public.delete_expense(:E);
+select (select count(*) from public.expenses where id = :E) as expenses,
+       (select count(*) from public.expense_splits where expense_id = :E) as splits;
+rollback;
+
+\echo '== TX-9 storage: B deletes A''s chat file (expect DELETE 0), A deletes own (expect DELETE 1)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-0000-0000-00000000000b","role":"authenticated"}', true);
+delete from storage.objects where bucket_id = 'chat-attachments' and name = '99999999-0000-0000-0000-000000000009/photo.jpg';
+rollback;
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+delete from storage.objects where bucket_id = 'chat-attachments' and name = '99999999-0000-0000-0000-000000000009/photo.jpg';
 rollback;

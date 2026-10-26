@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
@@ -120,25 +121,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (cropped == null) return;
 
     setState(() => _isUploadingAvatar = true);
+    // Each upload gets a NEW file name, so if saving the profile fails we
+    // can delete just the new file and keep the current photo. After
+    // success the old file is removed (best effort).
+    const bucket = 'avatars';
+    final storage = SupabaseConfig.client.storage.from(bucket);
+    String? uploadedPath;
     try {
+      final oldPath = storagePathFromUrl(_avatarUrl, bucket);
       final ext = cropped.path.split('.').last;
-      final path = '$userId/avatar.$ext';
+      final path =
+          '$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
-      await SupabaseConfig.client.storage
-          .from('avatars')
-          .upload(path, File(cropped.path),
-          fileOptions: const FileOptions(upsert: true));
+      await storage.upload(path, File(cropped.path));
+      uploadedPath = path;
 
-      final url =
-      SupabaseConfig.client.storage.from('avatars').getPublicUrl(path);
-      final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
-
+      final url = storage.getPublicUrl(path);
       await SupabaseConfig.client
           .from('profiles')
-          .update({'avatar_url': bustedUrl}).eq('id', userId);
+          .update({'avatar_url': url}).eq('id', userId);
+
+      if (oldPath != null && oldPath != path) {
+        try {
+          await storage.remove([oldPath]);
+        } catch (_) {}
+      }
 
       if (mounted) {
-        setState(() => _avatarUrl = bustedUrl);
+        setState(() => _avatarUrl = url);
         // Refresh anywhere else this avatar is shown — profile tab and
         // every group's member list — since they cache their own data.
         ref.invalidate(myProfileProvider);
@@ -146,6 +156,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       print('=== AVATAR UPLOAD ERROR: $e ===');
+      if (uploadedPath != null) {
+        try {
+          await storage.remove([uploadedPath]);
+        } catch (_) {}
+      }
       if (mounted) showErrorSnack(context, l10n.failedToUpdatePhoto);
     } finally {
       if (mounted) setState(() => _isUploadingAvatar = false);

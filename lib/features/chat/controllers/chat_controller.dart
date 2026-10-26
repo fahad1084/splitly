@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../config/supabase/supabase_config.dart';
+import '../../../core/utils/string_utils.dart';
 import '../models/message_model.dart';
 
 // ── Messages provider per group ───────────────────────────────────────────────
@@ -234,14 +235,19 @@ class ChatController
 
       // The bucket is private: store the storage PATH, and show it later
       // through a signed URL (see attachmentSignedUrlProvider).
-      await SupabaseConfig.client.from('messages').insert({
-        'id': const Uuid().v4(),
-        'group_id': _groupId,
-        'sender_id': userId,
-        'content': caption,          // ✅ caption goes here now
-        'attachment_url': path,
-        'attachment_type': 'image',
-      });
+      try {
+        await SupabaseConfig.client.from('messages').insert({
+          'id': const Uuid().v4(),
+          'group_id': _groupId,
+          'sender_id': userId,
+          'content': caption,          // ✅ caption goes here now
+          'attachment_url': path,
+          'attachment_type': 'image',
+        });
+      } catch (_) {
+        await _removeUpload(path); // don't leave an orphan file behind
+        rethrow;
+      }
       return null;
     } catch (e) {
       print('=== SEND IMAGE ERROR: $e ===');
@@ -263,20 +269,34 @@ class ChatController
           .from('chat-attachments')
           .upload(path, audioFile);
 
-      await SupabaseConfig.client.from('messages').insert({
-        'id': const Uuid().v4(),
-        'group_id': _groupId,
-        'sender_id': userId,
-        'content': '',
-        'attachment_url': path, // private bucket — see sendImage
-        'attachment_type': 'audio',
-        'audio_duration': durationSeconds,
-      });
+      try {
+        await SupabaseConfig.client.from('messages').insert({
+          'id': const Uuid().v4(),
+          'group_id': _groupId,
+          'sender_id': userId,
+          'content': '',
+          'attachment_url': path, // private bucket — see sendImage
+          'attachment_type': 'audio',
+          'audio_duration': durationSeconds,
+        });
+      } catch (_) {
+        await _removeUpload(path); // don't leave an orphan file behind
+        rethrow;
+      }
       return null;
     } catch (e) {
       print('=== SEND AUDIO ERROR: $e ===');
       return 'Failed to send voice message';
     }
+  }
+
+  // ── Delete a file we just uploaded (best effort) ──────────────────────────
+  Future<void> _removeUpload(String path) async {
+    try {
+      await SupabaseConfig.client.storage
+          .from(_chatAttachmentsBucket)
+          .remove([path]);
+    } catch (_) {}
   }
 }
 
@@ -308,12 +328,8 @@ final typingUsersProvider = StreamProvider.family<List<String>, String>((ref, gr
 const _chatAttachmentsBucket = 'chat-attachments';
 const _signedUrlExpirySeconds = 60 * 60;
 
-String chatAttachmentPath(String stored) {
-  const marker = '/$_chatAttachmentsBucket/';
-  final i = stored.indexOf(marker);
-  if (!stored.startsWith('http') || i == -1) return stored;
-  return Uri.decodeComponent(stored.substring(i + marker.length).split('?').first);
-}
+String chatAttachmentPath(String stored) =>
+    storagePathFromUrl(stored, _chatAttachmentsBucket) ?? stored;
 
 Future<String> createChatAttachmentUrl(String stored) {
   return SupabaseConfig.client.storage

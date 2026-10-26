@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../models/expense_model.dart';
 
@@ -81,73 +81,56 @@ class ExpensesController
     String? recurEvery, // 'daily' | 'weekly' | 'monthly'
   }) async {
     try {
-      final expenseId = const Uuid().v4();
-
-      // Calculate splits based on type
-      final splits = _calculateSplits(
-        expenseId: expenseId,
+      final splits = calculateSplits(
         amount: amount,
         splitType: splitType,
         members: members,
       );
 
-      DateTime? nextRecurAt;
-      if (isRecurring && recurEvery != null) {
-        final now = DateTime.now();
-        switch (recurEvery) {
-          case 'daily':
-            nextRecurAt = now.add(const Duration(days: 1));
-            break;
-          case 'weekly':
-            nextRecurAt = now.add(const Duration(days: 7));
-            break;
-          case 'monthly':
-          default:
-            nextRecurAt = DateTime(now.year, now.month + 1, now.day);
-        }
-      }
-
-      // Insert expense
-      await SupabaseConfig.client.from('expenses').insert({
-        'id': expenseId,
-        'group_id': _groupId,
-        'paid_by': paidBy,
-        'title': title.trim(),
-        'amount': amount,
-        'currency': currency,
-        'category': category,
-        'split_type': splitType,
-        'notes': notes?.trim(),
-        'is_recurring': isRecurring,
-        'recur_every': isRecurring ? recurEvery : null,
-        'next_recur_at': nextRecurAt?.toUtc().toIso8601String(),
+      // ONE call: the expense and all its splits are saved in a single
+      // database transaction (all or nothing). The server checks that
+      // everyone is a group member and that the splits add up exactly,
+      // and works out the next recurring date. Currency comes from the group.
+      await SupabaseConfig.client.rpc('add_expense', params: {
+        'p_group_id': _groupId,
+        'p_paid_by': paidBy,
+        'p_title': title.trim(),
+        'p_amount': amount,
+        'p_splits': splits,
+        'p_category': category,
+        'p_split_type': splitType,
+        'p_notes': notes?.trim(),
+        'p_is_recurring': isRecurring,
+        'p_recur_every': isRecurring ? recurEvery : null,
       });
-
-      // Insert splits
-      await SupabaseConfig.client.from('expense_splits').insert(splits);
 
       state = AsyncValue.data(await _fetchExpenses());
       return null;
+    } on PostgrestException catch (e) {
+      print('=== ADD EXPENSE ERROR: ${e.message} ===');
+      return expenseErrorCode(e.message);
     } catch (e) {
       print('=== ADD EXPENSE ERROR: $e ===');
-      return 'Error: $e';
+      return 'UNKNOWN';
     }
   }
 
   // ── Delete expense ──────────────────────────────────────────────────────────
-  Future<void> deleteExpense(String expenseId) async {
+  // Returns null on success, or an error code (see expenseErrorCode).
+  Future<String?> deleteExpense(String expenseId) async {
     try {
+      // One call — the splits are deleted together with the expense
       await SupabaseConfig.client
-          .from('expense_splits')
-          .delete()
-          .eq('expense_id', expenseId);
-      await SupabaseConfig.client
-          .from('expenses')
-          .delete()
-          .eq('id', expenseId);
+          .rpc('delete_expense', params: {'p_expense_id': expenseId});
       state = AsyncValue.data(await _fetchExpenses());
+      return null;
     } catch (e) {
       print('=== DELETE EXPENSE ERROR: $e ===');
+      // Re-sync so a swiped-away expense comes back if the delete failed
+      try {
+        state = AsyncValue.data(await _fetchExpenses());
+      } catch (_) {}
+      return e is PostgrestException ? expenseErrorCode(e.message) : 'UNKNOWN';
     }
   }
 
@@ -160,68 +143,86 @@ class ExpensesController
     }
   }
 
-  // ── Split calculation ───────────────────────────────────────────────────────
-  List<Map<String, dynamic>> _calculateSplits({
-    required String expenseId,
-    required double amount,
-    required String splitType,
-    required List<Map<String, dynamic>> members,
-  }) {
-    final activeMemberIds = members
-        .where((m) => m['included'] as bool? ?? true)
-        .map((m) => m['user_id'] as String)
-        .toList();
-
-    if (activeMemberIds.isEmpty) return [];
-
-    switch (splitType) {
-      case 'equal':
-        final share = double.parse(
-            (amount / activeMemberIds.length).toStringAsFixed(2));
-        return activeMemberIds.map((uid) {
-          return {
-            'id': const Uuid().v4(),
-            'expense_id': expenseId,
-            'user_id': uid,
-            'amount_owed': share,
-            'is_settled': false,
-          };
-        }).toList();
-
-      case 'custom':
-        return members
-            .where((m) => m['included'] as bool? ?? true)
-            .map((m) {
-          return {
-            'id': const Uuid().v4(),
-            'expense_id': expenseId,
-            'user_id': m['user_id'] as String,
-            'amount_owed':
-            (m['custom_amount'] as num?)?.toDouble() ?? 0.0,
-            'is_settled': false,
-          };
-        }).toList();
-
-      case 'percentage':
-        return members
-            .where((m) => m['included'] as bool? ?? true)
-            .map((m) {
-          final pct = (m['percentage'] as num?)?.toDouble() ?? 0.0;
-          return {
-            'id': const Uuid().v4(),
-            'expense_id': expenseId,
-            'user_id': m['user_id'] as String,
-            'amount_owed':
-            double.parse((amount * pct / 100).toStringAsFixed(2)),
-            'is_settled': false,
-          };
-        }).toList();
-
-      default:
-        return [];
-    }
-  }
 }
+
+// ── Money helpers ─────────────────────────────────────────────────────────────
+// Work in whole paisa (1/100 of the currency unit) so nothing is lost to
+// floating-point rounding.
+int toPaisa(double amount) => (amount * 100).round();
+double fromPaisa(int paisa) => paisa / 100;
+
+// ── Split calculation ─────────────────────────────────────────────────────────
+// Returns [{user_id, amount_owed}] for the members marked 'included'.
+// Equal and percentage splits always add up EXACTLY to the amount: shares
+// are rounded down to the paisa and the leftover paisa go one each to the
+// first members. Example: 100 split 3 ways → 33.34, 33.33, 33.33.
+List<Map<String, dynamic>> calculateSplits({
+  required double amount,
+  required String splitType,
+  required List<Map<String, dynamic>> members,
+}) {
+  final included =
+  members.where((m) => m['included'] as bool? ?? true).toList();
+  if (included.isEmpty) return [];
+
+  final totalPaisa = toPaisa(amount);
+  final List<int> shares;
+
+  switch (splitType) {
+    case 'equal':
+      final base = totalPaisa ~/ included.length;
+      shares = List.filled(included.length, base);
+      break;
+
+    case 'custom':
+      // The user typed each amount; the form checks they add up exactly
+      return included
+          .map((m) => {
+        'user_id': m['user_id'] as String,
+        'amount_owed': fromPaisa(
+            toPaisa((m['custom_amount'] as num?)?.toDouble() ?? 0.0)),
+      })
+          .toList();
+
+    case 'percentage':
+      shares = included.map((m) {
+        final pct = (m['percentage'] as num?)?.toDouble() ?? 0.0;
+        return (totalPaisa * pct / 100).floor();
+      }).toList();
+      break;
+
+    default:
+      return [];
+  }
+
+  // Hand out the leftover paisa, one each, starting with the first member
+  var leftover = totalPaisa - shares.fold<int>(0, (a, b) => a + b);
+  for (var i = 0; leftover > 0 && shares.isNotEmpty; i = (i + 1) % shares.length) {
+    shares[i]++;
+    leftover--;
+  }
+
+  return [
+    for (var i = 0; i < included.length; i++)
+      {
+        'user_id': included[i]['user_id'] as String,
+        'amount_owed': fromPaisa(shares[i]),
+      },
+  ];
+}
+
+// ── Server error → code the UI can translate ─────────────────────────────────
+// add_expense / delete_expense raise these codes as the error message
+// (see supabase/migrations/20261027130000_transactions.sql).
+const _expenseErrorCodes = {
+  'NOT_A_MEMBER', 'INVALID_TITLE', 'INVALID_AMOUNT', 'PAYER_NOT_MEMBER',
+  'INVALID_SPLIT_TYPE', 'INVALID_RECURRENCE', 'NO_MEMBERS', 'DUPLICATE_SPLIT',
+  'INVALID_SPLIT_AMOUNT', 'SPLIT_USER_NOT_MEMBER', 'SPLITS_DONT_ADD_UP',
+  'EXPENSE_NOT_FOUND', 'NOT_ALLOWED',
+};
+
+String expenseErrorCode(String message) =>
+    _expenseErrorCodes.contains(message) ? message : 'UNKNOWN';
 
 // ── Balance calculation per group ─────────────────────────────────────────────
 final groupBalancesProvider =

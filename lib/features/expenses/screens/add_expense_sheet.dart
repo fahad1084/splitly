@@ -145,11 +145,18 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       return;
     }
 
+    // At least one person must be in the split (the server checks too)
+    if (!_members.any((m) => m['included'] as bool)) {
+      showErrorSnack(context, l10n.noMembersToSplit);
+      return;
+    }
+
     if (_splitType == 'custom') {
-      final total = _members
+      // Compare in whole paisa — the server requires an EXACT match
+      final totalPaisa = _members
           .where((m) => m['included'] as bool)
-          .fold(0.0, (sum, m) => sum + (m['custom_amount'] as double));
-      if ((total - amount).abs() > 0.01) {
+          .fold<int>(0, (sum, m) => sum + toPaisa(m['custom_amount'] as double));
+      if (totalPaisa != toPaisa(amount)) {
         showErrorSnack(context,
             l10n.customAmountsMustAddUp(
                 widget.group.currency, amount.toString()));
@@ -190,7 +197,17 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
     setState(() => _isLoading = false);
 
     if (error != null) {
-      showErrorSnack(context, error);
+      // Server error codes → existing translated messages
+      final message = switch (error) {
+        'NO_MEMBERS' => l10n.noMembersToSplit,
+        'INVALID_AMOUNT' => l10n.pleaseEnterValidAmount,
+        'INVALID_TITLE' => l10n.pleaseEnterTitle,
+        'SPLITS_DONT_ADD_UP' || 'INVALID_SPLIT_AMOUNT' =>
+            l10n.customAmountsMustAddUp(
+                widget.group.currency, amount.toString()),
+        _ => l10n.somethingWentWrong,
+      };
+      showErrorSnack(context, message);
     } else {
       showSuccessSnack(context, l10n.expenseAdded);
       Navigator.pop(context);
