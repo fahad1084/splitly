@@ -9,6 +9,7 @@ import '../../balances/models/balance_model.dart';
 import '../../balances/screens/settle_up_sheet.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../groups/controllers/groups_controller.dart';
+import '../../../core/services/home_widget_service.dart';
 
 class BalancesTab extends ConsumerWidget {
   const BalancesTab({super.key});
@@ -84,6 +85,15 @@ class BalancesTab extends ConsumerWidget {
               .toList();
 
           final currency = groups.first.currency;
+
+          // Keep the home screen widget in sync with the latest balances.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            HomeWidgetService.updateBalance(
+              totalOwed: totalOwed,
+              totalOwe: totalOwe,
+              currency: currency,
+            );
+          });
 
           return RefreshIndicator(
             color: AppColors.primary,

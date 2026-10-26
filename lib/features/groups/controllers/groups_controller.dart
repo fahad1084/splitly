@@ -30,6 +30,40 @@ FutureProvider<Map<String, int>>((ref) async {
   }
 });
 
+// ── Archived groups (for the "Archived Groups" screen) ──────────────────────
+final archivedGroupsProvider =
+FutureProvider<List<GroupModel>>((ref) async {
+  final db = SupabaseConfig.client;
+  final userId = db.auth.currentUser?.id;
+  if (userId == null) return [];
+  try {
+    final List<dynamic> memberRows = await db
+        .from('group_members')
+        .select('group_id')
+        .eq('user_id', userId);
+    final groupIds =
+    memberRows.map((r) => r['group_id'] as String).toList();
+    if (groupIds.isEmpty) return [];
+
+    final List<dynamic> groupRows = await db
+        .from('groups')
+        .select('*')
+        .inFilter('id', groupIds)
+        .eq('is_archived', true)
+        .order('created_at', ascending: false);
+
+    return groupRows
+        .map((r) => GroupModel.fromMap({
+      ...Map<String, dynamic>.from(r),
+      'member_count': 0, // not needed on this screen
+    }))
+        .toList();
+  } catch (e) {
+    print('=== FETCH ARCHIVED GROUPS ERROR: $e ===');
+    return [];
+  }
+});
+
 class GroupsController extends AsyncNotifier<List<GroupModel>> {
   SupabaseClient get _db => SupabaseConfig.client;
 
@@ -130,6 +164,25 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         .update({'is_archived': true})
         .eq('id', groupId);
     state = AsyncValue.data(await _fetchGroups());
+  }
+
+  Future<void> unarchiveGroup(String groupId) async {
+    await _db
+        .from('groups')
+        .update({'is_archived': false})
+        .eq('id', groupId);
+    state = AsyncValue.data(await _fetchGroups());
+  }
+
+  Future<String?> deleteGroupPermanently(String groupId) async {
+    try {
+      await _db.rpc('delete_group_permanently',
+          params: {'p_group_id': groupId});
+      return null;
+    } catch (e) {
+      print('=== DELETE GROUP ERROR: $e ===');
+      return 'Error: $e';
+    }
   }
 
   Future<void> refresh() async {

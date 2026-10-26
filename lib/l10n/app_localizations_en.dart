@@ -991,4 +991,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAllRead => 'Mark all read';
+
+  @override
+  String get scanQrCode => 'Scan QR Code';
+
+  @override
+  String get notifyDebtReminders => 'Debt reminders';
+
+  @override
+  String get archivedGroups => 'Archived Groups';
+
+  @override
+  String get noArchivedGroups => 'No archived groups';
+
+  @override
+  String get unarchive => 'Unarchive';
+
+  @override
+  String get groupUnarchived => 'Group restored!';
+
+  @override
+  String get deleteGroupTitle => 'Delete Group Permanently?';
+
+  @override
+  String deleteGroupWarning(String groupName) {
+    return 'This will permanently delete \"$groupName\" and all its expenses, chat, and settlements for every member. This cannot be undone.';
+  }
+
+  @override
+  String get deletePermanently => 'Delete Permanently';
+
+  @override
+  String get groupDeleted => 'Group deleted';
 }

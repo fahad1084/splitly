@@ -114,6 +114,18 @@ class _NotificationSettingsScreenState
                       'notify_members', v);
                 },
               ),
+              const SizedBox(height: 10),
+              _PrefTile(
+                icon: Icons.alarm_rounded,
+                label: l10n.notifyDebtReminders,
+                value: prefs['notify_debt_reminders'] ?? true,
+                dark: dark,
+                onChanged: (v) {
+                  setState(() => prefs['notify_debt_reminders'] = v);
+                  NotificationsController.updatePreference(
+                      'notify_debt_reminders', v);
+                },
+              ),
             ],
           );
         },

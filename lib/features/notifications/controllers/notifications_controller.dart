@@ -78,7 +78,7 @@ FutureProvider<Map<String, bool>>((ref) async {
     final data = await SupabaseConfig.client
         .from('profiles')
         .select(
-        'notify_messages, notify_expenses, notify_settlements, notify_members')
+        'notify_messages, notify_expenses, notify_settlements, notify_members, notify_debt_reminders')
         .eq('id', userId)
         .maybeSingle();
     return {
@@ -86,6 +86,7 @@ FutureProvider<Map<String, bool>>((ref) async {
       'notify_expenses': data?['notify_expenses'] as bool? ?? true,
       'notify_settlements': data?['notify_settlements'] as bool? ?? true,
       'notify_members': data?['notify_members'] as bool? ?? true,
+      'notify_debt_reminders': data?['notify_debt_reminders'] as bool? ?? true,
     };
   } catch (e) {
     print('=== FETCH NOTIFICATION PREFS ERROR: $e ===');

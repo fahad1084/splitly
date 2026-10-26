@@ -1939,6 +1939,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark all read'**
   String get markAllRead;
+
+  /// No description provided for @scanQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get scanQrCode;
+
+  /// No description provided for @notifyDebtReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt reminders'**
+  String get notifyDebtReminders;
+
+  /// No description provided for @archivedGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived Groups'**
+  String get archivedGroups;
+
+  /// No description provided for @noArchivedGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'No archived groups'**
+  String get noArchivedGroups;
+
+  /// No description provided for @unarchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive'**
+  String get unarchive;
+
+  /// No description provided for @groupUnarchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Group restored!'**
+  String get groupUnarchived;
+
+  /// No description provided for @deleteGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Group Permanently?'**
+  String get deleteGroupTitle;
+
+  /// No description provided for @deleteGroupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete \"{groupName}\" and all its expenses, chat, and settlements for every member. This cannot be undone.'**
+  String deleteGroupWarning(String groupName);
+
+  /// No description provided for @deletePermanently.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Permanently'**
+  String get deletePermanently;
+
+  /// No description provided for @groupDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Group deleted'**
+  String get groupDeleted;
 }
 
 class _AppLocalizationsDelegate

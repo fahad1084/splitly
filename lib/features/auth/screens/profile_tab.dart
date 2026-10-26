@@ -10,6 +10,7 @@ import '../../reports/screens/reports_screen.dart';
 import '../../security/controllers/app_lock_controller.dart';
 import '../../security/screens/set_pin_screen.dart';
 import '../../groups/screens/edit_profile_screen.dart';
+import '../../groups/screens/archived_groups_screen.dart';
 import '../../notifications/screens/notification_settings_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
@@ -122,6 +123,17 @@ class ProfileTab extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (_) => const ReportsScreen(),
                     ),
+                  ),
+                ),
+                _Divider(),
+
+                _ProfileTile(
+                  icon: Icons.archive_outlined,
+                  label: l10n.archivedGroups,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ArchivedGroupsScreen()),
                   ),
                 ),
                 _Divider(),

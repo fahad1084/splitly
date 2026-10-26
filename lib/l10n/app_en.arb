@@ -360,5 +360,18 @@
   "notifySettlements": "Settlements",
   "notifyNewMembers": "New members joining",
   "noNotificationsYet": "No notifications yet",
-  "markAllRead": "Mark all read"
+  "markAllRead": "Mark all read",
+  "scanQrCode": "Scan QR Code",
+  "notifyDebtReminders": "Debt reminders",
+  "archivedGroups": "Archived Groups",
+  "noArchivedGroups": "No archived groups",
+  "unarchive": "Unarchive",
+  "groupUnarchived": "Group restored!",
+  "deleteGroupTitle": "Delete Group Permanently?",
+  "deleteGroupWarning": "This will permanently delete \"{groupName}\" and all its expenses, chat, and settlements for every member. This cannot be undone.",
+  "@deleteGroupWarning": {
+    "placeholders": { "groupName": {"type": "String"} }
+  },
+  "deletePermanently": "Delete Permanently",
+  "groupDeleted": "Group deleted"
 }

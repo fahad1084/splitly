@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
@@ -501,6 +502,28 @@ class GroupDetailScreen extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: QrImageView(
+                        data: group.inviteCode,
+                        version: QrVersions.auto,
+                        size: 140,
+                        backgroundColor: Colors.white,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: AppColors.primaryDark,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       group.inviteCode,
                       style: TextStyle(

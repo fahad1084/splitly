@@ -990,4 +990,36 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get markAllRead => 'سب پڑھا ہوا نشان زد کریں';
+
+  @override
+  String get scanQrCode => 'کیو آر کوڈ اسکین کریں';
+
+  @override
+  String get notifyDebtReminders => 'قرض یاد دہانی';
+
+  @override
+  String get archivedGroups => 'آرکائیو شدہ گروپس';
+
+  @override
+  String get noArchivedGroups => 'کوئی آرکائیو شدہ گروپ نہیں';
+
+  @override
+  String get unarchive => 'بحال کریں';
+
+  @override
+  String get groupUnarchived => 'گروپ بحال ہو گیا!';
+
+  @override
+  String get deleteGroupTitle => 'گروپ مستقل طور پر ڈیلیٹ کریں؟';
+
+  @override
+  String deleteGroupWarning(String groupName) {
+    return 'اس سے \"$groupName\" اور اس کے تمام اخراجات، چیٹ، اور سیٹلمنٹس ہر ممبر کے لیے مستقل طور پر ڈیلیٹ ہو جائیں گے۔ یہ عمل واپس نہیں ہو سکتا۔';
+  }
+
+  @override
+  String get deletePermanently => 'مستقل طور پر ڈیلیٹ کریں';
+
+  @override
+  String get groupDeleted => 'گروپ ڈیلیٹ ہو گیا';
 }

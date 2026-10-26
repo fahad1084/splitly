@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
@@ -82,6 +83,17 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
   void dispose() {
     _codeCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanQrCode() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const _QrScannerScreen()),
+    );
+    if (result != null && result.isNotEmpty) {
+      _codeCtrl.text = result;
+      _join();
+    }
   }
 
   Future<void> _join() async {
@@ -216,8 +228,65 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
               onPressed: _join,
               icon: Icons.login_rounded,
             ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _scanQrCode,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.qr_code_scanner_rounded,
+                    color: AppColors.primary, size: 18),
+                label: Text(l10n.scanQrCode,
+                    style: const TextStyle(color: AppColors.primary)),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── QR Scanner Screen ─────────────────────────────────────────────────────────
+class _QrScannerScreen extends StatefulWidget {
+  const _QrScannerScreen();
+
+  @override
+  State<_QrScannerScreen> createState() => _QrScannerScreenState();
+}
+
+class _QrScannerScreenState extends State<_QrScannerScreen> {
+  bool _handled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryDark,
+        title: Text(l10n.scanQrCode,
+            style: const TextStyle(color: AppColors.primaryTint)),
+        iconTheme: const IconThemeData(color: AppColors.primaryTint),
+      ),
+      body: MobileScanner(
+        onDetect: (capture) {
+          if (_handled) return;
+          final barcodes = capture.barcodes;
+          if (barcodes.isEmpty) return;
+          final value = barcodes.first.rawValue;
+          if (value == null || value.isEmpty) return;
+          _handled = true;
+          Navigator.pop(context, value);
+        },
       ),
     );
   }

@@ -37,6 +37,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         return Icons.handshake_outlined;
       case 'member_joined':
         return Icons.person_add_alt_1_rounded;
+      case 'debt_reminder':
+        return Icons.alarm_rounded;
       default:
         return Icons.notifications_outlined;
     }

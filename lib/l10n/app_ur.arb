@@ -353,5 +353,15 @@
   "notifySettlements": "سیٹلمنٹس",
   "notifyNewMembers": "نئے ممبران کا شامل ہونا",
   "noNotificationsYet": "ابھی تک کوئی نوٹیفیکیشن نہیں",
-  "markAllRead": "سب پڑھا ہوا نشان زد کریں"
+  "markAllRead": "سب پڑھا ہوا نشان زد کریں",
+  "scanQrCode": "کیو آر کوڈ اسکین کریں",
+  "notifyDebtReminders": "قرض یاد دہانی",
+  "archivedGroups": "آرکائیو شدہ گروپس",
+  "noArchivedGroups": "کوئی آرکائیو شدہ گروپ نہیں",
+  "unarchive": "بحال کریں",
+  "groupUnarchived": "گروپ بحال ہو گیا!",
+  "deleteGroupTitle": "گروپ مستقل طور پر ڈیلیٹ کریں؟",
+  "deleteGroupWarning": "اس سے \"{groupName}\" اور اس کے تمام اخراجات، چیٹ، اور سیٹلمنٹس ہر ممبر کے لیے مستقل طور پر ڈیلیٹ ہو جائیں گے۔ یہ عمل واپس نہیں ہو سکتا۔",
+  "deletePermanently": "مستقل طور پر ڈیلیٹ کریں",
+  "groupDeleted": "گروپ ڈیلیٹ ہو گیا"
 }
