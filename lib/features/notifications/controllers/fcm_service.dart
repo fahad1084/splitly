@@ -5,7 +5,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import '../../../config/supabase/supabase_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../firebase_options.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../security/controllers/app_lock_controller.dart';
+import '../../settings/controllers/locale_controller.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Background handler (must be top-level) ────────────────────────────────────
@@ -119,9 +123,21 @@ class FCMService {
   // Static + top-level-callable so the background isolate (which has no
   // access to the running app's instance) can use it too.
   static Future<void> _showFromData(Map<String, dynamic> data) async {
-    final title = data['title'] as String? ?? 'Splitly';
-    final body = data['body'] as String? ?? '';
-    final avatarUrl = data['avatar_url'] as String?;
+    var title = data['title'] as String? ?? 'Splitly';
+    var body = data['body'] as String? ?? '';
+    var avatarUrl = data['avatar_url'] as String?;
+
+    // App lock on → no message text, amounts or sender photo on this phone.
+    // The title is always the group name (see send-push-notification).
+    if (await _isAppLockOn()) {
+      final l10n = await _savedLocalizations();
+      final group = title;
+      title = l10n.appName;
+      body = data['type'] == 'message'
+          ? l10n.lockedNotificationMessage(group)
+          : l10n.lockedNotificationActivity(group);
+      avatarUrl = null;
+    }
 
     final localNotifications = FlutterLocalNotificationsPlugin();
     const androidSettings =
@@ -154,6 +170,29 @@ class FCMService {
         ),
       ),
     );
+  }
+
+  // Read fresh from disk: this may run in the background isolate, whose
+  // cached prefs don't see the user turning the lock on or off.
+  static Future<bool> _isAppLockOn() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      return prefs.getBool(kLockEnabledKey) ?? false;
+    } catch (e) {
+      logDebug('App lock check for notification failed: $e');
+      return true; // can't tell → keep the content private
+    }
+  }
+
+  // No BuildContext here (maybe no UI at all) → use the saved app language
+  static Future<AppLocalizations> _savedLocalizations() async {
+    var code = 'en';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      code = prefs.getString(kLocaleKey) ?? 'en';
+    } catch (_) {}
+    return lookupAppLocalizations(Locale(code == 'ur' ? 'ur' : 'en'));
   }
 
   // ── Save FCM token to Supabase ────────────────────────────────────────────

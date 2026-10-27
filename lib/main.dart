@@ -35,6 +35,8 @@ final _navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Before runApp, so it gets the back button before the Navigator does
+  WidgetsBinding.instance.addObserver(AppLockBackGuard());
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -90,31 +92,38 @@ class SplitlyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
+      // App lock covers every screen (see _AppLockOverlay)
+      builder: (context, child) =>
+          _AppLockOverlay(child: child ?? const SizedBox.shrink()),
+
       home: const AuthGate(),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// APP LOCK WRAPPER
+// APP LOCK OVERLAY
 // ─────────────────────────────────────────────────────────────────────────────
-// Wraps HomeScreen. Checks PIN lock on cold start and re-locks whenever
-// the app goes to background (paused lifecycle state).
-class _AppLockWrapper extends ConsumerStatefulWidget {
+// Sits in MaterialApp.builder, ABOVE the Navigator, so the unlock screen
+// covers every route (chat, group details, sheets, dialogs). The screens
+// underneath stay alive, so nothing typed is lost. Locks on cold start, and
+// after the app was in the background for kLockGracePeriod — but not when
+// the app opened its own camera/picker/share sheet (runWithoutLock).
+class _AppLockOverlay extends ConsumerStatefulWidget {
   final Widget child;
-  const _AppLockWrapper({required this.child});
+  const _AppLockOverlay({required this.child});
 
   @override
-  ConsumerState<_AppLockWrapper> createState() => _AppLockWrapperState();
+  ConsumerState<_AppLockOverlay> createState() => _AppLockOverlayState();
 }
 
-class _AppLockWrapperState extends ConsumerState<_AppLockWrapper>
+class _AppLockOverlayState extends ConsumerState<_AppLockOverlay>
     with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkLockOnStart();
+    ref.read(appLockControllerProvider.notifier).lockIfEnabled();
   }
 
   @override
@@ -123,25 +132,33 @@ class _AppLockWrapperState extends ConsumerState<_AppLockWrapper>
     super.dispose();
   }
 
-  Future<void> _checkLockOnStart() async {
-    final enabled =
-    await ref.read(appLockControllerProvider.notifier).isLockEnabled();
-    if (enabled && mounted) {
-      ref.read(appLockControllerProvider.notifier).lock();
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _checkLockOnStart(); // re-lock when app goes to background
+    final controller = ref.read(appLockControllerProvider.notifier);
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused) {
+      controller.onBackgrounded();
+    } else if (state == AppLifecycleState.resumed) {
+      controller.onResumed();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isLocked = ref.watch(appLockControllerProvider);
-    return isLocked ? const UnlockScreen() : widget.child;
+    return Stack(
+      children: [
+        // Hidden app: no taps, no keyboard focus, nothing read aloud
+        ExcludeSemantics(
+          excluding: isLocked,
+          child: ExcludeFocus(
+            excluding: isLocked,
+            child: IgnorePointer(ignoring: isLocked, child: widget.child),
+          ),
+        ),
+        if (isLocked) const Positioned.fill(child: UnlockScreen()),
+      ],
+    );
   }
 }
 
@@ -197,8 +214,8 @@ class _AuthGateState extends State<AuthGate> {
         // Throw away anything cached from a previous user before Home builds
         _resetUserData();
         FCMService().saveTokenToSupabase();
-        // ✅ Wrapped with app lock check
-        _navigate(const _AppLockWrapper(child: HomeScreen()));
+        // No lock here: the user has just signed in with their password
+        _navigate(const HomeScreen());
         break;
 
       case AuthChangeEvent.userUpdated:
@@ -295,8 +312,9 @@ class _InitialScreenState extends State<_InitialScreen> {
 
       Widget destination;
       if (session != null) {
-        // Already logged in → skip onboarding, go straight to home (with lock check)
-        destination = const _AppLockWrapper(child: HomeScreen());
+        // Already logged in → skip onboarding, go straight to home
+        // (_AppLockOverlay has already locked if app lock is on)
+        destination = const HomeScreen();
       } else if (!seenOnboarding) {
         // First time ever opening the app → show onboarding slides
         destination = const OnboardingScreen();

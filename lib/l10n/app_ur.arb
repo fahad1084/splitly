@@ -165,6 +165,12 @@
   "enterPinToContinue": "جاری رکھنے کے لیے اپنا پن درج کریں",
   "incorrectPin": "غلط پن۔ دوبارہ کوشش کریں۔",
   "useBiometricsButton": "بایومیٹرک استعمال کریں",
+  "tooManyPinAttempts": "بہت زیادہ غلط کوششیں۔ {time} بعد دوبارہ کوشش کریں۔",
+  "@tooManyPinAttempts": { "placeholders": { "time": { "type": "String" } } },
+  "lockedNotificationMessage": "{group} میں نیا پیغام",
+  "@lockedNotificationMessage": { "placeholders": { "group": { "type": "String" } } },
+  "lockedNotificationActivity": "{group} میں نئی سرگرمی",
+  "@lockedNotificationActivity": { "placeholders": { "group": { "type": "String" } } },
 
   "exportGroupTitle": "{groupName} ایکسپورٹ کریں",
   "@exportGroupTitle": { "placeholders": { "groupName": { "type": "String" } } },

@@ -469,6 +469,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useBiometricsButton => 'Use biometrics';
 
   @override
+  String tooManyPinAttempts(String time) {
+    return 'Too many wrong tries. Try again in $time.';
+  }
+
+  @override
+  String lockedNotificationMessage(String group) {
+    return 'New message in $group';
+  }
+
+  @override
+  String lockedNotificationActivity(String group) {
+    return 'New activity in $group';
+  }
+
+  @override
   String exportGroupTitle(String groupName) {
     return 'Export $groupName';
   }

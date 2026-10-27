@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,10 +19,55 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   String? _error;
   bool _checking = false;
 
+  // Wrong-PIN wait (saved in secure storage, so it survives a restart)
+  DateTime? _lockedUntil;
+  Timer? _countdown;
+
   @override
   void initState() {
     super.initState();
+    _loadLockout();
     _tryBiometricAuto();
+  }
+
+  @override
+  void dispose() {
+    _countdown?.cancel();
+    super.dispose();
+  }
+
+  Duration get _waitLeft {
+    final until = _lockedUntil;
+    if (until == null) return Duration.zero;
+    final left = until.difference(DateTime.now());
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  Future<void> _loadLockout() async {
+    final left =
+        await ref.read(appLockControllerProvider.notifier).lockoutRemaining();
+    if (left > Duration.zero && mounted) _startCountdown(left);
+  }
+
+  void _startCountdown(Duration left) {
+    _countdown?.cancel();
+    setState(() => _lockedUntil = DateTime.now().add(left));
+    _countdown = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      if (_waitLeft == Duration.zero) {
+        t.cancel();
+        setState(() => _lockedUntil = null);
+      } else {
+        setState(() {}); // tick the countdown text
+      }
+    });
+  }
+
+  String _formatWait(Duration d) {
+    final secs = d.inSeconds + 1; // round up, never show 0:00
+    final m = secs ~/ 60;
+    final s = (secs % 60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   Future<void> _tryBiometricAuto() async {
@@ -37,12 +83,13 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
     final success =
     await ref.read(appLockControllerProvider.notifier).authenticateWithBiometrics();
     if (success && mounted) {
+      _countdown?.cancel();
       ref.read(appLockControllerProvider.notifier).unlock();
     }
   }
 
   Future<void> _onKeyTap(String digit) async {
-    if (_pin.length >= 4 || _checking) return;
+    if (_pin.length >= 4 || _checking || _waitLeft > Duration.zero) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _error = null;
@@ -51,16 +98,21 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
 
     if (_pin.length == 4) {
       setState(() => _checking = true);
-      final valid = await ref.read(appLockControllerProvider.notifier).verifyPin(_pin);
-      if (valid) {
-        ref.read(appLockControllerProvider.notifier).unlock();
-      } else {
-        HapticFeedback.heavyImpact();
-        setState(() {
-          _error = l10n.incorrectPin;
-          _pin = '';
-          _checking = false;
-        });
+      final controller = ref.read(appLockControllerProvider.notifier);
+      final result = await controller.verifyPin(_pin);
+      if (!mounted) return;
+      if (result == PinResult.correct) {
+        controller.unlock();
+        return;
+      }
+      HapticFeedback.heavyImpact();
+      setState(() {
+        _error = result == PinResult.wrong ? l10n.incorrectPin : null;
+        _pin = '';
+        _checking = false;
+      });
+      if (result == PinResult.lockedOut) {
+        _startCountdown(await controller.lockoutRemaining());
       }
     }
   }
@@ -80,6 +132,10 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final dotColor = AppColors.primary;
+    final waitLeft = _waitLeft;
+    final message = waitLeft > Duration.zero
+        ? l10n.tooManyPinAttempts(_formatWait(waitLeft))
+        : _error;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -125,9 +181,14 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
               }),
             ),
 
-            if (_error != null) ...[
+            if (message != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: TextStyle(color: AppColors.danger, fontSize: 13)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.danger, fontSize: 13)),
+              ),
             ],
 
             const Spacer(),
@@ -137,7 +198,9 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
               child: Column(
                 children: [
                   _UnlockNumberPad(
-                    textColor: textColor,
+                    textColor: waitLeft > Duration.zero
+                        ? textColor.withOpacity(0.3)
+                        : textColor,
                     onKeyTap: _onKeyTap,
                     onBackspace: _onBackspace,
                   ),

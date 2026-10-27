@@ -24,6 +24,7 @@ import '../../chat/screens/chat_screen.dart';
 import '../../../core/utils/string_utils.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -473,11 +474,12 @@ class GroupDetailScreen extends ConsumerWidget {
   // ✅ NEW — pick a photo from gallery and update the group's photo
   void _changeGroupPhoto(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 75,
-      maxWidth: 800,
-    );
+    final picked = await AppLockController.runWithoutLock(
+        () => ImagePicker().pickImage(
+              source: ImageSource.gallery,
+              imageQuality: 75,
+              maxWidth: 800,
+            ));
     if (picked == null) return;
 
     final error = await ref
@@ -638,11 +640,11 @@ class GroupDetailScreen extends ConsumerWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(sheetContext);
-                        Share.share(
-                          l10n.shareInviteMessage(
-                              group.name, group.inviteCode),
-                          subject: l10n.inviteToGroup(group.name),
-                        );
+                        AppLockController.runWithoutLock(() => Share.share(
+                              l10n.shareInviteMessage(
+                                  group.name, group.inviteCode),
+                              subject: l10n.inviteToGroup(group.name),
+                            ));
                       },
                       style: ElevatedButton.styleFrom(
                         padding:

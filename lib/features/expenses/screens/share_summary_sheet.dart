@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../groups/models/group_model.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 void showShareSummarySheet(BuildContext context, GroupModel group) {
   showModalBottomSheet(
@@ -274,6 +275,7 @@ class _ShareSummarySheet extends ConsumerWidget {
   }
 
   void _shareGeneral(String text) {
-    Share.share(text, subject: 'Splitly Expense Summary');
+    AppLockController.runWithoutLock(
+        () => Share.share(text, subject: 'Splitly Expense Summary'));
   }
 }

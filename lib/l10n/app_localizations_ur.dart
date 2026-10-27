@@ -468,6 +468,21 @@ class AppLocalizationsUr extends AppLocalizations {
   String get useBiometricsButton => 'بایومیٹرک استعمال کریں';
 
   @override
+  String tooManyPinAttempts(String time) {
+    return 'بہت زیادہ غلط کوششیں۔ $time بعد دوبارہ کوشش کریں۔';
+  }
+
+  @override
+  String lockedNotificationMessage(String group) {
+    return '$group میں نیا پیغام';
+  }
+
+  @override
+  String lockedNotificationActivity(String group) {
+    return '$group میں نئی سرگرمی';
+  }
+
+  @override
   String exportGroupTitle(String groupName) {
     return '$groupName ایکسپورٹ کریں';
   }

@@ -12,6 +12,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/groups_controller.dart';
 import 'package:splitly/core/utils/app_logger.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 const _avatarColors = [
   '#0F766E', '#134E4A', '#14B8A6',
@@ -89,16 +90,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
     if (userId == null) return;
 
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 90,
-      maxWidth: 1200,
-    );
+    final picked = await AppLockController.runWithoutLock(
+        () => ImagePicker().pickImage(
+              source: ImageSource.gallery,
+              imageQuality: 90,
+              maxWidth: 1200,
+            ));
     if (picked == null) return;
 
     // Let the user crop to a centered square before uploading — avoids
     // off-center or wrong-aspect-ratio photos looking odd in the circle.
-    final cropped = await ImageCropper().cropImage(
+    final cropped = await AppLockController.runWithoutLock(
+        () => ImageCropper().cropImage(
       sourcePath: picked.path,
       compressQuality: 80,
       compressFormat: ImageCompressFormat.jpg,
@@ -118,7 +121,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           aspectRatioLockEnabled: true,
         ),
       ],
-    );
+    ));
     if (cropped == null) return;
 
     setState(() => _isUploadingAvatar = true);

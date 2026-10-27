@@ -7,6 +7,7 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../groups/models/group_model.dart';
 import '../../expenses/models/expense_model.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 class ExportService {
   // ── PDF Export ──────────────────────────────────────────────────────────
@@ -88,7 +89,8 @@ class ExportService {
     );
 
     final bytes = await doc.save();
-    await Printing.sharePdf(bytes: bytes, filename: '${group.name}_summary.pdf');
+    await AppLockController.runWithoutLock(() => Printing.sharePdf(
+        bytes: bytes, filename: '${group.name}_summary.pdf'));
   }
 
   static pw.Widget _cell(String text, {bool bold = false}) => pw.Padding(
@@ -124,9 +126,9 @@ class ExportService {
     final file = File('${dir.path}/${group.name}_expenses.csv');
     await file.writeAsString(csvData);
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Splitly expense export for ${group.name}',
-    );
+    await AppLockController.runWithoutLock(() => Share.shareXFiles(
+          [XFile(file.path)],
+          text: 'Splitly expense export for ${group.name}',
+        ));
   }
 }

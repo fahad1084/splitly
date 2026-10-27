@@ -5,6 +5,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 class ReceiptScanResult {
   final double? amount;
@@ -34,7 +35,8 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   final _subtotalKeywords = ['subtotal', 'sub total', 'sub-total'];
 
   Future<void> _pickImage(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    final picked = await AppLockController.runWithoutLock(
+        () => ImagePicker().pickImage(source: source, imageQuality: 85));
     if (picked == null) return;
     setState(() {
       _image = File(picked.path);

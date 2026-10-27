@@ -165,6 +165,12 @@
   "enterPinToContinue": "Enter your PIN to continue",
   "incorrectPin": "Incorrect PIN. Try again.",
   "useBiometricsButton": "Use biometrics",
+  "tooManyPinAttempts": "Too many wrong tries. Try again in {time}.",
+  "@tooManyPinAttempts": { "placeholders": { "time": { "type": "String" } } },
+  "lockedNotificationMessage": "New message in {group}",
+  "@lockedNotificationMessage": { "placeholders": { "group": { "type": "String" } } },
+  "lockedNotificationActivity": "New activity in {group}",
+  "@lockedNotificationActivity": { "placeholders": { "group": { "type": "String" } } },
 
   "exportGroupTitle": "Export {groupName}",
   "@exportGroupTitle": { "placeholders": { "groupName": { "type": "String" } } },

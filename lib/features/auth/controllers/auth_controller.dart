@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../notifications/controllers/fcm_service.dart';
 import 'package:splitly/core/utils/app_logger.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 // ── Auth state stream ─────────────────────────────────────────────────────────
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -142,7 +143,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
         ],
       );
 
-      final googleUser = await googleSignIn.signIn();
+      final googleUser =
+          await AppLockController.runWithoutLock(googleSignIn.signIn);
       if (googleUser == null) {
         state = const AsyncValue.data(null);
         return null; // user cancelled

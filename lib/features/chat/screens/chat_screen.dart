@@ -15,6 +15,7 @@ import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/chat_controller.dart';
 import '../models/message_model.dart';
+import '../../security/controllers/app_lock_controller.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final GroupModel group;
@@ -150,8 +151,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   // ── Photo attachment ─────────────────────────────────────────────────────
   Future<void> _pickAndSendImage(ImageSource source) async {
-    final picked = await ImagePicker()
-        .pickImage(source: source, imageQuality: 70, maxWidth: 1600);
+    final picked = await AppLockController.runWithoutLock(() => ImagePicker()
+        .pickImage(source: source, imageQuality: 70, maxWidth: 1600));
     if (picked == null) return;
     if (!mounted) return;
 

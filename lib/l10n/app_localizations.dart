@@ -974,6 +974,24 @@ abstract class AppLocalizations {
   /// **'Use biometrics'**
   String get useBiometricsButton;
 
+  /// No description provided for @tooManyPinAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong tries. Try again in {time}.'**
+  String tooManyPinAttempts(String time);
+
+  /// No description provided for @lockedNotificationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New message in {group}'**
+  String lockedNotificationMessage(String group);
+
+  /// No description provided for @lockedNotificationActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'New activity in {group}'**
+  String lockedNotificationActivity(String group);
+
   /// No description provided for @exportGroupTitle.
   ///
   /// In en, this message translates to:
