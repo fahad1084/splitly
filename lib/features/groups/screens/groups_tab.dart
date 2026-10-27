@@ -127,7 +127,7 @@ class GroupsTab extends ConsumerWidget {
           groups.isEmpty ? 'PKR' : groups.first.currency;
 
           for (final group in groups) {
-            final summary = ref.watch(groupBalanceSummaryProvider(group.balanceKey));
+            final summary = ref.watch(groupDebtSummaryProvider(group.balanceKey));
             totalOwed += summary.youAreOwed;
             totalOwe += summary.youOwe;
           }

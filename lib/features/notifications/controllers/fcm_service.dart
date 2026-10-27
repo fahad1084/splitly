@@ -61,6 +61,10 @@ class FCMService {
     importance: Importance.high,
   );
 
+  /// Set by the app (AuthGate) to reload what a push says has changed,
+  /// while the app is open.
+  static void Function(Map<String, dynamic> data)? onForegroundData;
+
   // ── Initialize ────────────────────────────────────────────────────────────
   Future<void> initialize() async {
     await _requestPermission();
@@ -111,6 +115,7 @@ class FCMService {
     // sender's avatar as the large icon).
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       FCMService._showFromData(message.data);
+      onForegroundData?.call(message.data);
     });
 
     // App opened FROM notification

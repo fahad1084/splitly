@@ -54,8 +54,26 @@ final myDebtsProvider = FutureProvider<List<DebtRow>>((ref) async {
 // gets the same provider (a Map key created a new provider on every build).
 typedef GroupBalanceKey = ({String id, String name, String currency});
 
-final groupBalanceSummaryProvider =
+// For the Groups tab, Balances tab and home-screen widget: only what is owed,
+// from myDebtsProvider. Does NOT load the group's expenses (totalSpent is 0),
+// so the start screen makes no per-group requests.
+final groupDebtSummaryProvider =
 Provider.family<GroupBalanceSummary, GroupBalanceKey>((ref, group) {
+  final rows = ref.watch(myDebtsProvider).value ?? [];
+  return buildGroupSummary(
+    groupId: group.id,
+    groupName: group.name,
+    currency: group.currency,
+    totalSpentPaisa: 0,
+    rows: rows,
+    currentUserId: SupabaseConfig.client.auth.currentUser?.id ?? '',
+  );
+});
+
+// For screens inside one group: also totalSpent, so it loads the expenses.
+// autoDispose because expensesProvider is.
+final groupBalanceSummaryProvider =
+Provider.autoDispose.family<GroupBalanceSummary, GroupBalanceKey>((ref, group) {
   final expenses = ref.watch(expensesProvider(group.id)).value ?? [];
   final rows = ref.watch(myDebtsProvider).value ?? [];
   final currentUserId = SupabaseConfig.client.auth.currentUser?.id ?? '';
@@ -115,8 +133,9 @@ GroupBalanceSummary buildGroupSummary({
 // ── Payment history of one group ──────────────────────────────────────────────
 // 'migrated' rows are hidden: they only carry over what was already settled
 // before payments were tracked (old payments still show, as 'legacy').
+// autoDispose: freed when no screen of this group is open any more.
 final settlementsProvider =
-FutureProvider.family<List<SettlementModel>, String>((ref, groupId) async {
+FutureProvider.autoDispose.family<List<SettlementModel>, String>((ref, groupId) async {
   final db = SupabaseConfig.client;
   final List<dynamic> rows = await db
       .from('settlements')

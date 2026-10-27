@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
@@ -6,18 +7,92 @@ import '../../balances/controllers/balances_controller.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Expenses per group ────────────────────────────────────────────────────────
-final expensesProvider =
-AsyncNotifierProviderFamily<ExpensesController, List<ExpenseModel>, String>(
+// autoDispose: loaded only while a screen of this group is open, and the
+// group's realtime channel closes when the last one is left.
+final expensesProvider = AsyncNotifierProvider.autoDispose
+    .family<ExpensesController, List<ExpenseModel>, String>(
   ExpensesController.new,
 );
 
 class ExpensesController
-    extends FamilyAsyncNotifier<List<ExpenseModel>, String> {
+    extends AutoDisposeFamilyAsyncNotifier<List<ExpenseModel>, String> {
   String get _groupId => arg;
+  RealtimeChannel? _channel;
+  Timer? _refreshDebounce;
+  bool _disposed = false;
 
   @override
   Future<List<ExpenseModel>> build(String arg) async {
-    return _fetchExpenses();
+    final expenses = await _fetchExpenses();
+    _subscribeToRealtime();
+    ref.onDispose(() {
+      _disposed = true;
+      _refreshDebounce?.cancel();
+      _channel?.unsubscribe();
+    });
+    return expenses;
+  }
+
+  // ── Live updates for the open group ────────────────────────────────────────
+  // Someone else adds/deletes an expense or records/confirms a payment →
+  // reload this group's expenses, balances and payments once (debounced, so
+  // a burst of changes is one reload).
+  void _subscribeToRealtime() {
+    final groupFilter = PostgresChangeFilter(
+      type: PostgresChangeFilterType.eq,
+      column: 'group_id',
+      value: _groupId,
+    );
+    _channel = SupabaseConfig.client
+        .channel('group-live:$_groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'expenses',
+          filter: groupFilter,
+          callback: (payload) {
+            // Already in the list → our own save, which reloaded already
+            final id = payload.newRecord['id'];
+            if (state.value?.any((e) => e.id == id) ?? false) return;
+            _scheduleRefresh();
+          },
+        )
+        // DELETE events can't be filtered and carry only the id: react only
+        // when it is one of this group's expenses that we still show.
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'expenses',
+          callback: (payload) {
+            final id = payload.oldRecord['id'];
+            if (state.value?.any((e) => e.id == id) ?? false) {
+              _scheduleRefresh();
+            }
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'settlements',
+          filter: groupFilter,
+          callback: (_) => _scheduleRefresh(),
+        )
+        .subscribe();
+  }
+
+  void _scheduleRefresh() {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(const Duration(milliseconds: 800), () async {
+      if (_disposed) return;
+      ref.invalidate(myDebtsProvider);
+      ref.invalidate(settlementsProvider(_groupId));
+      try {
+        final fresh = await _fetchExpenses();
+        if (!_disposed) state = AsyncValue.data(fresh);
+      } catch (_) {
+        // keep showing the current list; pull-to-refresh still works
+      }
+    });
   }
 
   Future<List<ExpenseModel>> _fetchExpenses() async {
@@ -126,7 +201,9 @@ class ExpensesController
       await SupabaseConfig.client
           .rpc('delete_expense', params: {'p_expense_id': expenseId});
       ref.invalidate(myDebtsProvider);
-      state = AsyncValue.data(await _fetchExpenses());
+      // Just drop it from the list — no need to download the rest again
+      state = AsyncValue.data(
+          (state.value ?? []).where((e) => e.id != expenseId).toList());
       return null;
     } catch (e) {
       logDebug('=== DELETE EXPENSE ERROR: $e ===');

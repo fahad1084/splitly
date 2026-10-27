@@ -5,13 +5,59 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../features/groups/screens/groups_tab.dart';
 import '../../balances/screens/balances_tab.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../balances/controllers/balances_controller.dart';
+import '../../expenses/controllers/expenses_controller.dart';
+import '../../groups/controllers/groups_controller.dart';
+import '../../notifications/controllers/notifications_controller.dart';
 import 'profile_tab.dart';
 
 // ── Bottom nav index provider ─────────────────────────────────────────────────
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+  // Coming back after at least this long reloads balances, badges and
+  // notifications — so nobody needs to pull to refresh.
+  static const _refreshAfter = Duration(seconds: 10);
+  DateTime? _pausedAt;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _pausedAt ??= DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      final since = _pausedAt;
+      _pausedAt = null;
+      if (since == null || DateTime.now().difference(since) < _refreshAfter) {
+        return;
+      }
+      ref.invalidate(myDebtsProvider);
+      ref.invalidate(unreadCountsProvider);
+      ref.invalidate(notificationsProvider);
+      // Families: only the groups that are open right now reload
+      ref.invalidate(expensesProvider);
+      ref.invalidate(settlementsProvider);
+    }
+  }
 
   static const _tabs = [
     GroupsTab(),
@@ -20,7 +66,7 @@ class HomeScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentIndex = ref.watch(bottomNavIndexProvider);
     final dark = isDark(context);

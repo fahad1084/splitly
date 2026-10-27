@@ -88,31 +88,20 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       final groupIds =
       memberRows.map((r) => r['group_id'] as String).toList();
 
-      // Fetch groups
+      // Fetch groups, with the member count in the same request
       final List<dynamic> groupRows = await _db
           .from('groups')
-          .select('*')
+          .select('*, group_members(count)')
           .inFilter('id', groupIds)
           .eq('is_archived', false)
           .order('created_at', ascending: false);
 
-
-      // Count members per group
-      final List<dynamic> countRows = await _db
-          .from('group_members')
-          .select('group_id')
-          .inFilter('group_id', groupIds);
-
-      final countMap = <String, int>{};
-      for (final r in countRows) {
-        final id = r['group_id'] as String;
-        countMap[id] = (countMap[id] ?? 0) + 1;
-      }
-
       final result = groupRows.map((g) {
+        final counts = g['group_members'] as List? ?? const [];
         return GroupModel.fromMap({
           ...Map<String, dynamic>.from(g),
-          'member_count': countMap[g['id']] ?? 0,
+          'member_count':
+              counts.isEmpty ? 0 : (counts.first['count'] as num).toInt(),
         });
       }).toList();
 
@@ -156,7 +145,10 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         .from('groups')
         .update({'is_archived': true})
         .eq('id', groupId);
-    state = AsyncValue.data(await _fetchGroups());
+    // Just drop it from the list — no need to download the rest again
+    state = AsyncValue.data(
+        (state.value ?? []).where((g) => g.id != groupId).toList());
+    ref.invalidate(archivedGroupsProvider);
   }
 
   Future<void> unarchiveGroup(String groupId) async {
@@ -279,7 +271,11 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         } catch (_) {}
       }
 
-      state = AsyncValue.data(await _fetchGroups());
+      // Only the photo changed — update it in the list we already have
+      state = AsyncValue.data([
+        for (final g in state.value ?? <GroupModel>[])
+          g.id == groupId ? g.copyWith(photoUrl: url) : g,
+      ]);
       return null;
     } catch (e) {
       logDebug('=== UPDATE GROUP PHOTO ERROR: $e ===');
@@ -294,7 +290,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
 }
 
 final groupDetailProvider =
-FutureProvider.family<GroupModel?, String>((ref, groupId) async {
+FutureProvider.autoDispose.family<GroupModel?, String>((ref, groupId) async {
   final db = SupabaseConfig.client;
   try {
     final dynamic resp = await db
@@ -320,8 +316,9 @@ FutureProvider.family<GroupModel?, String>((ref, groupId) async {
 
 
 
+// autoDispose: freed when no screen of this group is open any more.
 final groupMembersProvider =
-FutureProvider.family<List<Map<String, dynamic>>, String>(
+FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>(
         (ref, groupId) async {
       try {
         final List<dynamic> resp = await SupabaseConfig.client

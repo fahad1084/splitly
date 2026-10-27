@@ -185,6 +185,9 @@ class _AuthGateState extends State<AuthGate> {
     super.initState();
     _container = ProviderScope.containerOf(context, listen: false);
 
+    // A push arrived while the app is open → reload just what it is about
+    FCMService.onForegroundData = _onPushData;
+
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       _handleAuthEvent(event);
@@ -238,6 +241,30 @@ class _AuthGateState extends State<AuthGate> {
         break;
 
       default:
+        break;
+    }
+  }
+
+  void _onPushData(Map<String, dynamic> data) {
+    final groupId = data['group_id'] as String? ?? '';
+    _container.invalidate(notificationsProvider);
+    switch (data['type']) {
+      case 'message':
+        _container.invalidate(unreadCountsProvider);
+        break;
+      case 'expense':
+      case 'settlement':
+        _container.invalidate(myDebtsProvider);
+        if (groupId.isNotEmpty) {
+          _container.invalidate(expensesProvider(groupId));
+          _container.invalidate(settlementsProvider(groupId));
+        }
+        break;
+      case 'member_joined':
+        _container.invalidate(groupsProvider);
+        if (groupId.isNotEmpty) {
+          _container.invalidate(groupMembersProvider(groupId));
+        }
         break;
     }
   }

@@ -29,6 +29,20 @@ class GroupModel {
   ({String id, String name, String currency}) get balanceKey =>
       (id: id, name: name, currency: currency);
 
+  GroupModel copyWith({String? photoUrl}) => GroupModel(
+        id: id,
+        name: name,
+        description: description,
+        currency: currency,
+        createdBy: createdBy,
+        inviteCode: inviteCode,
+        isArchived: isArchived,
+        createdAt: createdAt,
+        category: category,
+        photoUrl: photoUrl ?? this.photoUrl,
+        memberCount: memberCount,
+      );
+
   factory GroupModel.fromMap(Map<String, dynamic> map) {
     return GroupModel(
       id: map['id'] as String,

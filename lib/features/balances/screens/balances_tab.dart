@@ -48,7 +48,7 @@ class BalancesTab extends ConsumerWidget {
 
           // Build summaries (the debts come from the database in one call)
           final summaries = groups.map((group) {
-            return ref.watch(groupBalanceSummaryProvider(group.balanceKey));
+            return ref.watch(groupDebtSummaryProvider(group.balanceKey));
           }).toList();
 
           final currentUserId =
