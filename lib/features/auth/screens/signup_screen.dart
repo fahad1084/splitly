@@ -4,7 +4,6 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
-import 'home_screen.dart';
 import '../../../core/utils/app_errors.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -90,8 +89,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     final dividerColor =
     dark ? AppColors.primaryDark : AppColors.primaryTint;
     final linkMutedColor = dark
-        ? AppColors.primaryTint.withOpacity(0.6)
-        : AppColors.primaryDark.withOpacity(0.6);
+        ? AppColors.primaryTint.withValues(alpha: 0.6)
+        : AppColors.primaryDark.withValues(alpha: 0.6);
 
     return AuthPageWrapper(
       showBackButton: true,

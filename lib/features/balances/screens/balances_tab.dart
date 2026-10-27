@@ -295,10 +295,10 @@ class _BannerStat extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border:
-        Border.all(color: color.withOpacity(0.3), width: 0.5),
+        Border.all(color: color.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,7 +341,7 @@ class _DebtTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: dark
-              ? AppColors.primary.withOpacity(0.2)
+              ? AppColors.primary.withValues(alpha: 0.2)
               : AppColors.primaryTint,
           width: 0.5,
         ),
@@ -350,7 +350,7 @@ class _DebtTile extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: AppColors.danger.withOpacity(0.15),
+            backgroundColor: AppColors.danger.withValues(alpha: 0.15),
             child: Text(
               debt.fromUserName[0].toUpperCase(),
               style: TextStyle(
@@ -466,7 +466,7 @@ class _GroupBalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: dark
-              ? AppColors.primary.withOpacity(0.2)
+              ? AppColors.primary.withValues(alpha: 0.2)
               : AppColors.primaryTint,
           width: 0.5,
         ),
@@ -547,7 +547,7 @@ class _GroupStat extends StatelessWidget {
       padding:
       const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -631,7 +631,7 @@ class _SettledState extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: AppColors.success.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.check_circle_outline_rounded,

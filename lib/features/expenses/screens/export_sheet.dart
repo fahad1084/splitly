@@ -96,7 +96,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -152,7 +152,7 @@ class _ExportOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = isDark(context);
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
-    final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
+    final borderColor = dark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primaryTint;
 
     return InkWell(
       onTap: onTap,
@@ -169,7 +169,7 @@ class _ExportOptionTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.12),
+                color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor, size: 22),

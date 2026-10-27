@@ -76,9 +76,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     dark ? AppColors.primaryDark : Colors.white;
     final navSelected = AppColors.primary;
     final navUnselected =
-    dark ? AppColors.primaryLight.withOpacity(0.5) : AppColors.primaryLight;
+    dark ? AppColors.primaryLight.withValues(alpha: 0.5) : AppColors.primaryLight;
     final indicatorColor =
-    dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
+    dark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryTint;
 
     return Scaffold(
       // IndexedStack keeps all tabs alive — no reload on tab switch

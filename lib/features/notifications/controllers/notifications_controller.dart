@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/supabase/supabase_config.dart';
-import '../../auth/controllers/auth_controller.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 import 'package:splitly/core/utils/app_errors.dart';
 

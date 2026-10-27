@@ -205,12 +205,12 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.receipt_long_rounded,
-                            size: 72, color: AppColors.primaryLight.withOpacity(0.6)),
+                            size: 72, color: AppColors.primaryLight.withValues(alpha: 0.6)),
                         const SizedBox(height: 16),
                         Text(
                           l10n.scanReceiptDesc,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: textColor.withOpacity(0.7)),
+                          style: TextStyle(color: textColor.withValues(alpha: 0.7)),
                         ),
                       ],
                     ),

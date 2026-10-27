@@ -241,7 +241,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                   CircleAvatar(
                     radius: 16,
                     backgroundColor:
-                    AppColors.primary.withOpacity(0.2),
+                    AppColors.primary.withValues(alpha: 0.2),
                     child: Text(
                       getInitial(split.userName),
                       style: const TextStyle(
@@ -268,7 +268,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color:
-                        AppColors.success.withOpacity(0.1),
+                        AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(l10n.settled,

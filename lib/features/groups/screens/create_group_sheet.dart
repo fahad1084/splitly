@@ -159,7 +159,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                           color: selected
                               ? AppColors.primary
                               : dark
-                              ? AppColors.primaryDark.withOpacity(0.5)
+                              ? AppColors.primaryDark.withValues(alpha: 0.5)
                               : AppColors.primaryTint,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
@@ -252,7 +252,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                 decoration: BoxDecoration(
                   color: dark
                       ? AppColors.primaryDark
-                      : AppColors.primaryTint.withOpacity(0.4),
+                      : AppColors.primaryTint.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.primaryLight),
                 ),
@@ -287,8 +287,8 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                               style: TextStyle(
                                 fontSize: 13,
                                 color: dark
-                                    ? AppColors.primaryTint.withOpacity(0.7)
-                                    : AppColors.primaryDark.withOpacity(0.6),
+                                    ? AppColors.primaryTint.withValues(alpha: 0.7)
+                                    : AppColors.primaryDark.withValues(alpha: 0.6),
                               ),
                             ),
                           ],

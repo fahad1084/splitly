@@ -39,7 +39,7 @@ Future<void> openNotificationTarget(
   } catch (e) {
     logDebug('=== OPEN NOTIFICATION: group $groupId not available: $e ===');
   }
-  if (!nav.mounted) return;
+  if (!context.mounted) return; // the navigator's own context
   if (group == null || group.isArchived) {
     showErrorSnack(context, l10n.groupNoLongerAvailable);
     return;

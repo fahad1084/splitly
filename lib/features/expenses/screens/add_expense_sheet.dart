@@ -439,13 +439,13 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
               decoration: InputDecoration(
                 labelText: l10n.amount,
                 labelStyle: TextStyle(
-                    color: AppColors.primary.withOpacity(0.7),
+                    color: AppColors.primary.withValues(alpha: 0.7),
                     fontSize: 15),
                 floatingLabelStyle: const TextStyle(
                     color: AppColors.primary, fontSize: 13),
                 hintText: '0.00',
                 hintStyle: TextStyle(
-                    color: AppColors.primaryLight.withOpacity(0.4),
+                    color: AppColors.primaryLight.withValues(alpha: 0.4),
                     fontSize: 28),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
@@ -785,7 +785,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     decoration: BoxDecoration(
                       color: included
                           ? (dark
-                          ? AppColors.primary.withOpacity(0.15)
+                          ? AppColors.primary.withValues(alpha: 0.15)
                           : AppColors.primaryTint)
                           : (dark
                           ? AppColors.primaryDark
@@ -793,8 +793,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: included
-                            ? AppColors.primary.withOpacity(0.3)
-                            : AppColors.primaryTint.withOpacity(0.3),
+                            ? AppColors.primary.withValues(alpha: 0.3)
+                            : AppColors.primaryTint.withValues(alpha: 0.3),
                         width: 0.5,
                       ),
                     ),
@@ -859,7 +859,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               fontWeight: FontWeight.w500,
                               color: included
                                   ? headingColor
-                                  : headingColor.withOpacity(0.4),
+                                  : headingColor.withValues(alpha: 0.4),
                             ),
                           ),
                         ),
@@ -876,7 +876,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               color: included
                                   ? AppColors.primary
                                   : AppColors.mutedText(context)
-                                  .withOpacity(0.4),
+                                  .withValues(alpha: 0.4),
                             ),
                           ),
 
@@ -887,11 +887,11 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                 horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: dark
-                                  ? AppColors.primary.withOpacity(0.15)
+                                  ? AppColors.primary.withValues(alpha: 0.15)
                                   : AppColors.primaryTint,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.6),
+                                  color: AppColors.primary.withValues(alpha: 0.6),
                                   width: 1.2),
                             ),
                             child: TextFormField(
@@ -909,7 +909,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                 hintText: '0',
                                 hintStyle: TextStyle(
                                     color: AppColors.mutedText(context)
-                                        .withOpacity(0.4),
+                                        .withValues(alpha: 0.4),
                                     fontSize: 13),
                                 prefixText: '${widget.group.currency} ',
                                 prefixStyle: TextStyle(
@@ -935,11 +935,11 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                 horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: dark
-                                  ? AppColors.primary.withOpacity(0.15)
+                                  ? AppColors.primary.withValues(alpha: 0.15)
                                   : AppColors.primaryTint,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.6),
+                                  color: AppColors.primary.withValues(alpha: 0.6),
                                   width: 1.2),
                             ),
                             child: TextFormField(
@@ -957,7 +957,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                 hintText: '0',
                                 hintStyle: TextStyle(
                                     color: AppColors.mutedText(context)
-                                        .withOpacity(0.4),
+                                        .withValues(alpha: 0.4),
                                     fontSize: 13),
                                 suffixText: l10n.percentSymbol,
                                 suffixStyle: TextStyle(
@@ -997,7 +997,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             if (!_editing) Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: dark ? AppColors.primaryDark.withOpacity(0.4) : AppColors.primaryTint.withOpacity(0.4),
+                color: dark ? AppColors.primaryDark.withValues(alpha: 0.4) : AppColors.primaryTint.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
@@ -1017,7 +1017,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                       ),
                       Switch(
                         value: _isRecurring,
-                        activeColor: AppColors.primary,
+                        activeThumbColor: AppColors.primary,
                         onChanged: (v) => setState(() => _isRecurring = v),
                       ),
                     ],

@@ -39,7 +39,7 @@ class ProfileTab extends ConsumerWidget {
     dark ? AppColors.primaryTint : AppColors.primaryDark;
     final cardBg = dark ? AppColors.primaryDark : Colors.white;
     final cardBorder = dark
-        ? AppColors.primary.withOpacity(0.2)
+        ? AppColors.primary.withValues(alpha: 0.2)
         : AppColors.primaryTint;
 
     return Scaffold(
@@ -219,7 +219,7 @@ class ProfileTab extends ConsumerWidget {
               l10n.splitlyFooter,
               style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.primaryLight.withOpacity(0.5)),
+                  color: AppColors.primaryLight.withValues(alpha: 0.5)),
             ),
 
             const SizedBox(height: 24),
@@ -252,7 +252,7 @@ class ProfileTab extends ConsumerWidget {
                 width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -346,8 +346,8 @@ class ProfileTab extends ConsumerWidget {
           l10n.deleteAccountWarning,
           style: TextStyle(
             color: dark
-                ? AppColors.primaryTint.withOpacity(0.8)
-                : AppColors.primaryDark.withOpacity(0.7),
+                ? AppColors.primaryTint.withValues(alpha: 0.8)
+                : AppColors.primaryDark.withValues(alpha: 0.7),
           ),
         ),
         actions: [
@@ -387,8 +387,8 @@ class ProfileTab extends ConsumerWidget {
                   l10n.deleteAccountConfirmPrompt,
                   style: TextStyle(
                     color: dark
-                        ? AppColors.primaryTint.withOpacity(0.8)
-                        : AppColors.primaryDark.withOpacity(0.7),
+                        ? AppColors.primaryTint.withValues(alpha: 0.8)
+                        : AppColors.primaryDark.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -462,7 +462,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
   final dark = isDark(context);
   final sheetBg = dark ? AppColors.primaryDark : Colors.white;
   final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
-  final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
+  final borderColor = dark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primaryTint;
 
   showModalBottomSheet(
     context: context,
@@ -493,7 +493,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.4),
+                      color: AppColors.primaryLight.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -505,7 +505,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.lock_outline_rounded,
@@ -561,7 +561,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                           style: TextStyle(fontSize: 12, color: AppColors.mutedText(context)),
                         ),
                         value: localBiometricOn,
-                        activeColor: AppColors.primary,
+                        activeThumbColor: AppColors.primary,
                         onChanged: (val) async {
                           await controller.setBiometricEnabled(val);
                           setSheetState(() => localBiometricOn = val);
@@ -577,7 +577,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.danger,
-                      side: BorderSide(color: AppColors.danger.withOpacity(0.4)),
+                      side: BorderSide(color: AppColors.danger.withValues(alpha: 0.4)),
                     ),
                     icon: const Icon(Icons.lock_open_rounded, size: 18),
                     label: Text(l10n.disableAppLock),
@@ -608,8 +608,8 @@ void _confirmDisableAppLock(BuildContext context, WidgetRef ref) {
         l10n.disableAppLockDesc,
         style: TextStyle(
           color: dark
-              ? AppColors.primaryTint.withOpacity(0.8)
-              : AppColors.primaryDark.withOpacity(0.7),
+              ? AppColors.primaryTint.withValues(alpha: 0.8)
+              : AppColors.primaryDark.withValues(alpha: 0.7),
         ),
       ),
       actions: [

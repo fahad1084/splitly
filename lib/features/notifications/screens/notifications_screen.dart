@@ -74,7 +74,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -117,12 +117,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   children: [
                     Icon(Icons.notifications_off_outlined,
                         size: 56,
-                        color: AppColors.primaryLight.withOpacity(0.5)),
+                        color: AppColors.primaryLight.withValues(alpha: 0.5)),
                     const SizedBox(height: 12),
                     Text(l10n.noNotificationsYet,
                         style: TextStyle(
                             color: AppColors.mutedText(context)
-                                .withOpacity(0.8))),
+                                .withValues(alpha: 0.8))),
                   ],
                 ),
               ),
@@ -158,13 +158,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     decoration: BoxDecoration(
                       color: n.isUnread
                           ? (dark
-                          ? AppColors.primary.withOpacity(0.15)
+                          ? AppColors.primary.withValues(alpha: 0.15)
                           : AppColors.primaryTint)
                           : (dark ? AppColors.primaryDark : Colors.white),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: dark
-                            ? AppColors.primary.withOpacity(0.2)
+                            ? AppColors.primary.withValues(alpha: 0.2)
                             : AppColors.primaryTint,
                         width: 0.5,
                       ),
@@ -176,7 +176,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           width: 38,
                           height: 38,
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.15),
+                            color: AppColors.primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(_iconFor(n.type),
@@ -202,7 +202,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.mutedText(context)
-                                          .withOpacity(0.9))),
+                                          .withValues(alpha: 0.9))),
                             ],
                           ),
                         ),
@@ -214,7 +214,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.mutedText(context)
-                                        .withOpacity(0.6))),
+                                        .withValues(alpha: 0.6))),
                             if (n.isUnread) ...[
                               const SizedBox(height: 6),
                               Container(

@@ -50,7 +50,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -91,7 +91,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
               decoration: InputDecoration(
                 hintText: l10n.searchExpenses,
                 hintStyle: TextStyle(
-                    color: AppColors.primaryLight.withOpacity(0.5),
+                    color: AppColors.primaryLight.withValues(alpha: 0.5),
                     fontSize: 14),
                 prefixIcon: const Icon(Icons.search_rounded,
                     color: AppColors.primary, size: 20),
@@ -488,7 +488,7 @@ class _CustomRangeChip extends ConsumerWidget {
                 confirmButtonStyle:
                 TextButton.styleFrom(foregroundColor: AppColors.primary),
                 cancelButtonStyle: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryDark.withOpacity(0.6)),
+                    foregroundColor: AppColors.primaryDark.withValues(alpha: 0.6)),
               ),
             ),
             child: child!,

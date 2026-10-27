@@ -57,7 +57,7 @@ class GroupDetailScreen extends ConsumerWidget {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -75,7 +75,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                   image: (group.photoUrl != null && group.photoUrl!.isNotEmpty)
                       ? DecorationImage(
@@ -200,7 +200,7 @@ class GroupDetailScreen extends ConsumerWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.accent.withOpacity(0.15),
+                                color: AppColors.accent.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -238,7 +238,7 @@ class GroupDetailScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: dark
-                                  ? AppColors.primary.withOpacity(0.2)
+                                  ? AppColors.primary.withValues(alpha: 0.2)
                                   : AppColors.primaryTint,
                               width: 0.5,
                             ),
@@ -555,7 +555,7 @@ class GroupDetailScreen extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withOpacity(0.4),
+                    color: AppColors.primaryLight.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -583,7 +583,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: codeBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primaryLight.withOpacity(0.4)),
+                  border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.4)),
                 ),
                 child: Column(
                   children: [
@@ -623,7 +623,7 @@ class GroupDetailScreen extends ConsumerWidget {
                       l10n.inviteCode,
                       style: TextStyle(
                         fontSize: 12,
-                        color: textColor.withOpacity(0.5),
+                        color: textColor.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -692,7 +692,7 @@ class GroupDetailScreen extends ConsumerWidget {
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
-    final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
+    final borderColor = dark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primaryTint;
 
     showModalBottomSheet(
       context: context,
@@ -718,7 +718,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -869,7 +869,7 @@ class GroupDetailScreen extends ConsumerWidget {
         ),
         content: Text(
           l10n.archiveGroupDesc,
-          style: TextStyle(color: dark ? AppColors.primaryTint.withOpacity(0.8) : AppColors.primaryDark.withOpacity(0.7)),
+          style: TextStyle(color: dark ? AppColors.primaryTint.withValues(alpha: 0.8) : AppColors.primaryDark.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -900,7 +900,7 @@ class GroupDetailScreen extends ConsumerWidget {
         title: Text(l10n.leaveGroup,
             style: TextStyle(color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
         content: Text(l10n.leaveGroupConfirm,
-            style: TextStyle(color: dark ? AppColors.primaryTint.withOpacity(0.8) : AppColors.primaryDark.withOpacity(0.7))),
+            style: TextStyle(color: dark ? AppColors.primaryTint.withValues(alpha: 0.8) : AppColors.primaryDark.withValues(alpha: 0.7))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -1028,7 +1028,7 @@ class _MenuTile extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.12),
+                color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -1185,7 +1185,7 @@ class _MemberTile extends ConsumerWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: dark
-                  ? AppColors.primary.withOpacity(0.2)
+                  ? AppColors.primary.withValues(alpha: 0.2)
                   : AppColors.primaryTint,
               width: 0.5,
             ),
@@ -1264,7 +1264,7 @@ class _MemberTile extends ConsumerWidget {
     final dark = isDark(context);
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final borderColor =
-    dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
+    dark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryTint;
 
     showModalBottomSheet(
       context: context,
@@ -1283,7 +1283,7 @@ class _MemberTile extends ConsumerWidget {
                 width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),

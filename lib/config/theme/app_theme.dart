@@ -95,7 +95,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.primaryTint.withOpacity(0.4),
+      fillColor: AppColors.primaryTint.withValues(alpha: 0.4),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.primaryLight),
@@ -143,7 +143,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

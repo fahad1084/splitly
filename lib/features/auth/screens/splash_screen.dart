@@ -88,8 +88,8 @@ class _SplashScreenState extends State<SplashScreen>
     final nameColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final taglineColor = dark ? AppColors.accent : AppColors.accentDark;
     final spinnerColor = dark
-        ? AppColors.accent.withOpacity(0.6)
-        : AppColors.primary.withOpacity(0.6);
+        ? AppColors.accent.withValues(alpha: 0.6)
+        : AppColors.primary.withValues(alpha: 0.6);
 
     return Scaffold(
       backgroundColor: bgColor,

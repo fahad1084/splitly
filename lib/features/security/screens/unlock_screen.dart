@@ -147,7 +147,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
+                color: AppColors.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.lock_rounded, size: 30, color: AppColors.primary),
@@ -199,7 +199,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                 children: [
                   _UnlockNumberPad(
                     textColor: waitLeft > Duration.zero
-                        ? textColor.withOpacity(0.3)
+                        ? textColor.withValues(alpha: 0.3)
                         : textColor,
                     onKeyTap: _onKeyTap,
                     onBackspace: _onBackspace,

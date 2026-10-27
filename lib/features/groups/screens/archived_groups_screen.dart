@@ -29,7 +29,7 @@ class ArchivedGroupsScreen extends ConsumerWidget {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -59,12 +59,12 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.archive_outlined,
                         size: 56,
-                        color: AppColors.primaryLight.withOpacity(0.5)),
+                        color: AppColors.primaryLight.withValues(alpha: 0.5)),
                     const SizedBox(height: 12),
                     Text(l10n.noArchivedGroups,
                         style: TextStyle(
                             color: AppColors.mutedText(context)
-                                .withOpacity(0.8))),
+                                .withValues(alpha: 0.8))),
                   ],
                 ),
               ),
@@ -84,7 +84,7 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: dark
-                        ? AppColors.primary.withOpacity(0.2)
+                        ? AppColors.primary.withValues(alpha: 0.2)
                         : AppColors.primaryTint,
                     width: 0.5,
                   ),

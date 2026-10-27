@@ -318,14 +318,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 TextFormField(
                   initialValue: email,
                   readOnly: true,
-                  style: TextStyle(color: textColor.withOpacity(0.5)),
+                  style: TextStyle(color: textColor.withValues(alpha: 0.5)),
                   decoration: InputDecoration(
                     labelText: l10n.yourEmail,
                     prefixIcon: const Icon(Icons.email_outlined),
                     filled: true,
                     fillColor: dark
-                        ? AppColors.primaryDark.withOpacity(0.3)
-                        : AppColors.primaryTint.withOpacity(0.3),
+                        ? AppColors.primaryDark.withValues(alpha: 0.3)
+                        : AppColors.primaryTint.withValues(alpha: 0.3),
                   ),
                 ),
 

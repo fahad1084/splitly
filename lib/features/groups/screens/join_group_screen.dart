@@ -211,7 +211,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
                 hintText: 'a1b2c3d4',
                 hintStyle: TextStyle(
                   fontSize: 20,
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   letterSpacing: 4,
                 ),
                 labelText: l10n.inviteCode,

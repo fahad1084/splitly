@@ -6,7 +6,6 @@ import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
-import 'home_screen.dart';
 import 'package:flutter/services.dart';
 import '../../../core/utils/app_errors.dart';
 
@@ -125,8 +124,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final dividerColor =
     dark ? AppColors.primaryDark : AppColors.primaryTint;
     final linkMutedColor = dark
-        ? AppColors.primaryTint.withOpacity(0.6)
-        : AppColors.primaryDark.withOpacity(0.6);
+        ? AppColors.primaryTint.withValues(alpha: 0.6)
+        : AppColors.primaryDark.withValues(alpha: 0.6);
 
     return AuthPageWrapper(
       child: FadeTransition(

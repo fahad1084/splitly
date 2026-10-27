@@ -5,7 +5,6 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/expense_model.dart';
 import '../../balances/controllers/balances_controller.dart';
-import '../../../core/utils/string_utils.dart';
 import '../../../core/utils/money_format.dart';
 
 // Matches _categoryIcons in add_expense_sheet.dart
@@ -134,7 +133,7 @@ class ExpenseTile extends ConsumerWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: dark
-                ? AppColors.primary.withOpacity(0.2)
+                ? AppColors.primary.withValues(alpha: 0.2)
                 : AppColors.primaryTint,
             width: 0.5,
           ),
@@ -147,7 +146,7 @@ class ExpenseTile extends ConsumerWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: dark
-                    ? AppColors.primary.withOpacity(0.2)
+                    ? AppColors.primary.withValues(alpha: 0.2)
                     : AppColors.primaryTint,
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -184,7 +183,7 @@ class ExpenseTile extends ConsumerWidget {
                         const SizedBox(width: 6),
                         Icon(Icons.repeat_rounded,
                             size: 13,
-                            color: AppColors.primary.withOpacity(0.7)),
+                            color: AppColors.primary.withValues(alpha: 0.7)),
                       ],
                     ],
                   ),

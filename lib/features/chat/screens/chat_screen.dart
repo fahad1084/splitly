@@ -195,7 +195,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     width: 40, height: 4,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.4),
+                      color: AppColors.primaryLight.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -218,8 +218,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     filled: true,
                     fillColor: dark
-                        ? AppColors.primaryDark.withOpacity(0.5)
-                        : AppColors.primaryTint.withOpacity(0.4),
+                        ? AppColors.primaryDark.withValues(alpha: 0.5)
+                        : AppColors.primaryTint.withValues(alpha: 0.4),
                     contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -273,7 +273,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final dark = isDark(context);
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
-    final borderColor = dark ? AppColors.primary.withOpacity(0.3) : AppColors.primaryTint;
+    final borderColor = dark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primaryTint;
 
     showModalBottomSheet(
       context: context,
@@ -293,7 +293,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -403,7 +403,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final dark = isDark(context);
     final messagesAsync = ref.watch(messagesProvider(widget.group.id));
 
     return Scaffold(
@@ -418,7 +417,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -431,7 +430,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.group_rounded,
@@ -645,7 +644,7 @@ class _AttachmentTile extends StatelessWidget {
             Container(
               width: 38, height: 38,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
+                color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: AppColors.primary, size: 20),
@@ -695,8 +694,8 @@ class _MessageBubble extends ConsumerWidget {
               CircleAvatar(
                 radius: 14,
                 backgroundColor: _parseHex(message.senderAvatarColor)
-                    ?.withOpacity(0.2) ??
-                    AppColors.primary.withOpacity(0.2),
+                    ?.withValues(alpha: 0.2) ??
+                    AppColors.primary.withValues(alpha: 0.2),
                 backgroundImage: (message.senderAvatarUrl != null &&
                     message.senderAvatarUrl!.isNotEmpty)
                     ? NetworkImage(message.senderAvatarUrl!)
@@ -743,7 +742,7 @@ class _MessageBubble extends ConsumerWidget {
                         maxWidth: MediaQuery.of(context).size.width * 0.7,
                       ),
                       decoration: BoxDecoration(
-                        color: (isMe ? Colors.white : AppColors.primary).withOpacity(0.12),
+                        color: (isMe ? Colors.white : AppColors.primary).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border: BorderDirectional(
                           start: BorderSide(
@@ -769,7 +768,7 @@ class _MessageBubble extends ConsumerWidget {
                                 color: (isMe
                                     ? Colors.white
                                     : (dark ? AppColors.primaryTint : AppColors.primaryDark))
-                                    .withOpacity(0.8)),
+                                    .withValues(alpha: 0.8)),
                           ),
                         ],
                       ),
@@ -819,7 +818,7 @@ class _MessageBubble extends ConsumerWidget {
                             ? null
                             : Border.all(
                             color: dark
-                                ? AppColors.primary.withOpacity(0.2)
+                                ? AppColors.primary.withValues(alpha: 0.2)
                                 : AppColors.primaryTint,
                             width: 0.5),
                       ),
@@ -867,7 +866,7 @@ class _MessageBubble extends ConsumerWidget {
                 width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.4),
+                  color: AppColors.primaryLight.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -1136,7 +1135,6 @@ class _AudioBubbleState extends State<_AudioBubble> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final bg = widget.isMe
         ? AppColors.primary
         : widget.dark
@@ -1163,7 +1161,7 @@ class _AudioBubbleState extends State<_AudioBubble> {
             ? null
             : Border.all(
             color: widget.dark
-                ? AppColors.primary.withOpacity(0.2)
+                ? AppColors.primary.withValues(alpha: 0.2)
                 : AppColors.primaryTint,
             width: 0.5),
       ),
@@ -1190,19 +1188,19 @@ class _AudioBubbleState extends State<_AudioBubble> {
                   child: LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
                     minHeight: 3,
-                    backgroundColor: iconColor.withOpacity(0.2),
+                    backgroundColor: iconColor.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation(iconColor),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _isPlaying ? _fmt(_position) : _fmt(_total),
-                  style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.8)),
+                  style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.8)),
                 ),
               ],
             ),
           ),
-          Icon(Icons.mic_rounded, size: 14, color: iconColor.withOpacity(0.6)),
+          Icon(Icons.mic_rounded, size: 14, color: iconColor.withValues(alpha: 0.6)),
         ],
       ),
     );
@@ -1289,7 +1287,7 @@ class _MessageInput extends StatelessWidget {
     final dark = isDark(context);
     final bg = dark ? AppColors.primaryDark : Colors.white;
     final borderColor =
-    dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
+    dark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryTint;
 
     return Container(
       padding: EdgeInsets.only(
@@ -1311,7 +1309,7 @@ class _MessageInput extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
               ),
@@ -1389,7 +1387,7 @@ class _MessageInput extends StatelessWidget {
                 label: AppLocalizations.of(context)!.attachFile,
                 onTap: isSending ? null : onAttachment,
                 child: Icon(Icons.attach_file_rounded,
-                    color: AppColors.primary.withOpacity(isSending ? 0.4 : 1)),
+                    color: AppColors.primary.withValues(alpha: isSending ? 0.4 : 1)),
               ),
               const SizedBox(width: 8),
 
@@ -1398,11 +1396,11 @@ class _MessageInput extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
                     color: dark
-                        ? AppColors.primaryDark.withOpacity(0.5)
-                        : AppColors.primaryTint.withOpacity(0.4),
+                        ? AppColors.primaryDark.withValues(alpha: 0.5)
+                        : AppColors.primaryTint.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                        color: AppColors.primaryLight.withOpacity(0.3),
+                        color: AppColors.primaryLight.withValues(alpha: 0.3),
                         width: 0.5),
                   ),
                   child: TextField(
@@ -1417,7 +1415,7 @@ class _MessageInput extends StatelessWidget {
                       hintText: l10n.messageHint,
                       hintStyle: TextStyle(
                           fontSize: 14,
-                          color: AppColors.primaryLight.withOpacity(0.5)),
+                          color: AppColors.primaryLight.withValues(alpha: 0.5)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -1458,7 +1456,7 @@ class _MessageInput extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: isSending
-                            ? AppColors.primary.withOpacity(0.5)
+                            ? AppColors.primary.withValues(alpha: 0.5)
                             : AppColors.primary,
                         shape: BoxShape.circle,
                       ),

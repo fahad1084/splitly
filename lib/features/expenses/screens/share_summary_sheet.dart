@@ -102,7 +102,7 @@ class _ShareSummarySheet extends ConsumerWidget {
               color: cardBg,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                  color: AppColors.primaryLight.withOpacity(0.3),
+                  color: AppColors.primaryLight.withValues(alpha: 0.3),
                   width: 0.5),
             ),
             child: Column(
@@ -127,8 +127,8 @@ class _ShareSummarySheet extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: dark
-                        ? AppColors.primaryTint.withOpacity(0.8)
-                        : AppColors.primaryDark.withOpacity(0.8),
+                        ? AppColors.primaryTint.withValues(alpha: 0.8)
+                        : AppColors.primaryDark.withValues(alpha: 0.8),
                     height: 1.6,
                     fontFamily: 'monospace',
                   ),

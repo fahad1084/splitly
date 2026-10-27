@@ -35,7 +35,7 @@ class _NotificationSettingsScreenState
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -159,7 +159,7 @@ class _PrefTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color:
-          dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint,
+          dark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryTint,
           width: 0.5,
         ),
       ),
@@ -177,7 +177,7 @@ class _PrefTile extends StatelessWidget {
           ),
           Switch(
             value: value,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             onChanged: onChanged,
           ),
         ],

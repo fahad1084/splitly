@@ -155,8 +155,8 @@ class _SplitlyTextFieldState extends State<SplitlyTextField> {
         ? AppColors.primaryTint       // bright mint-white in dark mode
         : AppColors.primaryDark;      // deep teal-dark in light mode
     final hintColor = isDark(context)
-        ? AppColors.primaryLight.withOpacity(0.4)
-        : AppColors.primaryLight.withOpacity(0.6);
+        ? AppColors.primaryLight.withValues(alpha: 0.4)
+        : AppColors.primaryLight.withValues(alpha: 0.6);
 
     return TextFormField(
       controller: widget.controller,
@@ -263,7 +263,7 @@ class SplitlyButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
           elevation: 0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14)),
@@ -394,9 +394,9 @@ class ErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsetsDirectional.only(start: 12),
       decoration: BoxDecoration(
-        color: AppColors.danger.withOpacity(0.08),
+        color: AppColors.danger.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.danger.withOpacity(0.3), width: 0.5),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Row(
         children: [
@@ -447,10 +447,10 @@ class SplitlyGoogleButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final bgColor = dark
-        ? AppColors.primaryDark.withOpacity(0.6)
+        ? AppColors.primaryDark.withValues(alpha: 0.6)
         : Colors.white;
     final borderColor =
-    dark ? AppColors.primary.withOpacity(0.4) : AppColors.primaryTint;
+    dark ? AppColors.primary.withValues(alpha: 0.4) : AppColors.primaryTint;
     final textColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
 
@@ -520,7 +520,6 @@ class _GoogleGPainter extends CustomPainter {
     final redPaint    = Paint()..color = const Color(0xFFEA4335)..style = PaintingStyle.fill;
     final yellowPaint = Paint()..color = const Color(0xFFFBBC05)..style = PaintingStyle.fill;
     final greenPaint  = Paint()..color = const Color(0xFF34A853)..style = PaintingStyle.fill;
-    final whitePaint  = Paint()..color = Colors.white..style = PaintingStyle.fill;
 
     // ── Blue section (right half + crossbar) ─────────────────────────────
     final bluePath = Path()
@@ -597,7 +596,7 @@ class ShimmerCard extends StatelessWidget {
     final dark = isDark(context);
     final baseColor = dark ? AppColors.primaryDark : AppColors.primaryTint;
     final highlightColor = dark
-        ? AppColors.primary.withOpacity(0.3)
+        ? AppColors.primary.withValues(alpha: 0.3)
         : Colors.white;
 
     return Shimmer.fromColors(

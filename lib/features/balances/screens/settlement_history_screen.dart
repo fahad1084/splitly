@@ -139,7 +139,7 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
         color: dark ? AppColors.primaryDark : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint,
+          color: dark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryTint,
           width: 0.5,
         ),
       ),
@@ -183,7 +183,7 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
+                  color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(statusText,

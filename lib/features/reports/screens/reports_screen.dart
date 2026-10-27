@@ -6,7 +6,6 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/models/expense_model.dart';
 import '../../groups/controllers/groups_controller.dart';
-import '../../groups/models/group_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/utils/money_format.dart';
 
@@ -39,10 +38,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final dark = isDark(context);
     final groupsAsync = ref.watch(groupsProvider);
-    final headingColor =
-    dark ? AppColors.primaryTint : AppColors.primaryDark;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -56,7 +52,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -265,7 +261,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                                   cancelButtonStyle: TextButton.styleFrom(
                                     foregroundColor:
                                     AppColors.primaryDark
-                                        .withOpacity(0.6),
+                                        .withValues(alpha: 0.6),
                                   ),
                                 ),
                               ),
@@ -411,7 +407,6 @@ class _TotalCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final total =
     expenses.fold(0.0, (sum, e) => sum + e.amount);
-    final dark = isDark(context);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -577,7 +572,6 @@ class _CategoryTabState extends State<_CategoryTab> {
           // ── Legend + breakdown list ────────────────────────────────
           ...sorted.asMap().entries.map((entry) {
             final i = entry.key;
-            final cat = entry.key;
             final amount = entry.value.value;
             final pct = amount / total * 100;
             final color = _colors[i % _colors.length];
@@ -592,7 +586,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: dark
-                      ? color.withOpacity(0.3)
+                      ? color.withValues(alpha: 0.3)
                       : AppColors.primaryTint,
                   width: 0.5,
                 ),
@@ -604,7 +598,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
+                      color: color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(icon, color: color, size: 20),
@@ -630,7 +624,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: amount / total,
-                            backgroundColor: color.withOpacity(0.1),
+                            backgroundColor: color.withValues(alpha: 0.1),
                             valueColor:
                             AlwaysStoppedAnimation<Color>(color),
                             minHeight: 4,
@@ -793,7 +787,7 @@ class _MemberTabState extends State<_MemberTab> {
                   horizontalInterval:
                   sorted.first.value / 4,
                   getDrawingHorizontalLine: (_) => FlLine(
-                    color: AppColors.primaryTint.withOpacity(0.3),
+                    color: AppColors.primaryTint.withValues(alpha: 0.3),
                     strokeWidth: 0.5,
                   ),
                 ),
@@ -809,13 +803,13 @@ class _MemberTabState extends State<_MemberTab> {
                         toY: entry.value.value,
                         color: isTouched
                             ? color
-                            : color.withOpacity(0.7),
+                            : color.withValues(alpha: 0.7),
                         width: 24,
                         borderRadius: BorderRadius.circular(6),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: sorted.first.value * 1.3,
-                          color: color.withOpacity(0.05),
+                          color: color.withValues(alpha: 0.05),
                         ),
                       ),
                     ],
@@ -843,7 +837,7 @@ class _MemberTabState extends State<_MemberTab> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: dark
-                      ? color.withOpacity(0.3)
+                      ? color.withValues(alpha: 0.3)
                       : AppColors.primaryTint,
                   width: 0.5,
                 ),
@@ -852,7 +846,7 @@ class _MemberTabState extends State<_MemberTab> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: color.withOpacity(0.15),
+                    backgroundColor: color.withValues(alpha: 0.15),
                     child: Text(
                       name[0].toUpperCase(),
                       style: TextStyle(
@@ -878,7 +872,7 @@ class _MemberTabState extends State<_MemberTab> {
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: amount / total,
-                            backgroundColor: color.withOpacity(0.1),
+                            backgroundColor: color.withValues(alpha: 0.1),
                             valueColor:
                             AlwaysStoppedAnimation<Color>(color),
                             minHeight: 4,
