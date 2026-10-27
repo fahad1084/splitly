@@ -242,6 +242,19 @@ serve(async (req) => {
         group_id: groupId ?? "",
         avatar_url: (actorId === record.paid_to ? toP?.avatar_url : fromP?.avatar_url) ?? "",
       };
+    } else if (table === "notifications" && record.type === "recurring_skipped") {
+      // From the notifications_push trigger: the daily job skipped a copy
+      // of a recurring expense. The row IS the in-app notification, so
+      // only the push goes to its owner (the expense's creator).
+      groupId = record.group_id;
+      notificationType = "recurring_skipped";
+      pushOnly = true;
+      title = record.title;
+      body = record.body;
+      dataPayload = {
+        type: "recurring_skipped",
+        group_id: groupId ?? "",
+      };
     } else if (table === "group_members") {
       groupId = record.group_id;
       actorId = record.user_id;
@@ -270,6 +283,7 @@ serve(async (req) => {
       expense: "notify_expenses",
       settlement: "notify_settlements",
       member_joined: "notify_members",
+      recurring_skipped: "notify_expenses",
     };
 
     // Recipients depend on the event type:
@@ -289,6 +303,8 @@ serve(async (req) => {
     } else if (notificationType === "settlement") {
       recipientIds = [record.paid_by, record.paid_to]
         .filter((id: string) => id && id !== actorId);
+    } else if (notificationType === "recurring_skipped") {
+      recipientIds = [record.user_id];
     } else {
       const { data: allMembers } = await supabase
         .from("group_members")
