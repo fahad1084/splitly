@@ -1327,4 +1327,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String memberOptions(String name) {
     return '$name کے اختیارات';
   }
+
+  @override
+  String get atLeast8Chars => 'کم از کم 8 حروف';
 }

@@ -2503,6 +2503,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Options for {name}'**
   String memberOptions(String name);
+
+  /// No description provided for @atLeast8Chars.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get atLeast8Chars;
 }
 
 class _AppLocalizationsDelegate

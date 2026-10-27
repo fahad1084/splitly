@@ -1326,4 +1326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String memberOptions(String name) {
     return 'Options for $name';
   }
+
+  @override
+  String get atLeast8Chars => 'At least 8 characters';
 }

@@ -450,5 +450,6 @@
   "hidePassword": "پاس ورڈ چھپائیں",
   "chooseThisColor": "یہ رنگ منتخب کریں",
   "includeInSplit": "{name} کو تقسیم میں شامل کریں",
-  "memberOptions": "{name} کے اختیارات"
+  "memberOptions": "{name} کے اختیارات",
+  "atLeast8Chars": "کم از کم 8 حروف"
 }

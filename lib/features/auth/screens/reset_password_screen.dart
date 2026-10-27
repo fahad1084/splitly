@@ -166,7 +166,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
             autofocus: true,
             validator: (v) {
               if (v == null || v.isEmpty) return l10n.passwordRequired;
-              if (v.length < 6) return l10n.atLeast6Chars;
+              // New passwords: at least 8 (login still accepts older 6-character ones)
+              if (v.length < 8) return l10n.atLeast8Chars;
               return null;
             },
           ),
