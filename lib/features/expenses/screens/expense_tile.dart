@@ -226,7 +226,7 @@ class ExpenseTile extends ConsumerWidget {
                       : l10n.youOweAmount(
                       formatMoney(myShare, expense.currency)),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: iPaid
                         ? AppColors.successText(context)
                         : AppColors.dangerText(context),

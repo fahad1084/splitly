@@ -138,9 +138,10 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: headingColor)),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               SizedBox(
-                height: 72,
+                // Grows with the phone's text size
+                height: MediaQuery.textScalerOf(context).scale(72),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: groupTypes.length,
@@ -152,7 +153,8 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                       onTap: () => setState(() => _selectedTypeIndex = i),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
-                        width: 64,
+                        constraints: const BoxConstraints(minWidth: 64),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: selected
                               ? AppColors.primary
@@ -181,7 +183,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                             Text(
                               groupTypeLabel(l10n, type),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: selected
                                     ? Colors.white

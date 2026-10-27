@@ -520,9 +520,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: headingColor)),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             SizedBox(
-              height: 72,
+              // Grows with the phone's text size
+              height: MediaQuery.textScalerOf(context).scale(72),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _categoryIcons.length,
@@ -535,7 +536,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                         setState(() => _category = cat['id'] as String),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      width: 64,
+                      constraints: const BoxConstraints(minWidth: 64),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: selected
                             ? AppColors.primary
@@ -562,7 +564,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           Text(
                             cat['label'] as String,
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: selected
                                   ? Colors.white
@@ -616,7 +618,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
               ),
             )
                 : SizedBox(
-              height: 56,
+              // Grows with the phone's text size
+              height: MediaQuery.textScalerOf(context).scale(56),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _members.length,
@@ -664,7 +667,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               getInitial(m['name'] as String),
                               style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w500),
                             )
                                 : null,
@@ -909,7 +912,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                     fontSize: 13),
                                 prefixText: '${widget.group.currency} ',
                                 prefixStyle: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 12,
                                     color: AppColors.mutedText(context)),
                                 border: InputBorder.none,
                                 enabledBorder: InputBorder.none,

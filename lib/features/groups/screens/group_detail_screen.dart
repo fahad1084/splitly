@@ -270,7 +270,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                       l10n.amountPending(
                                           formatMoney(debt.pendingAmount, debt.currency)),
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         color: AppColors.warningText(context),
                                       ),
                                     ),
@@ -290,7 +290,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                     child: Text(
                                       l10n.settleUp,
                                       style: const TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -619,7 +619,7 @@ class GroupDetailScreen extends ConsumerWidget {
                     Text(
                       l10n.inviteCode,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: textColor.withOpacity(0.5),
                       ),
                     ),
@@ -1233,7 +1233,7 @@ class _MemberTile extends ConsumerWidget {
                   ),
                   child: Text(l10n.admin,
                       style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: AppColors.primaryDark)),
                 ),

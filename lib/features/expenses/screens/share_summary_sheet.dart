@@ -115,7 +115,7 @@ class _ShareSummarySheet extends ConsumerWidget {
                     const SizedBox(width: 6),
                     Text(l10n.preview,
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: AppColors.mutedText(context),
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.5)),

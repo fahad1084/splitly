@@ -218,7 +218,7 @@ class ProfileTab extends ConsumerWidget {
             Text(
               l10n.splitlyFooter,
               style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   color: AppColors.primaryLight.withOpacity(0.5)),
             ),
 

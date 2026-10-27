@@ -103,7 +103,8 @@ class ExpenseHistoryScreen extends ConsumerWidget {
 
           // ── Date filter chips ───────────────────────────────────────
           SizedBox(
-            height: 36,
+            // Grows with the phone's text size
+            height: MediaQuery.textScalerOf(context).scale(36),
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -122,7 +123,8 @@ class ExpenseHistoryScreen extends ConsumerWidget {
 
           // ── Category filter chips ───────────────────────────────────
           SizedBox(
-            height: 36,
+            // Grows with the phone's text size
+            height: MediaQuery.textScalerOf(context).scale(36),
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -220,7 +222,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                                 Text(
                                   formatMoney(entry.value.fold(0.0, (sum, e) => sum + e.amount), group.currency),
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 12,
                                     color: AppColors.mutedText(context),
                                   ),
                                 ),

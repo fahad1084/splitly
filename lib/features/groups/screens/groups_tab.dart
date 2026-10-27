@@ -386,7 +386,7 @@ class _GroupCard extends StatelessWidget {
                         unreadCount > 99 ? '99+' : '$unreadCount',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -435,7 +435,7 @@ class _GroupCard extends StatelessWidget {
                         ),
                         child: Text(group.currency,
                             style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.primaryDark)),
                       ),
@@ -558,7 +558,7 @@ class _BalanceCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(label,
                   style: const TextStyle(
-                      fontSize: 11, color: AppColors.primaryTint)),
+                      fontSize: 12, color: AppColors.primaryTint)),
             ],
           ),
           const SizedBox(height: 10),

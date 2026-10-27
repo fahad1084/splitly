@@ -305,7 +305,7 @@ class _BannerStat extends StatelessWidget {
         children: [
           Text(label,
               style: const TextStyle(
-                  fontSize: 11, color: AppColors.primaryTint)),
+                  fontSize: 12, color: AppColors.primaryTint)),
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
@@ -393,7 +393,7 @@ class _DebtTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(debt.groupName,
                     style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: AppColors.mutedText(context))),
               ],
             ),
@@ -417,7 +417,7 @@ class _DebtTile extends StatelessWidget {
                   l10n.amountPending(
                       formatMoney(debt.pendingAmount, debt.currency)),
                   style: TextStyle(
-                      fontSize: 11, color: AppColors.warningText(context)),
+                      fontSize: 12, color: AppColors.warningText(context)),
                 ),
               const SizedBox(height: 6),
               // Both people can record a payment; when the debtor does,
@@ -435,7 +435,7 @@ class _DebtTile extends StatelessWidget {
                     child: Text(
                       l10n.settleUp,
                       style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: Colors.white,
                           fontWeight: FontWeight.w500),
                     ),
@@ -555,7 +555,7 @@ class _GroupStat extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 10, color: AppColors.mutedText(context))),
+                  fontSize: 12, color: AppColors.mutedText(context))),
           const SizedBox(height: 2),
           Text(value,
               style: TextStyle(

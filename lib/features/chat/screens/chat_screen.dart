@@ -438,7 +438,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         color: AppColors.primaryTint)),
                 Text(l10n.groupChat,
                     style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: AppColors.mutedText(context))),
               ],
             ),
@@ -699,7 +699,7 @@ class _MessageBubble extends ConsumerWidget {
                   style: TextStyle(
                       color: _parseHex(message.senderAvatarColor) ??
                           AppColors.primary,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500),
                 )
                     : null,
@@ -717,7 +717,7 @@ class _MessageBubble extends ConsumerWidget {
                       child: Text(
                         message.senderName,
                         style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: AppColors.primary),
                       ),
@@ -745,7 +745,7 @@ class _MessageBubble extends ConsumerWidget {
                           Text(
                             message.replyToSender ?? '',
                             style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: isMe ? Colors.white : AppColors.primary),
                           ),
@@ -754,7 +754,7 @@ class _MessageBubble extends ConsumerWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 color: (isMe
                                     ? Colors.white
                                     : (dark ? AppColors.primaryTint : AppColors.primaryDark))
@@ -820,7 +820,7 @@ class _MessageBubble extends ConsumerWidget {
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           color: AppColors.mutedText(context)),
                     ),
                   ),
@@ -1185,7 +1185,7 @@ class _AudioBubbleState extends State<_AudioBubble> {
                 const SizedBox(height: 4),
                 Text(
                   _isPlaying ? _fmt(_position) : _fmt(_total),
-                  style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8)),
+                  style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.8)),
                 ),
               ],
             ),
@@ -1233,7 +1233,7 @@ class _DateSeparator extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(label,
                 style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: AppColors.mutedText(context),
                     fontWeight: FontWeight.w500)),
           ),

@@ -243,9 +243,10 @@ class SplitlyButton extends StatelessWidget {
       ],
     );
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
+    // At least 52 high; taller with large system text
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+          minWidth: double.infinity, minHeight: 52),
       child: isOutline
           ? OutlinedButton(
         onPressed: isLoading ? null : onPressed,
@@ -404,9 +405,10 @@ class SplitlyGoogleButton extends StatelessWidget {
     final textColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
+    // At least 52 high; taller with large system text
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+          minWidth: double.infinity, minHeight: 52),
       child: GestureDetector(
         onTap: isLoading ? null : onPressed,
         child: AnimatedContainer(

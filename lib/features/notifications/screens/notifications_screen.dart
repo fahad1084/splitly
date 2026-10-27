@@ -211,7 +211,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           children: [
                             Text(_timeAgo(n.createdAt),
                                 style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 12,
                                     color: AppColors.mutedText(context)
                                         .withOpacity(0.6))),
                             if (n.isUnread) ...[

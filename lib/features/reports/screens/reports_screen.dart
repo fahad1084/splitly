@@ -103,7 +103,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
               // ── Group selector ─────────────────────────────────────
               if (groups.length > 1)
                 SizedBox(
-                  height: 48,
+                  // Grows with the phone's text size
+                  height: MediaQuery.textScalerOf(context).scale(48),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(
@@ -387,7 +388,7 @@ class _PeriodChip extends StatelessWidget {
         ),
         child: Text(label,
             style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: selected
                     ? Colors.white
@@ -654,7 +655,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                       Text(
                         '${pct.toStringAsFixed(1)}%',
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: AppColors.mutedText(context)),
                       ),
                     ],
@@ -771,7 +772,7 @@ class _MemberTabState extends State<_MemberTab> {
                           child: Text(
                             name.split(' ').first,
                             style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 color: AppColors.mutedText(context)),
                           ),
                         );
@@ -900,7 +901,7 @@ class _MemberTabState extends State<_MemberTab> {
                       ),
                       Text('${pct.toStringAsFixed(1)}%',
                           style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: AppColors.mutedText(context))),
                     ],
                   ),

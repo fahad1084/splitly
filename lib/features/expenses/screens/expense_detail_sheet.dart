@@ -138,7 +138,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                   Text(
                     expense.category,
                     style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: AppColors.mutedText(context)),
                   ),
                 ],
@@ -161,7 +161,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                 child: Text(
                   l10n.splitLabel(expense.splitType),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryDark,
                   ),
@@ -273,7 +273,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                       ),
                       child: Text(l10n.settled,
                           style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 12,
                               color: AppColors.successText(context),
                               fontWeight: FontWeight.w500)),
                     )
