@@ -151,5 +151,117 @@ begin
   perform set_config('request.jwt.claims',
     json_build_object('sub', ali, 'role', 'authenticated')::text, true);
 
+  -- ── 10c: recurring expenses ───────────────────────────────────────────────
+  -- C1 month ends keep their day; leap years; daily / weekly
+  if public._next_recur_date(date '2027-01-31', 'monthly', 31) = date '2027-02-28'
+     and public._next_recur_date(date '2027-02-28', 'monthly', 31) = date '2027-03-31'
+     and public._next_recur_date(date '2027-03-31', 'monthly', 31) = date '2027-04-30'
+     and public._next_recur_date(date '2028-01-30', 'monthly', 30) = date '2028-02-29'
+     and public._next_recur_date(date '2027-12-15', 'monthly', 15) = date '2028-01-15'
+     and public._next_recur_date(date '2027-01-31', 'daily', 31) = date '2027-02-01'
+     and public._next_recur_date(date '2027-01-31', 'weekly', 31) = date '2027-02-07'
+  then ok := ok + 1; else fails := fails || ' C1'; end if;
+
+  -- C2 a new monthly expense remembers its day, creator, and first due day
+  v_id := public.add_expense(p_group_id => g, p_paid_by => ali, p_title => 'Rent',
+    p_amount => 100, p_splits => splits, p_is_recurring => true,
+    p_recur_every => 'monthly', p_expense_date => today);
+  select count(*) into v_n from public.expenses
+   where id = v_id and created_by = ali
+     and recur_day = extract(day from today)
+     and (next_recur_at at time zone 'Asia/Karachi')::date
+         = public._next_recur_date(today, 'monthly', extract(day from today)::int);
+  if v_n = 1 then ok := ok + 1; else fails := fails || ' C2'; end if;
+
+  -- C3 due 3 days ago (daily) → 4 copies (d-3 .. today), next due tomorrow
+  v_id := public.add_expense(p_group_id => g, p_paid_by => ali, p_title => 'Milk',
+    p_amount => 100, p_splits => splits, p_is_recurring => true, p_recur_every => 'daily');
+  -- From here the job runs like pg_cron (no user)
+  perform set_config('request.jwt.claims', '{}', true);
+  update public.expenses set next_recur_at = public._recur_at(today - 3) where id = v_id;
+  perform public.generate_recurring_expenses();
+  select count(*) into v_n from public.expenses e
+   where e.recurring_parent_id = v_id and e.expense_date between today - 3 and today
+     and e.is_recurring = false and e.amount = 100
+     and (select count(*) from public.expense_splits s where s.expense_id = e.id) = 2;
+  if v_n = 4 and (select (next_recur_at at time zone 'Asia/Karachi')::date
+                    from public.expenses where id = v_id) = today + 1
+  then ok := ok + 1; else fails := fails || ' C3(' || v_n || ')'; end if;
+
+  -- C4 running again the same day creates nothing new
+  update public.expenses set next_recur_at = public._recur_at(today) where id = v_id;
+  perform public.generate_recurring_expenses();
+  select count(*) into v_n from public.expenses where recurring_parent_id = v_id;
+  if v_n = 4 then ok := ok + 1; else fails := fails || ' C4(' || v_n || ')'; end if;
+
+  -- C5 paused → no copy, the due day stays
+  update public.expenses set next_recur_at = public._recur_at(today - 1), recur_paused = true
+   where id = v_id;
+  perform public.generate_recurring_expenses();
+  select count(*) into v_n from public.expenses where recurring_parent_id = v_id;
+  if v_n = 4 then ok := ok + 1; else fails := fails || ' C5(' || v_n || ')'; end if;
+
+  -- C6 who may pause / resume / stop: Bilal is not creator, payer or admin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', bilal, 'role', 'authenticated')::text, true);
+  begin
+    perform public.set_recurring_status(v_id, 'stop');
+    fails := fails || ' C6(allowed)';
+  exception when others then
+    if sqlerrm = 'NOT_ALLOWED' then ok := ok + 1; else fails := fails || ' C6(' || sqlerrm || ')'; end if;
+  end;
+
+  -- C7 Ali resumes → not paused, next due day is today or later (no back-fill)
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', ali, 'role', 'authenticated')::text, true);
+  perform public.set_recurring_status(v_id, 'resume');
+  if exists (select 1 from public.expenses where id = v_id and not recur_paused
+               and (next_recur_at at time zone 'Asia/Karachi')::date >= today)
+  then ok := ok + 1; else fails := fails || ' C7'; end if;
+
+  -- C8 Ali stops it → a normal expense, the copies stay
+  perform public.set_recurring_status(v_id, 'stop');
+  if exists (select 1 from public.expenses where id = v_id and not is_recurring
+               and next_recur_at is null)
+     and (select count(*) from public.expenses where recurring_parent_id = v_id) = 4
+  then ok := ok + 1; else fails := fails || ' C8'; end if;
+
+  -- C9 someone left → this copy is skipped, the creator is told, it keeps running
+  v_id := public.add_expense(p_group_id => g, p_paid_by => ali, p_title => 'Internet',
+    p_amount => 100, p_splits => splits, p_is_recurring => true, p_recur_every => 'weekly');
+  perform set_config('request.jwt.claims', '{}', true);
+  update public.expenses set next_recur_at = public._recur_at(today) where id = v_id;
+  delete from public.group_members where group_id = g and user_id = bilal;
+  perform public.generate_recurring_expenses();
+  if (select count(*) from public.expenses where recurring_parent_id = v_id) = 0
+     and exists (select 1 from public.notifications
+                  where user_id = ali and type = 'recurring_skipped'
+                    and entity_id = v_id and body like '%Bilal left the group.')
+     and exists (select 1 from public.expenses where id = v_id and is_recurring
+                   and (next_recur_at at time zone 'Asia/Karachi')::date = today + 7)
+  then ok := ok + 1; else fails := fails || ' C9'; end if;
+  insert into public.group_members (group_id, user_id, role) values (g, bilal, 'member');
+
+  -- C10 a split that doesn't add up (old data) → skipped + told, not stuck
+  update public.expense_splits set amount_owed = 49 where expense_id = v_id and user_id = bilal;
+  update public.expenses set next_recur_at = public._recur_at(today) where id = v_id;
+  perform public.generate_recurring_expenses();
+  if (select count(*) from public.expenses where recurring_parent_id = v_id) = 0
+     and exists (select 1 from public.notifications
+                  where entity_id = v_id and body like '%please check its split%')
+     and exists (select 1 from public.expenses where id = v_id
+                   and (next_recur_at at time zone 'Asia/Karachi')::date = today + 7)
+  then ok := ok + 1; else fails := fails || ' C10'; end if;
+
+  -- C11 a logged-in user can't run the job
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', ali, 'role', 'authenticated')::text, true);
+  begin
+    perform public.generate_recurring_expenses();
+    fails := fails || ' C11(ran)';
+  exception when others then
+    if sqlerrm = 'Not allowed' then ok := ok + 1; else fails := fails || ' C11(' || sqlerrm || ')'; end if;
+  end;
+
   raise exception 'RESULT: % passed, failed:%', ok, coalesce(nullif(fails, ''), ' none');
 end $$;
