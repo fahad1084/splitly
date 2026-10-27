@@ -46,3 +46,7 @@ app.*.map.json
 
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+
+# Local release copies and temporary files (never committed)
+/releases/
+/.tmp/
