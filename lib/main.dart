@@ -80,7 +80,7 @@ void main() async {
   runApp(const ProviderScope(child: SplitlyApp()));
 }
 
-// ✅ Converted to ConsumerWidget so it can watch the locale provider
+// ConsumerWidget so it can watch the locale provider
 class SplitlyApp extends ConsumerWidget {
   const SplitlyApp({super.key});
 
@@ -94,11 +94,11 @@ class SplitlyApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      // ✅ Key fix — navigatorKey on MaterialApp means all Navigator calls
+      // navigatorKey on MaterialApp means all Navigator calls
       // use the same stack, so back button works correctly everywhere
       navigatorKey: _navigatorKey,
 
-      // ✅ Language support (English / Urdu)
+      // Language support (English / Urdu)
       locale: locale,
       supportedLocales: const [
         Locale('en'),

@@ -163,7 +163,6 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
 
             // ── Debts within this group ─────────────────────────────────────────────
-            // ── Debts within this group ─────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Consumer(
                 builder: (context, ref, _) {
@@ -389,7 +388,7 @@ class GroupDetailScreen extends ConsumerWidget {
                             color: headingColor))),
                     Row(
                       children: [
-                        // ✅ History button
+                        // History button
                         TextButton.icon(
                           onPressed: () => Navigator.push(
                             context,
@@ -493,7 +492,7 @@ class GroupDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ✅ NEW — pick a photo from gallery and update the group's photo
+  // Pick a photo from gallery and update the group's photo
   void _changeGroupPhoto(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final picked = await AppLockController.runWithoutLock(

@@ -117,7 +117,7 @@ class SplitlyTextField extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final bool autofocus;
   final Iterable<String>? autofillHints;
-  final void Function(String)? onChanged; // ✅ added
+  final void Function(String)? onChanged;
 
   const SplitlyTextField({
     super.key,
@@ -131,7 +131,7 @@ class SplitlyTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autofocus = false,
     this.autofillHints,
-    this.onChanged, // ✅ added
+    this.onChanged,
   });
 
   @override
@@ -165,7 +165,7 @@ class _SplitlyTextFieldState extends State<SplitlyTextField> {
       textCapitalization: widget.textCapitalization,
       autofocus: widget.autofocus,
       autofillHints: widget.autofillHints,
-      onChanged: widget.onChanged, // ✅ added
+      onChanged: widget.onChanged,
       style: TextStyle(
         color: textColor,
         fontSize: 15,
@@ -444,7 +444,7 @@ class SplitlyGoogleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!; // ✅ added
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final bgColor = dark
         ? AppColors.primaryDark.withOpacity(0.6)
@@ -490,7 +490,7 @@ class SplitlyGoogleButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Flexible(child: Text(
-                  l10n.continueWithGoogle, // ✅ localized
+                  l10n.continueWithGoogle,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

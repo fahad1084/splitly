@@ -68,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (error != null) {
       showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     } else {
-      // ✅ THIS triggers the "Save password to Google?" popup on Android
+      // This triggers the "Save password to Google?" popup on Android
       // Must be called after successful login, before navigation
       TextInput.finishAutofillContext(shouldSave: true);
 
@@ -84,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (!mounted) return;
     setState(() => _isGoogleLoading = false);
     if (error != null) showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
-    // ✅ No navigation here — AuthGate handles it automatically on signedIn event
+    // No navigation here — AuthGate handles it automatically on signedIn event
   }
   void _goToSignUp() => Navigator.push(
     context,

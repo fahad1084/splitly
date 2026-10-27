@@ -10,9 +10,9 @@ class MessageModel {
   final String? attachmentUrl;
   final String? attachmentType;
   final int? audioDuration;
-  final String? replyToId;       // ✅ new
-  final String? replyToContent;  // ✅ new — snippet of replied message
-  final String? replyToSender;   // ✅ new — name of who was replied to
+  final String? replyToId;
+  final String? replyToContent;  // snippet of replied message
+  final String? replyToSender;   // name of who was replied to
   final DateTime createdAt;
 
   const MessageModel({

@@ -115,7 +115,7 @@ class ExpensesController
 
       if (rows.isEmpty) return [];
 
-      // ✅ Combine payer IDs + split user IDs into ONE set — avoids fetching
+      // Combine payer IDs + split user IDs into ONE set — avoids fetching
       // the same profile twice and cuts 2 separate DB round trips down to 1
       final allUserIds = <String>{};
       for (final r in rows) {

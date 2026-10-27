@@ -81,7 +81,6 @@ class AppTheme {
       backgroundColor: AppColors.accent,
       foregroundColor: AppColors.primaryDark,
     ),
-    // ✅ Fixed: CardThemeData (not CardTheme)
     cardTheme: CardThemeData(
       color: Colors.white,
       elevation: 0,
@@ -139,7 +138,6 @@ class AppTheme {
       backgroundColor: AppColors.accent,
       foregroundColor: AppColors.primaryDark,
     ),
-    // ✅ Fixed: CardThemeData (not CardTheme)
     cardTheme: CardThemeData(
       color: AppColors.primaryDark,
       elevation: 0,

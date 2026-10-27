@@ -11,7 +11,7 @@ class GroupModel {
   final bool isArchived;
   final DateTime createdAt;
   final String? category;
-  final String? photoUrl;      // ✅ new
+  final String? photoUrl;
   final int? memberCount;
 
   const GroupModel({
@@ -24,7 +24,7 @@ class GroupModel {
     required this.isArchived,
     required this.createdAt,
     this.category,
-    this.photoUrl,             // ✅ new
+    this.photoUrl,
     this.memberCount,
   });
 
@@ -72,7 +72,7 @@ class GroupModel {
       isArchived: map['is_archived'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at'] as String),
       category: map['category'] as String?,
-      photoUrl: map['photo_url'] as String?,   // ✅ new
+      photoUrl: map['photo_url'] as String?,
       memberCount: map['member_count'] as int?,
     );
   }

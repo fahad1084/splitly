@@ -190,8 +190,7 @@ class ChatController
         .subscribe();
   }
 
-// ── Send text message (with optional reply) ─────────────────────────────
-// ── Send text message (with optional reply) ─────────────────────────────
+  // ── Send text message (with optional reply) ─────────────────────────────
   Future<String?> sendMessage(String content, {String? replyToId}) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
     if (userId == null) return kErrNotSignedIn;
@@ -274,7 +273,6 @@ class ChatController
   }
 
   // ── Send image attachment ─────────────────────────────────────────────────
-// ── Send image attachment ─────────────────────────────────────────────────
   Future<String?> sendImage(File imageFile, {String caption = ''}) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
     if (userId == null) return kErrNotSignedIn;
@@ -295,7 +293,7 @@ class ChatController
           'id': const Uuid().v4(),
           'group_id': _groupId,
           'sender_id': userId,
-          'content': caption,          // ✅ caption goes here now
+          'content': caption,          // the caption goes here
           'attachment_url': path,
           'attachment_type': 'image',
         });

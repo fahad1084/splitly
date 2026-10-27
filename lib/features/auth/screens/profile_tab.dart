@@ -115,7 +115,7 @@ class ProfileTab extends ConsumerWidget {
                 ),
                 _Divider(),
 
-                // ✅ Reports tile
+                // Reports tile
                 _ProfileTile(
                   icon: Icons.bar_chart_rounded,
                   label: l10n.spendingReports,

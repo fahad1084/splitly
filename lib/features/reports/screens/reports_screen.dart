@@ -38,7 +38,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;   // ✅ add this line
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final groupsAsync = ref.watch(groupsProvider);
     final headingColor =
@@ -408,7 +408,7 @@ class _TotalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;   // ✅ add this
+    final l10n = AppLocalizations.of(context)!;
     final total =
     expenses.fold(0.0, (sum, e) => sum + e.amount);
     final dark = isDark(context);
@@ -920,7 +920,7 @@ class _MemberTabState extends State<_MemberTab> {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;   // ✅ add this
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Column(
@@ -955,7 +955,7 @@ class _EmptyState extends StatelessWidget {
 class _NoDataState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;   // ✅ add this
+    final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     return Center(
       child: Column(

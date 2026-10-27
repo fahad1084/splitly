@@ -67,7 +67,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
       showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     } else {
       showSuccessSnack(context, l10n.accountCreatedCheckEmail);
-      // ✅ No navigation here — go back to login so user can sign in
+      // No navigation here — go back to login so user can sign in
       Navigator.pop(context);
     }
   }
@@ -79,7 +79,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     if (!mounted) return;
     setState(() => _isGoogleLoading = false);
     if (error != null) showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
-    // ✅ No navigation here — AuthGate handles it automatically on signedIn event
+    // No navigation here — AuthGate handles it automatically on signedIn event
   }
   @override
   Widget build(BuildContext context) {

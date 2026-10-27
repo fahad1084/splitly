@@ -107,7 +107,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // ✅ FIX: Load members here instead of initState
+    // Load members here instead of initState
     // didChangeDependencies is called after providers are ready
     _loadMembers();
   }
@@ -456,7 +456,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           color: AppColors.primary)),
                 ),
                 prefixIconConstraints: const BoxConstraints(),
-                // ✅ Receipt scan button
+                // Receipt scan button
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.document_scanner_outlined,
                       color: AppColors.primary),

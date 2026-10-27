@@ -168,7 +168,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (picked == null) return;
     if (!mounted) return;
 
-    // ✅ Show preview with caption option before sending
+    // Show preview with caption option before sending
     final captionCtrl = TextEditingController();
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
