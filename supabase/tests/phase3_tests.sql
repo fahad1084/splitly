@@ -22,6 +22,7 @@ declare
   v_id  uuid;
   v_date date;
   v_n   int;
+  v_amt numeric;
   ok    int := 0;
   fails text := '';
 begin
@@ -67,6 +68,88 @@ begin
   select count(*) into v_n from pg_proc
    where proname = 'add_expense' and pronamespace = 'public'::regnamespace;
   if v_n = 1 then ok := ok + 1; else fails := fails || ' A5'; end if;
+
+  -- ── 10b: edit expense ─────────────────────────────────────────────────────
+  -- Bilal pays 300, split 150/150 → Ali owes Bilal 150
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', bilal, 'role', 'authenticated')::text, true);
+  v_id := public.add_expense(p_group_id => g, p_paid_by => bilal, p_title => 'Taxi',
+    p_amount => 300, p_splits => jsonb_build_array(
+      jsonb_build_object('user_id', ali, 'amount_owed', 150),
+      jsonb_build_object('user_id', bilal, 'amount_owed', 150)));
+
+  -- B1 the payer edits: 400, split 100.01 / 299.99, new date and title
+  perform public.edit_expense(p_expense_id => v_id, p_title => ' Taxi home ',
+    p_amount => 400, p_splits => jsonb_build_array(
+      jsonb_build_object('user_id', ali, 'amount_owed', 100.01),
+      jsonb_build_object('user_id', bilal, 'amount_owed', 299.99)),
+    p_category => 'transport', p_split_type => 'custom', p_expense_date => today - 3);
+  select count(*) into v_n from public.expenses
+   where id = v_id and title = 'Taxi home' and amount = 400 and category = 'transport'
+     and split_type = 'custom' and expense_date = today - 3 and edited_at is not null;
+  if v_n = 1 then ok := ok + 1; else fails := fails || ' B1'; end if;
+
+  -- B2 the old splits are gone, the new ones are there
+  select count(*) into v_n from public.expense_splits
+   where expense_id = v_id and ((user_id = ali and amount_owed = 100.01)
+                             or (user_id = bilal and amount_owed = 299.99));
+  if v_n = 2 and (select count(*) from public.expense_splits where expense_id = v_id) = 2
+  then ok := ok + 1; else fails := fails || ' B2'; end if;
+
+  -- B3 the balance follows the edit: Bilal owed Ali 50 + 50 (A2, A3),
+  -- Ali now owes Bilal 100.01 for the taxi → Ali owes Bilal exactly 0.01
+  select amount into v_amt from public.group_debts(g)
+   where debtor_id = ali and creditor_id = bilal;
+  if v_amt = 0.01 then ok := ok + 1; else fails := fails || ' B3(' || coalesce(v_amt::text, 'none') || ')'; end if;
+
+  -- B4 splits that don't add up → error, nothing changed
+  begin
+    perform public.edit_expense(p_expense_id => v_id, p_title => 'Broken',
+      p_amount => 400, p_splits => jsonb_build_array(
+        jsonb_build_object('user_id', ali, 'amount_owed', 100)),
+      p_split_type => 'custom');
+    fails := fails || ' B4(saved)';
+  exception when others then
+    if sqlerrm = 'SPLITS_DONT_ADD_UP'
+       and exists (select 1 from public.expenses where id = v_id and title = 'Taxi home')
+    then ok := ok + 1; else fails := fails || ' B4(' || sqlerrm || ')'; end if;
+  end;
+
+  -- B5 Ali is an admin → may edit Bilal's expense
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', ali, 'role', 'authenticated')::text, true);
+  perform public.edit_expense(p_expense_id => v_id, p_title => 'Taxi (admin)',
+    p_amount => 400, p_splits => jsonb_build_array(
+      jsonb_build_object('user_id', ali, 'amount_owed', 200),
+      jsonb_build_object('user_id', bilal, 'amount_owed', 200)));
+  if exists (select 1 from public.expenses where id = v_id and title = 'Taxi (admin)')
+  then ok := ok + 1; else fails := fails || ' B5'; end if;
+
+  -- B6 Bilal (not admin) may NOT edit Ali's expense
+  select id into v_id from public.expenses
+   where group_id = g and paid_by = ali order by created_at limit 1;
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', bilal, 'role', 'authenticated')::text, true);
+  begin
+    perform public.edit_expense(p_expense_id => v_id, p_title => 'Hacked',
+      p_amount => 100, p_splits => splits);
+    fails := fails || ' B6(saved)';
+  exception when others then
+    if sqlerrm = 'NOT_ALLOWED' then ok := ok + 1; else fails := fails || ' B6(' || sqlerrm || ')'; end if;
+  end;
+
+  -- B7 a stranger gets NOT_A_MEMBER
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', gen_random_uuid(), 'role', 'authenticated')::text, true);
+  begin
+    perform public.edit_expense(p_expense_id => v_id, p_title => 'Hacked',
+      p_amount => 100, p_splits => splits);
+    fails := fails || ' B7(saved)';
+  exception when others then
+    if sqlerrm = 'NOT_A_MEMBER' then ok := ok + 1; else fails := fails || ' B7(' || sqlerrm || ')'; end if;
+  end;
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', ali, 'role', 'authenticated')::text, true);
 
   raise exception 'RESULT: % passed, failed:%', ok, coalesce(nullif(fails, ''), ' none');
 end $$;
