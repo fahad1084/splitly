@@ -1252,4 +1252,22 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get recurringStoppedMsg => 'دہرانا بند ہو گیا۔';
+
+  @override
+  String get groupTypeHome => 'گھر';
+
+  @override
+  String get groupTypeTrip => 'سفر';
+
+  @override
+  String get groupTypeFriends => 'دوست';
+
+  @override
+  String get groupTypeOffice => 'دفتر';
+
+  @override
+  String get groupTypeFamily => 'خاندان';
+
+  @override
+  String get groupTypeOther => 'دیگر';
 }

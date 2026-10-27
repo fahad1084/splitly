@@ -447,5 +447,11 @@
   "@stopRepeatingConfirm": {"placeholders": {"title": {"type": "String"}}},
   "recurringPausedMsg": "Paused. No new copies until you resume.",
   "recurringResumedMsg": "Resumed.",
-  "recurringStoppedMsg": "Stopped repeating."
+  "recurringStoppedMsg": "Stopped repeating.",
+  "groupTypeHome": "Home",
+  "groupTypeTrip": "Trip",
+  "groupTypeFriends": "Friends",
+  "groupTypeOffice": "Office",
+  "groupTypeFamily": "Family",
+  "groupTypeOther": "Other"
 }

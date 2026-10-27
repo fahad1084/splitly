@@ -2365,6 +2365,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stopped repeating.'**
   String get recurringStoppedMsg;
+
+  /// No description provided for @groupTypeHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get groupTypeHome;
+
+  /// No description provided for @groupTypeTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get groupTypeTrip;
+
+  /// No description provided for @groupTypeFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get groupTypeFriends;
+
+  /// No description provided for @groupTypeOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get groupTypeOffice;
+
+  /// No description provided for @groupTypeFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get groupTypeFamily;
+
+  /// No description provided for @groupTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get groupTypeOther;
 }
 
 class _AppLocalizationsDelegate

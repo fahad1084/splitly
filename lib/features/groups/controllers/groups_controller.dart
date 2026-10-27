@@ -121,6 +121,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     required String name,
     String? description,
     required String currency,
+    String category = 'other', // one of groupTypes
   }) async {
     final userId = _db.auth.currentUser?.id;
     if (userId == null) return kErrNotSignedIn;
@@ -133,6 +134,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
         'p_description':
         (description?.trim().isEmpty ?? true) ? null : description?.trim(),
         'p_currency': currency,
+        'p_category': category,
       });
 
       state = AsyncValue.data(await _fetchGroups());

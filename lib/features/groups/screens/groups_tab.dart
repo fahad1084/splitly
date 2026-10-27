@@ -357,7 +357,7 @@ class _GroupCard extends StatelessWidget {
                         : null,
                   ),
                   child: (group.photoUrl == null || group.photoUrl!.isEmpty)
-                      ? const Icon(Icons.group_rounded,
+                      ? Icon(groupTypeIcon(group.category),
                       color: AppColors.primary, size: 24)
                       : null,
                 ),
@@ -417,6 +417,11 @@ class _GroupCard extends StatelessWidget {
                               fontSize: 12,
                               color: AppColors.primaryLight)),
                       const SizedBox(width: 10),
+                      Icon(groupTypeIcon(group.category),
+                          size: 13,
+                          color: AppColors.primaryLight,
+                          semanticLabel: groupTypeLabel(l10n, group.category)),
+                      const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),

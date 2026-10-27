@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../models/group_model.dart';
 import '../controllers/groups_controller.dart';
 import '../../../core/utils/app_errors.dart';
 
@@ -14,16 +15,6 @@ const _currencies = [
   {'code': 'SAR', 'name': 'Saudi Riyal'},
   {'code': 'GBP', 'name': 'British Pound'},
   {'code': 'EUR', 'name': 'Euro'},
-];
-
-// Group type icons
-const _groupTypes = [
-  {'label': 'Home', 'icon': Icons.home_rounded},
-  {'label': 'Trip', 'icon': Icons.flight_rounded},
-  {'label': 'Friends', 'icon': Icons.group_rounded},
-  {'label': 'Office', 'icon': Icons.work_rounded},
-  {'label': 'Family', 'icon': Icons.favorite_rounded},
-  {'label': 'Other', 'icon': Icons.category_rounded},
 ];
 
 void showCreateGroupSheet(BuildContext context) {
@@ -69,6 +60,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
           ? null
           : _descCtrl.text.trim(),
       currency: _selectedCurrency,
+      category: groupTypes[_selectedTypeIndex],
     );
 
     if (!mounted) return;
@@ -151,11 +143,11 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                 height: 72,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _groupTypes.length,
+                  itemCount: groupTypes.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (_, i) {
                     final selected = _selectedTypeIndex == i;
-                    final type = _groupTypes[i];
+                    final type = groupTypes[i];
                     return GestureDetector(
                       onTap: () => setState(() => _selectedTypeIndex = i),
                       child: AnimatedContainer(
@@ -179,7 +171,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              type['icon'] as IconData,
+                              groupTypeIcon(type),
                               size: 22,
                               color: selected
                                   ? Colors.white
@@ -187,7 +179,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              type['label'] as String,
+                              groupTypeLabel(l10n, type),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,

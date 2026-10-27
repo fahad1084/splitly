@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+
 class GroupModel {
   final String id;
   final String name;
@@ -59,3 +62,25 @@ class GroupModel {
     );
   }
 }
+// ── Group types ───────────────────────────────────────────────────────────────
+// The ids saved in groups.category (see migration 20261030000300).
+const groupTypes = ['home', 'trip', 'friends', 'office', 'family', 'other'];
+
+IconData groupTypeIcon(String? category) => switch (category?.toLowerCase()) {
+      'home' => Icons.home_rounded,
+      'trip' => Icons.flight_rounded,
+      'friends' => Icons.group_rounded,
+      'office' => Icons.work_rounded,
+      'family' => Icons.favorite_rounded,
+      _ => Icons.category_rounded,
+    };
+
+String groupTypeLabel(AppLocalizations l10n, String? category) =>
+    switch (category?.toLowerCase()) {
+      'home' => l10n.groupTypeHome,
+      'trip' => l10n.groupTypeTrip,
+      'friends' => l10n.groupTypeFriends,
+      'office' => l10n.groupTypeOffice,
+      'family' => l10n.groupTypeFamily,
+      _ => l10n.groupTypeOther,
+    };

@@ -84,7 +84,8 @@ class GroupDetailScreen extends ConsumerWidget {
                       : null,
                 ),
                 child: (group.photoUrl == null || group.photoUrl!.isEmpty)
-                    ? const Icon(Icons.group_rounded, color: AppColors.primaryTint, size: 18)
+                    ? Icon(groupTypeIcon(group.category),
+                        color: AppColors.primaryTint, size: 18)
                     : null,
               ),
             ),
@@ -97,11 +98,24 @@ class GroupDetailScreen extends ConsumerWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                         color: AppColors.primaryTint)),
-                Text(group.currency,
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w500)),
+                Row(
+                  children: [
+                    Text(group.currency,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w500)),
+                    const SizedBox(width: 8),
+                    Icon(groupTypeIcon(group.category),
+                        size: 13, color: AppColors.accent),
+                    const SizedBox(width: 3),
+                    Text(groupTypeLabel(l10n, group.category),
+                        style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
               ],
             ),
           ],

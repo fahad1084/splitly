@@ -427,5 +427,11 @@
   "stopRepeatingConfirm": "\"{title}\" کو دہرانا بند کریں؟ جو خرچے پہلے شامل ہو چکے ہیں وہ رہیں گے۔",
   "recurringPausedMsg": "روک دیا گیا۔ دوبارہ شروع کرنے تک کوئی نیا خرچہ شامل نہیں ہوگا۔",
   "recurringResumedMsg": "دوبارہ شروع ہو گیا۔",
-  "recurringStoppedMsg": "دہرانا بند ہو گیا۔"
+  "recurringStoppedMsg": "دہرانا بند ہو گیا۔",
+  "groupTypeHome": "گھر",
+  "groupTypeTrip": "سفر",
+  "groupTypeFriends": "دوست",
+  "groupTypeOffice": "دفتر",
+  "groupTypeFamily": "خاندان",
+  "groupTypeOther": "دیگر"
 }

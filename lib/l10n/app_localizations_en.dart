@@ -1252,4 +1252,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recurringStoppedMsg => 'Stopped repeating.';
+
+  @override
+  String get groupTypeHome => 'Home';
+
+  @override
+  String get groupTypeTrip => 'Trip';
+
+  @override
+  String get groupTypeFriends => 'Friends';
+
+  @override
+  String get groupTypeOffice => 'Office';
+
+  @override
+  String get groupTypeFamily => 'Family';
+
+  @override
+  String get groupTypeOther => 'Other';
 }
