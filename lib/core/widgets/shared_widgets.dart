@@ -392,7 +392,7 @@ class ErrorBanner extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.only(left: 12),
+      padding: const EdgeInsetsDirectional.only(start: 12),
       decoration: BoxDecoration(
         color: AppColors.danger.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
@@ -489,14 +489,14 @@ class SplitlyGoogleButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(
+                Flexible(child: Text(
                   l10n.continueWithGoogle, // ✅ localized
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: textColor,
                   ),
-                ),
+                )),
               ],
             ),
           ),

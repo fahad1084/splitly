@@ -259,9 +259,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         )
                             : null,
                       ),
-                      Positioned(
+                      PositionedDirectional(
                         bottom: -2,
-                        right: -2,
+                        end: -2,
                         child: GestureDetector(
                           onTap: _isUploadingAvatar
                               ? null

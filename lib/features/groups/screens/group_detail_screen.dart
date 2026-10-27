@@ -319,11 +319,11 @@ class GroupDetailScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(l10n.members,
+                    Flexible(child: Text(l10n.members,
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: headingColor)),
+                            color: headingColor))),
                     membersAsync.when(
                       skipError: true, // keep the last data if a reload fails
                       data: (members) => Container(
@@ -382,11 +382,11 @@ class GroupDetailScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(l10n.expensesHeading,
+                    Flexible(child: Text(l10n.expensesHeading,
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: headingColor)),
+                            color: headingColor))),
                     Row(
                       children: [
                         // ✅ History button
@@ -726,7 +726,7 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
 
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              padding: const EdgeInsetsDirectional.only(start: 4, bottom: 12),
               child: Text(
                 group.name,
                 style: TextStyle(
@@ -1228,7 +1228,7 @@ class _MemberTile extends ConsumerWidget {
               ),
               if (role == 'admin')
                 Container(
-                  margin: const EdgeInsets.only(right: 6),
+                  margin: const EdgeInsetsDirectional.only(end: 6),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
@@ -1290,9 +1290,9 @@ class _MemberTile extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              padding: const EdgeInsetsDirectional.only(start: 4, bottom: 12),
               child: Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   name,
                   style: TextStyle(

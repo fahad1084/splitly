@@ -230,7 +230,7 @@ class _OverallBanner extends StatelessWidget {
                   Flexible(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: Text(
                         formatPaisa(line.value.abs(), line.key),
                         style: TextStyle(

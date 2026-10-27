@@ -529,7 +529,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                 child: Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Text(text,
                       style: TextStyle(
                           fontSize: 12,
@@ -714,7 +714,7 @@ class _MessageBubble extends ConsumerWidget {
                 children: [
                   if (showName && !isMe)
                     Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 3),
+                      padding: const EdgeInsetsDirectional.only(start: 4, bottom: 3),
                       child: Text(
                         message.senderName,
                         style: const TextStyle(
@@ -735,8 +735,8 @@ class _MessageBubble extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: (isMe ? Colors.white : AppColors.primary).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border(
-                          left: BorderSide(
+                        border: BorderDirectional(
+                          start: BorderSide(
                               color: isMe ? Colors.white : AppColors.primary, width: 3),
                         ),
                       ),
@@ -817,7 +817,7 @@ class _MessageBubble extends ConsumerWidget {
                     ),
 
                   Padding(
-                    padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
+                    padding: const EdgeInsetsDirectional.only(top: 3, start: 4, end: 4),
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
@@ -1338,9 +1338,9 @@ class _MessageInput extends StatelessWidget {
               Icon(Icons.fiber_manual_record_rounded,
                   color: AppColors.danger, size: 16),
               const SizedBox(width: 8),
-              Text(l10n.recording,
+              Flexible(child: Text(l10n.recording,
                   style: TextStyle(
-                      color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
+                      color: dark ? AppColors.primaryTint : AppColors.primaryDark))),
               const SizedBox(width: 8),
               Text('0:${recordSeconds.toString().padLeft(2, '0')}',
                   style: TextStyle(color: AppColors.mutedText(context))),

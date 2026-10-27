@@ -389,7 +389,7 @@ class _DateChip extends ConsumerWidget {
           .state = value,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(right: 8),
+        margin: const EdgeInsetsDirectional.only(end: 8),
         padding:
         const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
@@ -501,7 +501,7 @@ class _CustomRangeChip extends ConsumerWidget {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(right: 8),
+        margin: const EdgeInsetsDirectional.only(end: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : Colors.transparent,
@@ -557,7 +557,7 @@ class _CategoryChip extends ConsumerWidget {
           .state = value,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(right: 8),
+        margin: const EdgeInsetsDirectional.only(end: 8),
         padding:
         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(

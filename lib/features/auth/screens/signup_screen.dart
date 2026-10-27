@@ -231,9 +231,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l10n.alreadyHaveAccount,
+                    Flexible(child: Text(l10n.alreadyHaveAccount,
                         style: TextStyle(
-                            fontSize: 13, color: linkMutedColor)),
+                            fontSize: 13, color: linkMutedColor))),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(l10n.signIn,

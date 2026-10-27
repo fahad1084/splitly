@@ -194,7 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                 // ── Forgot password ───────────────────────────────────────
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
                     onPressed: _goToForgotPassword,
                     style: TextButton.styleFrom(
@@ -248,9 +248,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l10n.newToSplitly,
+                    Flexible(child: Text(l10n.newToSplitly,
                         style: TextStyle(
-                            fontSize: 13, color: linkMutedColor)),
+                            fontSize: 13, color: linkMutedColor))),
                     GestureDetector(
                       onTap: _goToSignUp,
                       child: Text(l10n.signUp,

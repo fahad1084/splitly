@@ -112,8 +112,8 @@ class ExpenseTile extends ConsumerWidget {
           ? DismissDirection.endToStart
           : DismissDirection.none,
       background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 20),
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         decoration: BoxDecoration(
           color: AppColors.danger,

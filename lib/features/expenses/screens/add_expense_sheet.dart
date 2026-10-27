@@ -496,8 +496,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     const Icon(Icons.calendar_today_rounded,
                         size: 20, color: AppColors.primary),
                     const SizedBox(width: 12),
-                    Text(l10n.expenseDateLabel,
-                        style: TextStyle(fontSize: 14, color: headingColor)),
+                    Flexible(child: Text(l10n.expenseDateLabel,
+                        style: TextStyle(fontSize: 14, color: headingColor))),
                     const Spacer(),
                     Text(_dateText(l10n),
                         style: const TextStyle(
@@ -609,10 +609,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(l10n.loadingMembers,
+                    Flexible(child: Text(l10n.loadingMembers,
                         style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.primary)),
+                            color: AppColors.primary))),
                   ],
                 ),
               ),
@@ -755,9 +755,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                           strokeWidth: 2, color: AppColors.primary),
                     ),
                     const SizedBox(width: 8),
-                    Text(l10n.loadingMembers,
+                    Flexible(child: Text(l10n.loadingMembers,
                         style: TextStyle(
-                            fontSize: 12, color: AppColors.primary)),
+                            fontSize: 12, color: AppColors.primary))),
                   ],
                 ),
               )
@@ -900,7 +900,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               keyboardType:
                               const TextInputType.numberWithOptions(
                                   decimal: true),
-                              textAlign: TextAlign.right,
+                              textAlign: TextAlign.end,
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -948,7 +948,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               keyboardType:
                               const TextInputType.numberWithOptions(
                                   decimal: true),
-                              textAlign: TextAlign.right,
+                              textAlign: TextAlign.end,
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,

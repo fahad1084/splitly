@@ -711,7 +711,7 @@ class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 50),
+      padding: const EdgeInsetsDirectional.only(start: 50),
       child: Divider(
           height: 0.5,
           thickness: 0.5,

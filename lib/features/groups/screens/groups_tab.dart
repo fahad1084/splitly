@@ -84,9 +84,9 @@ class GroupsTab extends ConsumerWidget {
                     ),
                   ),
                   if (unreadCount > 0)
-                    Positioned(
+                    PositionedDirectional(
                       top: 6,
-                      right: 6,
+                      end: 6,
                       child: Container(
                         width: 8,
                         height: 8,
@@ -184,7 +184,7 @@ class GroupsTab extends ConsumerWidget {
                       mainAxisAlignment:
                       MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        Flexible(child: Text(
                           l10n.yourGroups,
                           style: TextStyle(
                             fontSize: 16,
@@ -193,7 +193,7 @@ class GroupsTab extends ConsumerWidget {
                                 ? AppColors.primaryTint
                                 : AppColors.primaryDark,
                           ),
-                        ),
+                        )),
                         Row(
                           children: [
                             GestureDetector(
@@ -367,9 +367,9 @@ class _GroupCard extends StatelessWidget {
                       : null,
                 ),
                 if (unreadCount > 0)
-                  Positioned(
+                  PositionedDirectional(
                     top: -4,
-                    right: -4,
+                    end: -4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 5, vertical: 2),
@@ -417,10 +417,10 @@ class _GroupCard extends StatelessWidget {
                       Icon(Icons.people_outline_rounded,
                           size: 12, color: AppColors.primaryLight),
                       const SizedBox(width: 4),
-                      Text(l10n.membersCount(group.memberCount ?? 0),
+                      Flexible(child: Text(l10n.membersCount(group.memberCount ?? 0),
                           style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.mutedText(context))),
+                              color: AppColors.mutedText(context)))),
                       const SizedBox(width: 10),
                       Icon(groupTypeIcon(group.category),
                           size: 13,
