@@ -7,6 +7,122 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../security/controllers/app_lock_controller.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// RECEIPT TOTAL FINDER (pure, unit-tested in test/receipt_total_test.dart)
+// ─────────────────────────────────────────────────────────────────────────────
+// A number counts as money when it
+//   • has exactly 2 decimals:            17.07   1,234.50   $8.99
+//   • has a money sign in front:          Rs 1,250   Rs. 1250   PKR 1250   $8
+//   • ends with "/-" (Pakistani bills):   1,250/-   1250/-
+//   • or stands on a "Total" line (any number there; the largest wins).
+// Plain numbers elsewhere (phone, card, invoice numbers, dates) are ignored.
+final _decimalMoney = RegExp(r'(\d{1,3}(?:,\d{3})+|\d+)\.\d{2}(?!\d)');
+final _signedMoney = RegExp(
+    r'(?<![a-z])(?:rs\.?|pkr|usd|\$)\s*((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)(?![\d,])',
+    caseSensitive: false);
+final _slashDashMoney =
+    RegExp(r'((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)\s*/-');
+final _anyNumber =
+    RegExp(r'(?<![\d.,])((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?)(?![\d,]|\.\d)');
+
+// Strongest first: "Grand Total" beats a plain "Total".
+const _strongTotalKeywords = [
+  'grand total', 'net total', 'total payable', 'payable', 'amount due',
+  'balance due', 'net amount',
+];
+const _totalKeywords = ['total', 'totai', 't0tal'];
+const _subtotalKeywords = ['subtotal', 'sub total', 'sub-total'];
+const _maxReceiptAmount = 1000000.0;
+
+double? _parseAmount(String raw) => double.tryParse(raw.replaceAll(',', ''));
+
+// Money values on one line, each number counted once even when two
+// patterns match it (e.g. "Rs 1,250.00").
+List<double> _moneyOnLine(String line, {required bool anyNumber}) {
+  final taken = <(int, int)>[];
+  final values = <double>[];
+  bool overlaps(int a, int b) => taken.any((t) => a < t.$2 && b > t.$1);
+
+  for (final re in [
+    _signedMoney, _slashDashMoney, _decimalMoney,
+    if (anyNumber) _anyNumber,
+  ]) {
+    for (final m in re.allMatches(line)) {
+      final g = re == _decimalMoney ? m.group(0)! : m.group(1)!;
+      final at = m.start + m.group(0)!.indexOf(g);
+      if (overlaps(at, at + g.length)) continue;
+      final v = _parseAmount(g);
+      if (v == null || v <= 0 || v > _maxReceiptAmount) continue;
+      taken.add((at, at + g.length));
+      values.add(v);
+    }
+  }
+  return values;
+}
+
+@visibleForTesting
+double? findReceiptTotal(String text) {
+  final lines = text.split('\n');
+  final moneyLines = <MapEntry<int, double>>[];
+  int? strongLine;
+  int? totalLine;
+  int? subtotalLine;
+
+  for (var i = 0; i < lines.length; i++) {
+    final lower = lines[i].toLowerCase();
+    final isSubtotal = _subtotalKeywords.any(lower.contains);
+    final isStrong = !isSubtotal && _strongTotalKeywords.any(lower.contains);
+    final isTotal =
+        !isSubtotal && (isStrong || _totalKeywords.any(lower.contains));
+
+    if (isStrong && strongLine == null) strongLine = i;
+    if (isTotal && totalLine == null) totalLine = i;
+    if (isSubtotal && subtotalLine == null) subtotalLine = i;
+
+    for (final v in _moneyOnLine(lines[i], anyNumber: isTotal || isSubtotal)) {
+      moneyLines.add(MapEntry(i, v));
+    }
+  }
+
+  if (moneyLines.isEmpty) return null;
+
+  double? largestOn(int? line) {
+    if (line == null) return null;
+    final vals = moneyLines.where((e) => e.key == line).map((e) => e.value);
+    return vals.isEmpty ? null : vals.reduce((a, b) => a > b ? a : b);
+  }
+
+  // Priority 1 — on the same line as the strongest "total" keyword
+  final onTotalLine = largestOn(strongLine) ?? largestOn(totalLine);
+  if (onTotalLine != null) return onTotalLine;
+
+  // Priority 2 — within 6 lines AFTER the "total" keyword (label and value
+  // in separate columns). An amount repeated there is very likely the total.
+  final keyLine = strongLine ?? totalLine;
+  if (keyLine != null) {
+    final nearby = moneyLines
+        .where((e) => e.key > keyLine && e.key <= keyLine + 6)
+        .toList();
+    if (nearby.isNotEmpty) {
+      final counts = <double, int>{};
+      for (final e in nearby) {
+        counts[e.value] = (counts[e.value] ?? 0) + 1;
+      }
+      final repeated = counts.entries.where((e) => e.value > 1).toList()
+        ..sort((a, b) => b.value.compareTo(a.value)); // most repeated first
+      if (repeated.isNotEmpty) return repeated.first.key;
+      return nearby.first.value;
+    }
+  }
+
+  // Priority 3 — same line as "subtotal"
+  final onSubtotal = largestOn(subtotalLine);
+  if (onSubtotal != null) return onSubtotal;
+
+  // Priority 4 — the largest money value anywhere
+  return moneyLines.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+}
+
 class ReceiptScanResult {
   final double? amount;
   final String rawText;
@@ -25,14 +141,6 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   bool _scanning = false;
   String _rawText = '';
   final _amountCtrl = TextEditingController();
-
-  // Matches money-formatted numbers: 17.07, $8.99, 1,234.50 — always 2 decimals.
-  // This is far more reliable than plain digit matching because auth numbers,
-  // card numbers, phone numbers, dates never have exactly 2 decimal places.
-  final _moneyRegex = RegExp(r'\$?\s?(\d{1,3}(?:,\d{3})*|\d+)\.\d{2}\b');
-
-  final _totalKeywords = ['total', 'totai', 't0tal', 'grand total', 'amount due', 'net amount', 'balance due'];
-  final _subtotalKeywords = ['subtotal', 'sub total', 'sub-total'];
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await AppLockController.runWithoutLock(
@@ -56,7 +164,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
       final recognized = await textRecognizer.processImage(inputImage);
       _rawText = recognized.text;
 
-      final found = _findTotal(recognized.text);
+      final found = findReceiptTotal(recognized.text);
 
       setState(() {
         if (found != null) _amountCtrl.text = found.toStringAsFixed(2);
@@ -67,76 +175,6 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
       await textRecognizer.close();
       if (mounted) setState(() => _scanning = false);
     }
-  }
-
-  double? _parseMoneyMatch(RegExpMatch m) {
-    final raw = m.group(0)?.replaceAll(r'$', '').replaceAll(',', '').trim();
-    return double.tryParse(raw ?? '');
-  }
-
-  double? _findTotal(String text) {
-    final lines = text.split('\n');
-
-    // Collect every money-formatted number with its line index
-    final List<MapEntry<int, double>> moneyLines = [];
-    int? totalKeywordLine;
-    int? subtotalKeywordLine;
-
-    for (int i = 0; i < lines.length; i++) {
-      final lower = lines[i].toLowerCase();
-
-      final isSubtotal = _subtotalKeywords.any((k) => lower.contains(k));
-      final isTotal = !isSubtotal && _totalKeywords.any((k) => lower.contains(k));
-
-      if (isTotal && totalKeywordLine == null) totalKeywordLine = i;
-      if (isSubtotal && subtotalKeywordLine == null) subtotalKeywordLine = i;
-
-      for (final m in _moneyRegex.allMatches(lines[i])) {
-        final val = _parseMoneyMatch(m);
-        if (val == null || val <= 0 || val > 1000000) continue;
-        moneyLines.add(MapEntry(i, val));
-      }
-    }
-
-    if (moneyLines.isEmpty) return null;
-
-    // Priority 1 — money value on the SAME line as "total" keyword
-    if (totalKeywordLine != null) {
-      final sameLine = moneyLines.where((e) => e.key == totalKeywordLine);
-      if (sameLine.isNotEmpty) return sameLine.first.value;
-    }
-
-    // Priority 2 — money value within 6 lines AFTER the "total" keyword
-    // (handles receipts where label and value are in separate columns)
-    if (totalKeywordLine != null) {
-      final nearby = moneyLines
-          .where((e) => e.key > totalKeywordLine! && e.key <= totalKeywordLine + 6)
-          .toList();
-      if (nearby.isNotEmpty) {
-        // If the same amount appears more than once nearby, it's very likely the total
-        final counts = <double, int>{};
-        for (final e in nearby) {
-          counts[e.value] = (counts[e.value] ?? 0) + 1;
-        }
-        final repeated = counts.entries.where((e) => e.value > 1).toList();
-        if (repeated.isNotEmpty) {
-          repeated.sort((a, b) => b.value.compareTo(a.value));
-          return repeated.first.key;
-        }
-        return nearby.first.value;
-      }
-    }
-
-    // Priority 3 — same line as "subtotal" keyword
-    if (subtotalKeywordLine != null) {
-      final sameLine = moneyLines.where((e) => e.key == subtotalKeywordLine);
-      if (sameLine.isNotEmpty) return sameLine.first.value;
-    }
-
-    // Priority 4 — fallback: the largest money-formatted value anywhere
-    // (total is usually the largest single amount on a receipt)
-    final values = moneyLines.map((e) => e.value).toList()..sort();
-    return values.last;
   }
 
   @override

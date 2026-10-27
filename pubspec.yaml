@@ -56,6 +56,9 @@ flutter:
     - .env
     - assets/images/
     - assets/icons/
+    # Noto Naskh Arabic (SIL OFL) — Urdu letters in the PDF export
+    - assets/fonts/NotoNaskhArabic-Regular.ttf
+    - assets/fonts/NotoNaskhArabic-Bold.ttf
 
 flutter_launcher_icons:
   android: true

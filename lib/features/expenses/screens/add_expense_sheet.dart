@@ -368,7 +368,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     if (result?.amount != null) {
                       setState(() {
                         _amountCtrl.text =
-                            result!.amount!.toStringAsFixed(0);
+                            result!.amount!.toStringAsFixed(2); // keep the paisa
                       });
                     }
                   },
