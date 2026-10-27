@@ -521,7 +521,7 @@ abstract class AppLocalizations {
   /// No description provided for @splitlyFooter.
   ///
   /// In en, this message translates to:
-  /// **'Splitly v1.0.0 · Your Circle. Your Hisaab.'**
+  /// **'Splitly v1.2.0 · Your Circle. Your Hisaab.'**
   String get splitlyFooter;
 
   /// No description provided for @protectSplitly.

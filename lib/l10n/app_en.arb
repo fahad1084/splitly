@@ -81,7 +81,7 @@
   "membersCount": "{count} members",
   "@membersCount": { "placeholders": { "count": { "type": "int" } } },
   "createFirstGroupDesc": "Create a new group or join one with an invite code.",
-  "splitlyFooter": "Splitly v1.0.0 · Your Circle. Your Hisaab.",
+  "splitlyFooter": "Splitly v1.2.0 · Your Circle. Your Hisaab.",
   "protectSplitly": "Protect Splitly with a PIN or biometrics",
   "addExtraLayer": "Add an extra layer of security to your app",
   "enablePinLock": "Enable PIN Lock",

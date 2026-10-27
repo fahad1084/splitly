@@ -81,7 +81,7 @@
   "membersCount": "{count} اراکین",
   "@membersCount": { "placeholders": { "count": { "type": "int" } } },
   "createFirstGroupDesc": "نیا گروپ بنائیں یا دعوتی کوڈ سے شامل ہوں۔",
-  "splitlyFooter": "Splitly v1.0.0 · آپ کا حلقہ۔ آپ کا حساب۔",
+  "splitlyFooter": "Splitly v1.2.0 · آپ کا حلقہ۔ آپ کا حساب۔",
   "protectSplitly": "پن یا بایومیٹرک سے Splitly کو محفوظ بنائیں",
   "addExtraLayer": "اپنی ایپ میں سیکیورٹی کی اضافی تہہ شامل کریں",
   "enablePinLock": "پن لاک فعال کریں",

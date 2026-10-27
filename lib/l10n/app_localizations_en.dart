@@ -233,7 +233,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create a new group or join one with an invite code.';
 
   @override
-  String get splitlyFooter => 'Splitly v1.0.0 · Your Circle. Your Hisaab.';
+  String get splitlyFooter => 'Splitly v1.2.0 · Your Circle. Your Hisaab.';
 
   @override
   String get protectSplitly => 'Protect Splitly with a PIN or biometrics';
