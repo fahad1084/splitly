@@ -453,5 +453,7 @@
   "groupTypeFriends": "Friends",
   "groupTypeOffice": "Office",
   "groupTypeFamily": "Family",
-  "groupTypeOther": "Other"
+  "groupTypeOther": "Other",
+  "groupNoLongerAvailable": "This group isn't available any more. You may have left it, or it was deleted.",
+  "expenseNoLongerExists": "This expense was deleted."
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_core/firebase_core.dart';
@@ -65,11 +66,57 @@ class FCMService {
   /// while the app is open.
   static void Function(Map<String, dynamic> data)? onForegroundData;
 
+  // ── Tapped notifications ──────────────────────────────────────────────────
+  // The app sets the handler once Home is showing (and clears it on sign
+  // out). A tap that comes earlier — the app was closed, or still starting —
+  // waits in _pendingOpen until then.
+  static void Function(Map<String, dynamic> data)? _onOpen;
+  static Map<String, dynamic>? _pendingOpen;
+
+  static void setOpenHandler(void Function(Map<String, dynamic> data)? handler) {
+    _onOpen = handler;
+    final pending = _pendingOpen;
+    if (handler != null && pending != null) {
+      _pendingOpen = null;
+      handler(pending);
+    }
+  }
+
+  static void _open(Map<String, dynamic> data) {
+    final handler = _onOpen;
+    if (handler != null) {
+      handler(data);
+    } else {
+      _pendingOpen = data;
+    }
+  }
+
+  // Our notifications carry {type, group_id, entity_id} as JSON
+  static void _onTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+    try {
+      _open(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+    } catch (e) {
+      logDebug('=== NOTIFICATION TAP: bad payload: $e ===');
+    }
+  }
+
   // ── Initialize ────────────────────────────────────────────────────────────
   Future<void> initialize() async {
     await _requestPermission();
     await _setupLocalNotifications();
     _listenForMessages();
+
+    // The app was started by tapping one of our notifications
+    final launch = await _localNotifications.getNotificationAppLaunchDetails();
+    final launchResponse = launch?.notificationResponse;
+    if ((launch?.didNotificationLaunchApp ?? false) && launchResponse != null) {
+      _onTap(launchResponse);
+    }
+    // ... or a system-shown FCM notification (not used today, kept safe)
+    final initial = await _messaging.getInitialMessage();
+    if (initial != null) _open(initial.data);
     await saveTokenToSupabase();
 
     // Listen for token refresh and save again
@@ -100,6 +147,7 @@ class FCMService {
     await _localNotifications.initialize(
       const InitializationSettings(
           android: androidSettings, iOS: iosSettings),
+      onDidReceiveNotificationResponse: _onTap,
     );
     await _localNotifications
         .resolvePlatformSpecificImplementation<
@@ -118,9 +166,10 @@ class FCMService {
       onForegroundData?.call(message.data);
     });
 
-    // App opened FROM notification
+    // App opened FROM a system-shown FCM notification (ours are shown by
+    // flutter_local_notifications, see _onTap)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      // TODO: navigate to relevant screen based on message.data
+      _open(message.data);
     });
   }
 
@@ -149,6 +198,7 @@ class FCMService {
     AndroidInitializationSettings('@mipmap/ic_launcher');
     await localNotifications.initialize(
       const InitializationSettings(android: androidSettings),
+      onDidReceiveNotificationResponse: _onTap,
     );
     await localNotifications
         .resolvePlatformSpecificImplementation<
@@ -174,6 +224,12 @@ class FCMService {
               : null,
         ),
       ),
+      // What to open when tapped (no text or amounts in here)
+      payload: jsonEncode({
+        'type': data['type'] ?? '',
+        'group_id': data['group_id'] ?? '',
+        'entity_id': data['entity_id'] ?? '',
+      }),
     );
   }
 

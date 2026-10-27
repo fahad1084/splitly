@@ -1270,4 +1270,11 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get groupTypeOther => 'دیگر';
+
+  @override
+  String get groupNoLongerAvailable =>
+      'یہ گروپ اب دستیاب نہیں۔ شاید آپ اسے چھوڑ چکے ہیں یا یہ حذف ہو گیا ہے۔';
+
+  @override
+  String get expenseNoLongerExists => 'یہ خرچہ حذف ہو چکا ہے۔';
 }

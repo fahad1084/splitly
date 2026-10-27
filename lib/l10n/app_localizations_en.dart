@@ -1270,4 +1270,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupTypeOther => 'Other';
+
+  @override
+  String get groupNoLongerAvailable =>
+      'This group isn\'t available any more. You may have left it, or it was deleted.';
+
+  @override
+  String get expenseNoLongerExists => 'This expense was deleted.';
 }

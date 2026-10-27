@@ -2401,6 +2401,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get groupTypeOther;
+
+  /// No description provided for @groupNoLongerAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This group isn\'t available any more. You may have left it, or it was deleted.'**
+  String get groupNoLongerAvailable;
+
+  /// No description provided for @expenseNoLongerExists.
+  ///
+  /// In en, this message translates to:
+  /// **'This expense was deleted.'**
+  String get expenseNoLongerExists;
 }
 
 class _AppLocalizationsDelegate

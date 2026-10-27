@@ -5,7 +5,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/notifications_controller.dart';
-import 'notification_detail_sheet.dart';
+import '../controllers/notification_router.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -143,7 +143,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       ref.invalidate(notificationsProvider);
                     }
                     if (!context.mounted) return;
-                    await showNotificationDetailSheet(context, n);
+                    await openNotificationTarget(
+                      Navigator.of(context),
+                      ProviderScope.containerOf(context, listen: false),
+                      type: n.type,
+                      groupId: n.groupId,
+                      entityId: n.entityId,
+                    );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(14),

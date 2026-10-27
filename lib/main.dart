@@ -20,6 +20,7 @@ import 'features/expenses/controllers/expenses_controller.dart';
 import 'features/expenses/screens/expense_history_screen.dart';
 import 'features/groups/controllers/groups_controller.dart';
 import 'features/notifications/controllers/fcm_service.dart';
+import 'features/notifications/controllers/notification_router.dart';
 import 'features/notifications/controllers/notifications_controller.dart';
 import 'firebase_options.dart';
 import 'features/security/controllers/app_lock_controller.dart';
@@ -32,6 +33,22 @@ import 'l10n/app_localizations.dart';
 // Attached to MaterialApp so ALL navigation uses the same stack
 // This fixes the back button closing the app issue
 final _navigatorKey = GlobalKey<NavigatorState>();
+
+// Tapped notifications open their screen — turned on once Home is showing
+// (a tap from before that waits in FCMService until then).
+void _enableNotificationTaps(ProviderContainer container) {
+  FCMService.setOpenHandler((data) {
+    // Next event-loop turn, so a Home route pushed just now is in place
+    Future(() {
+      final nav = _navigatorKey.currentState;
+      if (nav == null) return;
+      openNotificationTarget(nav, container,
+          type: data['type'] as String?,
+          groupId: data['group_id'] as String?,
+          entityId: data['entity_id'] as String?);
+    });
+  });
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -219,6 +236,7 @@ class _AuthGateState extends State<AuthGate> {
         FCMService().saveTokenToSupabase();
         // No lock here: the user has just signed in with their password
         _navigate(const HomeScreen());
+        _enableNotificationTaps(_container);
         break;
 
       case AuthChangeEvent.userUpdated:
@@ -235,6 +253,7 @@ class _AuthGateState extends State<AuthGate> {
 
       case AuthChangeEvent.signedOut:
         _isPasswordRecovery = false;
+        FCMService.setOpenHandler(null);
         _navigate(const LoginScreen());
         _resetUserData();
         FCMService().deleteDeviceToken();
@@ -351,10 +370,12 @@ class _InitialScreenState extends State<_InitialScreen> {
       }
 
       if (!mounted) return;
+      final container = ProviderScope.containerOf(context, listen: false);
       _navigatorKey.currentState?.pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => destination),
             (_) => false,
       );
+      if (session != null) _enableNotificationTaps(container);
     });
   }
 
