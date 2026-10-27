@@ -9,6 +9,7 @@ import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import 'expense_tile.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../core/utils/money_format.dart';
 
 const _categoryIconMap = {
   'food':          Icons.restaurant_rounded,
@@ -120,7 +121,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${expense.currency} ${expense.amount.toStringAsFixed(0)}',
+                    formatMoney(expense.amount, expense.currency),
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w500,
@@ -264,7 +265,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                     )
                   else
                     Text(
-                      '${expense.currency} ${split.amountOwed.toStringAsFixed(0)}',
+                      formatMoney(split.amountOwed, expense.currency),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

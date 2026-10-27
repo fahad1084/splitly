@@ -25,6 +25,7 @@ import '../../../core/utils/string_utils.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../security/controllers/app_lock_controller.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -239,7 +240,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '${debt.currency} ${debt.amount.toStringAsFixed(2)}',
+                                    formatMoney(debt.amount, debt.currency),
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -251,7 +252,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                   if (debt.pendingAmount > 0)
                                     Text(
                                       l10n.amountPending(
-                                          '${debt.currency} ${debt.pendingAmount.toStringAsFixed(2)}'),
+                                          formatMoney(debt.pendingAmount, debt.currency)),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: AppColors.accentDark,
@@ -900,7 +901,7 @@ void showOpenDebtsDialog(BuildContext context, WidgetRef ref,
   final dark = isDark(context);
   final me = ref.read(currentUserProvider)?.id ?? '';
   final summary = ref.read(groupBalanceSummaryProvider(group.balanceKey));
-  String money(double v) => '${group.currency} ${v.toStringAsFixed(2)}';
+  String money(double v) => formatMoney(v, group.currency);
   final lines = [
     for (final d in summary.debts)
       if (d.fromUserId == userId || d.toUserId == userId)
@@ -1034,7 +1035,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                 child: _BalanceItem(
                   label: l10n.totalSpent,
                   value:
-                  '${group.currency} ${summary.totalSpent.toStringAsFixed(0)}',
+                  formatMoney(summary.totalSpent, group.currency),
                   color: AppColors.primaryLight,
                 ),
               ),
@@ -1042,7 +1043,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                 child: _BalanceItem(
                   label: l10n.youAreOwed,
                   value:
-                  '${group.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
+                  formatMoney(summary.youAreOwed, group.currency),
                   color: AppColors.success,
                 ),
               ),
@@ -1050,7 +1051,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                 child: _BalanceItem(
                   label: l10n.youOwe,
                   value:
-                  '${group.currency} ${summary.youOwe.toStringAsFixed(0)}',
+                  formatMoney(summary.youOwe, group.currency),
                   color: AppColors.danger,
                 ),
               ),

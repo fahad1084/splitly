@@ -11,6 +11,7 @@ import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import 'receipt_scanner_screen.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../core/utils/money_format.dart';
 
 void showAddExpenseSheet(BuildContext context, GroupModel group) {
   showModalBottomSheet(
@@ -724,7 +725,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                         if (_splitType == 'equal')
                           Text(
                             included
-                                ? '${widget.group.currency} ${equalShare.toStringAsFixed(0)}'
+                                ? formatMoney(equalShare, widget.group.currency)
                                 : '—',
                             style: TextStyle(
                               fontSize: 13,

@@ -22,6 +22,15 @@ const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// "PKR 1,250.00" — same look as the app (2 decimals, thousands separators)
+function formatMoney(currency: string, amount: unknown): string {
+  const n = Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${currency} ${n}`.trim();
+}
+
 // ── Google OAuth token, cached ─────────────────────────────────────────────
 // A token is valid for 1 hour; keep it for 55 minutes so a warm function
 // instance doesn't sign a new JWT for every push.
@@ -178,7 +187,7 @@ serve(async (req) => {
       const { data: group } = await supabase.from("groups")
         .select("name, currency").eq("id", groupId).maybeSingle();
       title = group?.name ?? "New expense";
-      body = `${payer?.full_name ?? "Someone"} added "${record.title}" — ${group?.currency ?? ""} ${record.amount}`;
+      body = `${payer?.full_name ?? "Someone"} added "${record.title}" — ${formatMoney(group?.currency ?? "", record.amount)}`;
       dataPayload = {
         type: "expense",
         group_id: groupId ?? "",
@@ -215,7 +224,7 @@ serve(async (req) => {
         .select("full_name, avatar_url").eq("id", record.paid_to).maybeSingle();
       const { data: group } = await supabase.from("groups")
         .select("name, currency").eq("id", groupId).maybeSingle();
-      const money = `${group?.currency ?? ""} ${Number(record.amount).toFixed(2)}`;
+      const money = formatMoney(group?.currency ?? "", record.amount);
       title = group?.name ?? "Settlement";
       const actorName =
         (actorId === record.paid_to ? toP?.full_name : fromP?.full_name) ?? "Someone";

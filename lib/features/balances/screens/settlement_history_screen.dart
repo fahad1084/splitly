@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/balances_controller.dart';
 import '../models/balance_model.dart';
+import '../../../core/utils/money_format.dart';
 
 // ── Payment history of one group ──────────────────────────────────────────────
 // Who paid whom, how much, when, and the status. The receiver of a pending
@@ -159,7 +160,7 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
                 ),
               ),
               Text(
-                '${s.currency} ${s.amount.toStringAsFixed(2)}',
+                formatMoney(s.amount, s.currency),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

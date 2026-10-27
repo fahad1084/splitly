@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../groups/models/group_model.dart';
 import '../../expenses/models/expense_model.dart';
 import '../../security/controllers/app_lock_controller.dart';
+import '../../../core/utils/money_format.dart';
 
 class ExportService {
   // ── PDF Export ──────────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ class ExportService {
               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text('Total expenses: ${expenses.length}'),
-          pw.Text('Total amount: ${group.currency} ${total.toStringAsFixed(0)}'),
+          pw.Text('Total amount: ${formatMoney(total, group.currency)}'),
           pw.SizedBox(height: 16),
 
           // ── Table ───────────────────────────────────────────────
@@ -73,7 +74,7 @@ class ExportService {
                   _cell(e.title),
                   _cell(e.category),
                   _cell(e.paidByName),
-                  _cell('${e.currency} ${e.amount.toStringAsFixed(0)}'),
+                  _cell(formatMoney(e.amount, e.currency)),
                 ],
               )),
             ],

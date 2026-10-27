@@ -8,6 +8,7 @@ import '../../expenses/models/expense_model.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/money_format.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -450,7 +451,7 @@ class _TotalCard extends StatelessWidget {
               Text(
                 expenses.isEmpty
                     ? '-'
-                    :'$currency ${(total / expenses.length).toStringAsFixed(0)} ${l10n.avgLabel}',
+                    :'${formatMoney(total / expenses.length, currency)} ${l10n.avgLabel}',
                 style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.accent,
@@ -642,7 +643,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${widget.currency} ${amount.toStringAsFixed(0)}',
+                        formatMoney(amount, widget.currency),
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -733,7 +734,7 @@ class _MemberTabState extends State<_MemberTab> {
                           memberNames[sorted[group.x].key] ??
                               'Unknown';
                       return BarTooltipItem(
-                        '$name\n${widget.currency} ${rod.toY.toStringAsFixed(0)}',
+                        '$name\n${formatMoney(rod.toY, widget.currency)}',
                         const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
@@ -889,7 +890,7 @@ class _MemberTabState extends State<_MemberTab> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${widget.currency} ${amount.toStringAsFixed(0)}',
+                        formatMoney(amount, widget.currency),
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,

@@ -10,6 +10,7 @@ import '../../balances/controllers/balances_controller.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../../security/controllers/app_lock_controller.dart';
+import '../../../core/utils/money_format.dart';
 
 void showShareSummarySheet(BuildContext context, GroupModel group) {
   showModalBottomSheet(
@@ -235,14 +236,14 @@ class _ShareSummarySheet extends ConsumerWidget {
 
     buffer.writeln('💰 *Balance Summary*');
     buffer.writeln(
-        '• Total spent: ${group.currency} ${summary.totalSpent.toStringAsFixed(0)}');
+        '• Total spent: ${formatMoney(summary.totalSpent, group.currency)}');
     if (summary.youAreOwed > 0) {
       buffer.writeln(
-          '• You are owed: ${group.currency} ${summary.youAreOwed.toStringAsFixed(0)}');
+          '• You are owed: ${formatMoney(summary.youAreOwed, group.currency)}');
     }
     if (summary.youOwe > 0) {
       buffer.writeln(
-          '• You owe: ${group.currency} ${summary.youOwe.toStringAsFixed(0)}');
+          '• You owe: ${formatMoney(summary.youOwe, group.currency)}');
     }
 
     if (summary.debts.isNotEmpty) {
@@ -250,7 +251,7 @@ class _ShareSummarySheet extends ConsumerWidget {
       buffer.writeln('🤝 *Who Owes Who*');
       for (final debt in summary.debts) {
         buffer.writeln(
-            '• ${debt.fromUserName} → ${debt.toUserName}: ${debt.currency} ${debt.amount.toStringAsFixed(0)}');
+            '• ${debt.fromUserName} → ${debt.toUserName}: ${formatMoney(debt.amount, debt.currency)}');
       }
     }
 
@@ -260,7 +261,7 @@ class _ShareSummarySheet extends ConsumerWidget {
       final recent = expenses.take(5).toList();
       for (final expense in recent) {
         buffer.writeln(
-            '• ${expense.title} — ${expense.currency} ${expense.amount.toStringAsFixed(0)} (${expense.paidByName})');
+            '• ${expense.title} — ${formatMoney(expense.amount, expense.currency)} (${expense.paidByName})');
       }
       if (expenses.length > 5) {
         buffer

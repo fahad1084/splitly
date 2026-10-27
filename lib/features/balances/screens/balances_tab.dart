@@ -9,6 +9,7 @@ import '../../balances/models/balance_model.dart';
 import '../../balances/screens/settle_up_sheet.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../../core/services/home_widget_service.dart';
+import '../../../core/utils/money_format.dart';
 
 class BalancesTab extends ConsumerWidget {
   const BalancesTab({super.key});
@@ -54,14 +55,14 @@ class BalancesTab extends ConsumerWidget {
           final currentUserId =
               SupabaseConfig.client.auth.currentUser?.id ?? '';
 
-          // Overall totals
-          double totalOwed = 0;
-          double totalOwe = 0;
+          // Overall totals, PER CURRENCY (never add PKR and USD together)
+          final owed = <String, int>{};
+          final owe = <String, int>{};
           final allDebts = <DebtModel>[];
 
           for (final s in summaries) {
-            totalOwed += s.youAreOwed;
-            totalOwe += s.youOwe;
+            addToTotals(owed, s.currency, s.youAreOwed);
+            addToTotals(owe, s.currency, s.youOwe);
             allDebts.addAll(s.debts);
           }
 
@@ -78,9 +79,8 @@ class BalancesTab extends ConsumerWidget {
           // Keep the home screen widget in sync with the latest balances.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             HomeWidgetService.updateBalance(
-              totalOwed: totalOwed,
-              totalOwe: totalOwe,
-              currency: currency,
+              owedText: formatTotals(owed, fallbackCurrency: currency),
+              oweText: formatTotals(owe, fallbackCurrency: currency),
             );
           });
 
@@ -96,8 +96,8 @@ class BalancesTab extends ConsumerWidget {
                 // Overall banner
                 SliverToBoxAdapter(
                   child: _OverallBanner(
-                    totalOwed: totalOwed,
-                    totalOwe: totalOwe,
+                    owed: owed,
+                    owe: owe,
                     currency: currency,
                   ),
                 ),
@@ -173,21 +173,27 @@ class BalancesTab extends ConsumerWidget {
 
 // ── Overall Banner ────────────────────────────────────────────────────────────
 class _OverallBanner extends StatelessWidget {
-  final double totalOwed;
-  final double totalOwe;
-  final String currency;
+  final Map<String, int> owed; // paisa per currency
+  final Map<String, int> owe;
+  final String currency; // shown when there is nothing at all
 
   const _OverallBanner({
-    required this.totalOwed,
-    required this.totalOwe,
+    required this.owed,
+    required this.owe,
     required this.currency,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final net = totalOwed - totalOwe;
-    final isPositive = net >= 0;
+    // Net per currency (owed − owe); zero currencies are left out
+    final nets = <String, int>{
+      for (final c in {...owed.keys, ...owe.keys})
+        c: (owed[c] ?? 0) - (owe[c] ?? 0),
+    }..removeWhere((_, v) => v == 0);
+    final netLines = nets.isEmpty
+        ? [MapEntry(currency, 0)]
+        : (nets.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -203,43 +209,49 @@ class _OverallBanner extends StatelessWidget {
               style: const TextStyle(
                   fontSize: 13, color: AppColors.primaryLight)),
           const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$currency ${net.abs().toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w500,
-                  color: isPositive
-                      ? AppColors.success
-                      : AppColors.danger,
-                  letterSpacing: -1,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  isPositive ? l10n.youAreOwedLower : l10n.youOweLower,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isPositive
-                        ? AppColors.success
-                        : AppColors.danger,
+          // One line per currency
+          for (final line in netLines)
+            Builder(builder: (context) {
+              final isPositive = line.value >= 0;
+              final color =
+                  isPositive ? AppColors.success : AppColors.danger;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        formatPaisa(line.value.abs(), line.key),
+                        style: TextStyle(
+                          fontSize: netLines.length == 1 ? 36 : 26,
+                          fontWeight: FontWeight.w500,
+                          color: color,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      isPositive ? l10n.youAreOwedLower : l10n.youOweLower,
+                      style: TextStyle(fontSize: 13, color: color),
+                    ),
+                  ),
+                ],
+              );
+            }),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _BannerStat(
                   label: l10n.youAreOwed,
-                  value:
-                  '$currency ${totalOwed.toStringAsFixed(0)}',
+                  value: formatTotals(owed,
+                      fallbackCurrency: currency, separator: '\n'),
                   color: AppColors.success,
                 ),
               ),
@@ -247,8 +259,8 @@ class _OverallBanner extends StatelessWidget {
               Expanded(
                 child: _BannerStat(
                   label: l10n.youOwe,
-                  value:
-                  '$currency ${totalOwe.toStringAsFixed(0)}',
+                  value: formatTotals(owe,
+                      fallbackCurrency: currency, separator: '\n'),
                   color: AppColors.danger,
                 ),
               ),
@@ -381,7 +393,7 @@ class _DebtTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${debt.currency} ${debt.amount.toStringAsFixed(2)}',
+                formatMoney(debt.amount, debt.currency),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -394,7 +406,7 @@ class _DebtTile extends StatelessWidget {
               if (debt.pendingAmount > 0)
                 Text(
                   l10n.amountPending(
-                      '${debt.currency} ${debt.pendingAmount.toStringAsFixed(2)}'),
+                      formatMoney(debt.pendingAmount, debt.currency)),
                   style: const TextStyle(
                       fontSize: 11, color: AppColors.accentDark),
                 ),
@@ -489,7 +501,7 @@ class _GroupBalanceCard extends StatelessWidget {
                     child: _GroupStat(
                       label: l10n.owedToYou,
                       value:
-                      '${summary.currency} ${summary.youAreOwed.toStringAsFixed(0)}',
+                      formatMoney(summary.youAreOwed, summary.currency),
                       color: AppColors.success,
                     ),
                   ),
@@ -500,7 +512,7 @@ class _GroupBalanceCard extends StatelessWidget {
                     child: _GroupStat(
                       label: l10n.youOwe,
                       value:
-                      '${summary.currency} ${summary.youOwe.toStringAsFixed(0)}',
+                      formatMoney(summary.youOwe, summary.currency),
                       color: AppColors.danger,
                     ),
                   ),

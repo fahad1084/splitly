@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../models/expense_model.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../core/utils/money_format.dart';
 
 // Matches _categoryIcons in add_expense_sheet.dart
 const _categoryIconMap = {
@@ -206,7 +207,7 @@ class ExpenseTile extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${expense.currency} ${expense.amount.toStringAsFixed(0)}',
+                  formatMoney(expense.amount, expense.currency),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -220,7 +221,7 @@ class ExpenseTile extends ConsumerWidget {
                   iPaid
                       ? l10n.youLent
                       : l10n.youOweAmount(
-                      '${expense.currency} ${myShare.toStringAsFixed(0)}'),
+                      formatMoney(myShare, expense.currency)),
                   style: TextStyle(
                     fontSize: 11,
                     color: iPaid

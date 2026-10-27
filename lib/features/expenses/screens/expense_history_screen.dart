@@ -9,6 +9,7 @@ import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import '../screens/expense_detail_sheet.dart';
 import '../screens/expense_tile.dart';
+import '../../../core/utils/money_format.dart';
 
 // ── Filter state providers ────────────────────────────────────────────────────
 final selectedCategoryFilterProvider =
@@ -217,7 +218,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 // Day total
                                 Text(
-                                  '${group.currency} ${entry.value.fold(0.0, (sum, e) => sum + e.amount).toStringAsFixed(0)}',
+                                  formatMoney(entry.value.fold(0.0, (sum, e) => sum + e.amount), group.currency),
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: AppColors.primaryLight,

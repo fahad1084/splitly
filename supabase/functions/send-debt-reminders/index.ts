@@ -21,6 +21,15 @@ const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// "PKR 1,250.00" — same look as the app (2 decimals, thousands separators)
+function formatMoney(currency: string, amount: unknown): string {
+  const n = Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${currency} ${n}`.trim();
+}
+
 const REMINDER_MIN_AGE_DAYS = 3;
 const REMINDER_COOLDOWN_DAYS = 7;
 
@@ -120,7 +129,7 @@ serve(async (req) => {
       if (debtorProfile?.notify_debt_reminders === false) continue;
 
       const title = d.group_name;
-      const body = `Reminder: you owe ${creditorProfile?.full_name ?? "someone"} ${d.currency} ${Number(d.amount).toFixed(2)}`;
+      const body = `Reminder: you owe ${creditorProfile?.full_name ?? "someone"} ${formatMoney(d.currency, d.amount)}`;
 
       await supabase.from("notifications").insert({
         user_id: d.debtor_id,

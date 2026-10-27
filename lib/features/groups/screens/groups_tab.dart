@@ -13,6 +13,7 @@ import '../screens/group_detail_screen.dart';
 import '../screens/join_group_screen.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../notifications/controllers/notifications_controller.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroupsTab extends ConsumerWidget {
   const GroupsTab({super.key});
@@ -120,16 +121,17 @@ class GroupsTab extends ConsumerWidget {
           ),
         ),
         data: (groups) {
-          // ── Calculate real balances across all groups ──────────
-          double totalOwed = 0;
-          double totalOwe = 0;
+          // ── Balances across all groups, PER CURRENCY ───────────
+          // (never add PKR and USD together)
+          final owed = <String, int>{};
+          final owe = <String, int>{};
           final currency =
           groups.isEmpty ? 'PKR' : groups.first.currency;
 
           for (final group in groups) {
             final summary = ref.watch(groupDebtSummaryProvider(group.balanceKey));
-            totalOwed += summary.youAreOwed;
-            totalOwe += summary.youOwe;
+            addToTotals(owed, group.currency, summary.youAreOwed);
+            addToTotals(owe, group.currency, summary.youOwe);
           }
 
           return RefreshIndicator(
@@ -144,8 +146,8 @@ class GroupsTab extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: _SummaryBanner(
                     firstName: firstName,
-                    totalOwed: totalOwed,
-                    totalOwe: totalOwe,
+                    owed: owed,
+                    owe: owe,
                     currency: currency,
                   ),
                 ),
@@ -427,14 +429,14 @@ class _GroupCard extends StatelessWidget {
 // ── Summary Banner with real balance data ─────────────────────────────────────
 class _SummaryBanner extends StatelessWidget {
   final String firstName;
-  final double totalOwed;
-  final double totalOwe;
-  final String currency;
+  final Map<String, int> owed; // paisa per currency
+  final Map<String, int> owe;
+  final String currency; // shown when there is nothing at all
 
   const _SummaryBanner({
     required this.firstName,
-    required this.totalOwed,
-    required this.totalOwe,
+    required this.owed,
+    required this.owe,
     required this.currency,
   });
 
@@ -466,7 +468,9 @@ class _SummaryBanner extends StatelessWidget {
               Expanded(
                 child: _BalanceCard(
                   label: l10n.youAreOwed,
-                  amount: '$currency ${totalOwed.toStringAsFixed(0)}',
+                  // One line per currency
+                  amount: formatTotals(owed,
+                      fallbackCurrency: currency, separator: '\n'),
                   color: AppColors.success,
                   icon: Icons.arrow_downward_rounded,
                 ),
@@ -475,7 +479,8 @@ class _SummaryBanner extends StatelessWidget {
               Expanded(
                 child: _BalanceCard(
                   label: l10n.youOwe,
-                  amount: '$currency ${totalOwe.toStringAsFixed(0)}',
+                  amount: formatTotals(owe,
+                      fallbackCurrency: currency, separator: '\n'),
                   color: AppColors.danger,
                   icon: Icons.arrow_upward_rounded,
                 ),

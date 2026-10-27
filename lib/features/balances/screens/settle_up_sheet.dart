@@ -9,6 +9,7 @@ import '../controllers/balances_controller.dart';
 import '../models/balance_model.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../core/utils/money_format.dart';
 
 void showSettleUpSheet(BuildContext context, DebtModel debt) {
   showModalBottomSheet(
@@ -268,7 +269,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                       ),
                       Text(
                         l10n.upToAmount(
-                            '${widget.debt.currency} ${fromPaisa(_maxPaisa).toStringAsFixed(2)}'),
+                            formatMoney(fromPaisa(_maxPaisa), widget.debt.currency)),
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.primaryLight,
