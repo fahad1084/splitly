@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -117,7 +118,8 @@ class FCMService {
     // ... or a system-shown FCM notification (not used today, kept safe)
     final initial = await _messaging.getInitialMessage();
     if (initial != null) _open(initial.data);
-    await saveTokenToSupabase();
+    // Needs internet: runs in the background so the app also opens offline
+    unawaited(saveTokenToSupabase());
 
     // Listen for token refresh and save again
     _messaging.onTokenRefresh.listen((newToken) {

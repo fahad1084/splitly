@@ -1277,4 +1277,8 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get expenseNoLongerExists => 'یہ خرچہ حذف ہو چکا ہے۔';
+
+  @override
+  String get noInternetBanner =>
+      'انٹرنیٹ نہیں ہے۔ آخری محفوظ معلومات دکھائی جا رہی ہیں۔';
 }

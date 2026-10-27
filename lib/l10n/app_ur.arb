@@ -435,5 +435,6 @@
   "groupTypeFamily": "خاندان",
   "groupTypeOther": "دیگر",
   "groupNoLongerAvailable": "یہ گروپ اب دستیاب نہیں۔ شاید آپ اسے چھوڑ چکے ہیں یا یہ حذف ہو گیا ہے۔",
-  "expenseNoLongerExists": "یہ خرچہ حذف ہو چکا ہے۔"
+  "expenseNoLongerExists": "یہ خرچہ حذف ہو چکا ہے۔",
+  "noInternetBanner": "انٹرنیٹ نہیں ہے۔ آخری محفوظ معلومات دکھائی جا رہی ہیں۔"
 }

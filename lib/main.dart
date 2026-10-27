@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase/supabase_config.dart';
 import 'config/theme/app_theme.dart';
+import 'core/services/connectivity_service.dart';
+import 'core/services/offline_cache.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/reset_password_screen.dart';
 import 'features/auth/screens/splash_screen.dart';
@@ -170,10 +172,90 @@ class _AppLockOverlayState extends ConsumerState<_AppLockOverlay>
           excluding: isLocked,
           child: ExcludeFocus(
             excluding: isLocked,
-            child: IgnorePointer(ignoring: isLocked, child: widget.child),
+            child: IgnorePointer(
+                ignoring: isLocked, child: _OfflineArea(child: widget.child)),
           ),
         ),
         if (isLocked) const Positioned.fill(child: UnlockScreen()),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OFFLINE BANNER
+// ─────────────────────────────────────────────────────────────────────────────
+// A red "No internet" bar above every screen while the phone is offline.
+// Screens keep showing what they last loaded (groups and balances also come
+// from the copy on the phone). When the connection is back — or on
+// "Try again" — everything reloads.
+class _OfflineArea extends ConsumerWidget {
+  final Widget child;
+  const _OfflineArea({required this.child});
+
+  static void _reloadAll(WidgetRef ref) {
+    ref.invalidate(groupsProvider);
+    ref.invalidate(myDebtsProvider);
+    ref.invalidate(unreadCountsProvider);
+    ref.invalidate(notificationsProvider);
+    ref.invalidate(unreadNotificationCountProvider);
+    ref.invalidate(expensesProvider);
+    ref.invalidate(settlementsProvider);
+    ref.invalidate(groupMembersProvider);
+    ref.invalidate(messagesProvider);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<bool>>(isOnlineProvider, (previous, next) {
+      if (previous?.value == false && next.value == true) _reloadAll(ref);
+    });
+    final online = ref.watch(isOnlineProvider).value ?? true;
+    if (online) return child;
+
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      children: [
+        Material(
+          color: AppColors.danger,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.wifi_off_rounded,
+                      color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n?.noInternetBanner ?? 'No internet',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(48, 48)),
+                    onPressed: () {
+                      ref.invalidate(isOnlineProvider); // check again
+                      _reloadAll(ref);
+                    },
+                    child: Text(l10n?.tryAgain ?? 'Try again'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // The bar already covers the status bar area
+        Expanded(
+          child: MediaQuery.removePadding(
+              context: context, removeTop: true, child: child),
+        ),
       ],
     );
   }
@@ -254,6 +336,7 @@ class _AuthGateState extends State<AuthGate> {
       case AuthChangeEvent.signedOut:
         _isPasswordRecovery = false;
         FCMService.setOpenHandler(null);
+        OfflineCache.clear(); // the next person must not see this data
         _navigate(const LoginScreen());
         _resetUserData();
         FCMService().deleteDeviceToken();

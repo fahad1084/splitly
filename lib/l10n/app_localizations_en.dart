@@ -1277,4 +1277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expenseNoLongerExists => 'This expense was deleted.';
+
+  @override
+  String get noInternetBanner => 'No internet. Showing the last saved data.';
 }

@@ -455,5 +455,6 @@
   "groupTypeFamily": "Family",
   "groupTypeOther": "Other",
   "groupNoLongerAvailable": "This group isn't available any more. You may have left it, or it was deleted.",
-  "expenseNoLongerExists": "This expense was deleted."
+  "expenseNoLongerExists": "This expense was deleted.",
+  "noInternetBanner": "No internet. Showing the last saved data."
 }

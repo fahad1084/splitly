@@ -2413,6 +2413,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This expense was deleted.'**
   String get expenseNoLongerExists;
+
+  /// No description provided for @noInternetBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Showing the last saved data.'**
+  String get noInternetBanner;
 }
 
 class _AppLocalizationsDelegate
