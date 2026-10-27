@@ -2,6 +2,9 @@
 //
 // Triggered by Supabase Database Webhooks on INSERT into:
 //   messages, expenses, settlements, group_members
+// and by the settlements_update_push trigger (migration
+// 20261029000000_settlement_update_push.sql) when a pending payment is
+// confirmed or cancelled.
 //
 // Sends a push notification (via FCM v1 API using a Firebase service
 // account) to every OTHER member of the relevant group who has an
@@ -19,8 +22,23 @@ const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// ── Build a signed JWT (RS256) and exchange it for an OAuth2 access token ──
+// ── Google OAuth token, cached ─────────────────────────────────────────────
+// A token is valid for 1 hour; keep it for 55 minutes so a warm function
+// instance doesn't sign a new JWT for every push.
+const TOKEN_CACHE_MS = 55 * 60 * 1000;
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
 async function getAccessToken(): Promise<string> {
+  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+    return cachedToken.token;
+  }
+  const token = await fetchAccessToken();
+  cachedToken = { token, expiresAt: Date.now() + TOKEN_CACHE_MS };
+  return token;
+}
+
+// ── Build a signed JWT (RS256) and exchange it for an OAuth2 access token ──
+async function fetchAccessToken(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT" };
   const claimSet = {
@@ -78,12 +96,12 @@ async function getAccessToken(): Promise<string> {
 }
 
 async function sendFcm(
+  accessToken: string,
   token: string,
   title: string,
   body: string,
   data: Record<string, string>,
 ) {
-  const accessToken = await getAccessToken();
   const res = await fetch(
     `https://fcm.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/messages:send`,
     {
@@ -107,6 +125,8 @@ async function sendFcm(
     },
   );
   if (!res.ok) {
+    // Token rejected (e.g. revoked) → don't reuse it for the next push
+    if (res.status === 401) cachedToken = null;
     console.error("FCM send error:", await res.text());
   }
 }
@@ -130,6 +150,9 @@ serve(async (req) => {
     let body = "";
     let notificationType = "";
     let dataPayload: Record<string, string> = {};
+    // Confirm/cancel: the RPC already wrote the in-app notification
+    // (_notify_settlement), so only the push is sent here.
+    let pushOnly = false;
 
     if (table === "messages") {
       groupId = record.group_id;
@@ -162,16 +185,29 @@ serve(async (req) => {
         avatar_url: payer?.avatar_url ?? "",
       };
     } else if (table === "settlements") {
-      // record_settlement() inserts either:
+      // INSERT from record_settlement():
       //  - 'pending'   — the debtor says "I paid" → ask the receiver to confirm
       //  - 'confirmed' — the receiver says "I got paid" → tell the debtor
-      // Confirm / cancel are UPDATEs (no webhook); those RPCs write the
-      // in-app notification themselves.
-      if (record.status !== "pending" && record.status !== "confirmed") {
+      // UPDATE from confirm_settlement() / cancel_settlement() (pending →
+      // confirmed / cancelled) → tell the other person.
+      const isUpdate = payload.type === "UPDATE";
+      const oldStatus = (payload.old_record as Record<string, any> | null)?.status;
+      if (isUpdate) {
+        if (oldStatus !== "pending" ||
+            (record.status !== "confirmed" && record.status !== "cancelled")) {
+          return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+        }
+        pushOnly = true;
+      } else if (record.status !== "pending" && record.status !== "confirmed") {
         return new Response(JSON.stringify({ skipped: true }), { status: 200 });
       }
       groupId = record.group_id;
-      actorId = record.created_by ?? record.paid_by;
+      // Who did it. The other person (paid_by / paid_to) gets the push.
+      actorId = !isUpdate
+        ? (record.created_by ?? record.paid_by)
+        : record.status === "confirmed"
+        ? record.paid_to
+        : record.cancelled_by;
       notificationType = "settlement";
       const { data: fromP } = await supabase.from("profiles")
         .select("full_name, avatar_url").eq("id", record.paid_by).maybeSingle();
@@ -181,9 +217,17 @@ serve(async (req) => {
         .select("name, currency").eq("id", groupId).maybeSingle();
       const money = `${group?.currency ?? ""} ${Number(record.amount).toFixed(2)}`;
       title = group?.name ?? "Settlement";
-      body = record.status === "pending"
-        ? `${fromP?.full_name ?? "Someone"} says they paid you ${money}. Please confirm.`
-        : `${toP?.full_name ?? "Someone"} recorded your payment of ${money}`;
+      const actorName =
+        (actorId === record.paid_to ? toP?.full_name : fromP?.full_name) ?? "Someone";
+      if (!isUpdate) {
+        body = record.status === "pending"
+          ? `${fromP?.full_name ?? "Someone"} says they paid you ${money}. Please confirm.`
+          : `${toP?.full_name ?? "Someone"} recorded your payment of ${money}`;
+      } else {
+        body = record.status === "confirmed"
+          ? `${actorName} confirmed your payment of ${money}`
+          : `${actorName} cancelled the payment of ${money}`;
+      }
       dataPayload = {
         type: "settlement",
         group_id: groupId ?? "",
@@ -262,8 +306,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
     }
 
-    let sent = 0;
     const historyRows: Record<string, unknown>[] = [];
+    const tokens: string[] = [];
 
     for (const m of members as any[]) {
       const prefEnabled = m[prefColumn[notificationType]] ?? true;
@@ -271,21 +315,29 @@ serve(async (req) => {
 
       // Always log to history (in-app inbox), even if they have no push
       // token (e.g. denied permission) — they can still see it in-app.
-      historyRows.push({
-        user_id: m.id,
-        type: notificationType,
-        title,
-        body,
-        group_id: groupId,
-        entity_id: record.id ?? null,
-      });
-
-      const token = m.fcm_token;
-      if (token) {
-        await sendFcm(token, title, body, dataPayload);
-        sent++;
+      if (!pushOnly) {
+        historyRows.push({
+          user_id: m.id,
+          type: notificationType,
+          title,
+          body,
+          group_id: groupId,
+          entity_id: record.id ?? null,
+        });
       }
+
+      if (m.fcm_token) tokens.push(m.fcm_token);
     }
+
+    // One OAuth token for all, and all pushes at the same time
+    if (tokens.length > 0) {
+      const accessToken = await getAccessToken();
+      // allSettled: one bad token must not stop the others (or the history)
+      await Promise.allSettled(
+        tokens.map((t) => sendFcm(accessToken, t, title, body, dataPayload)),
+      );
+    }
+    const sent = tokens.length;
 
     if (historyRows.length > 0) {
       await supabase.from("notifications").insert(historyRows);

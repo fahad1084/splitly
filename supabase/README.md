@@ -7,7 +7,7 @@ Everything the Flutter app needs on the server side is in this folder.
 | `migrations/20261027000000_remote_schema.sql` | Baseline: all `public` tables, constraints, indexes, RPC functions, RLS policies, grants, realtime publication. Exported from the live project on 2026-10-27. |
 | `migrations/20261027000100_storage_buckets.sql` | Storage buckets (`avatars`, `group-photos`, `chat-attachments`) and their access policies. Safe to run more than once. |
 | `migrations/<later>_*.sql` | Every later database change, one file each, applied in name order. |
-| `setup/webhooks_and_cron.sql` | The 4 Database Webhooks and 2 cron jobs. **Template with placeholders — run by hand, never commit a filled-in copy.** |
+| `setup/webhooks_and_cron.sql` | The 4 Database Webhooks, 2 Vault secrets (payment confirm/cancel push) and 2 cron jobs. **Template with placeholders — run by hand, never commit a filled-in copy.** |
 | `functions/send-push-notification/` | Edge Function: push notifications for new messages, expenses, settlements, members. Called by the webhooks. |
 | `functions/send-debt-reminders/` | Edge Function: daily "you still owe X" reminders. Called by cron. |
 | `config.toml` | Supabase CLI settings (local dev + function settings such as `verify_jwt = false`). |
@@ -30,6 +30,7 @@ Everything the Flutter app needs on the server side is in this folder.
 
 - `tests/security_attacks.sql`: attack and "normal use" checks for RLS and the RPCs.
 - `tests/money_tests.sql`: balances, partial payments, pending/confirm/cancel, leaving or removing members with debts, currency, exact splits.
+- `tests/push_trigger_test.sql`: the payment confirm/cancel push trigger (queues exactly 1 request, only for pending → confirmed/cancelled; does nothing without the Vault secrets).
 - `tests/concurrency_test.sh`: 2 payments at the same moment, which proves the lock in `record_settlement`. Run it with `bash`, not `psql`.
 
 Each file needs a **fresh** local database. Run these one at a time:
@@ -52,16 +53,12 @@ Run `supabase db reset` again before the other test file. When you're done:
 supabase stop
 ```
 
-### Known gaps / TODO
+### Payment confirm / cancel push
 
-- [ ] **Push notifications for confirm and cancel of a payment.** Today:
-  - `record_settlement` → **push** (through the `notify-new-settlement` webhook, which fires on INSERT only)
-  - `confirm_settlement` / `cancel_settlement` → **in-app notification only** (they write to `notifications` themselves)
-
-  **To add the push:**
-  1. Add an **UPDATE** webhook on `settlements` to `setup/webhooks_and_cron.sql`. Fire it only when `status` changes from `pending` to `confirmed` or `cancelled`.
-  2. In `functions/send-push-notification`, handle `payload.type === "UPDATE"` (`payload.old_record` and `payload.record`). Send to the other person: the payer when it's confirmed, the other side when it's cancelled.
-  3. Remove the `_notify_settlement(...)` calls from the 2 RPCs, so nobody gets 2 notifications.
+- `record_settlement` (INSERT) → push through the `notify-new-settlement` Database Webhook.
+- `confirm_settlement` / `cancel_settlement` (UPDATE pending → confirmed / cancelled) → push through the `settlements_update_push` **trigger** (migration `20261029000000_settlement_update_push.sql`). The other person gets it; the "payments" mute setting is respected.
+- The in-app notification for confirm / cancel is still written by the 2 RPCs (`_notify_settlement`). For these UPDATEs the Edge Function sends **only the push**, so nobody gets 2 in-app notifications.
+- The trigger reads the function URL and webhook secret from **Supabase Vault** (`push_function_url`, `push_webhook_secret`), so no secret is in git. Without them it does nothing. They are in `setup/webhooks_and_cron.sql`, and must be added **once on every project, the live one too**.
 
 ---
 

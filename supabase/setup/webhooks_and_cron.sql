@@ -39,6 +39,17 @@ CREATE OR REPLACE TRIGGER "notify-new-settlement" AFTER INSERT ON public.settlem
     'https://<PROJECT_REF>.supabase.co/functions/v1/send-push-notification', 'POST',
     '{"Content-type":"application/json","x-webhook-secret":"<WEBHOOK_SECRET>"}', '{}', '5000');
 
+-- ── Vault secrets for the payment confirm/cancel push ───────────────────────
+-- Read by the settlements_update_push trigger
+-- (migrations/20261029000000_settlement_update_push.sql). Unlike the rest of
+-- this file, the LIVE project needs these too (added in v1.2). Running it
+-- twice fails with "duplicate key" — that just means it's already there.
+
+select vault.create_secret(
+  'https://<PROJECT_REF>.supabase.co/functions/v1/send-push-notification',
+  'push_function_url');
+select vault.create_secret('<WEBHOOK_SECRET>', 'push_webhook_secret');
+
 -- ── pg_cron jobs ────────────────────────────────────────────────────────────
 -- (They show up in Dashboard → Integrations → Cron. Times are UTC:
 --  02:00 UTC = 07:00 PKT, 10:00 UTC = 15:00 PKT.)
