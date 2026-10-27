@@ -410,5 +410,11 @@
   "cantRemoveMemberYet": "{name} کو ابھی گروپ سے نہیں نکالا جا سکتا",
   "userOwesUser": "{debtor} نے {creditor} کو {amount} دینے ہیں",
   "expenseHasPaymentsWarning": "اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے ڈیلیٹ کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔",
-  "expenseDateLabel": "تاریخ"
+  "expenseDateLabel": "تاریخ",
+  "editExpense": "خرچے میں ترمیم کریں",
+  "expenseUpdated": "خرچہ اپ ڈیٹ ہو گیا!",
+  "editedLabel": "ترمیم شدہ",
+  "cantEditMemberLeft": "یہ خرچہ تبدیل نہیں ہو سکتا: اس میں شامل کوئی شخص گروپ چھوڑ چکا ہے۔",
+  "onlyPayerOrAdminCanEdit": "یہ خرچہ صرف ادائیگی کرنے والا یا گروپ ایڈمن تبدیل کر سکتا ہے۔",
+  "expenseEditHasPaymentsWarning": "اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے تبدیل کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔"
 }

@@ -1193,4 +1193,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expenseDateLabel => 'Date';
+
+  @override
+  String get editExpense => 'Edit expense';
+
+  @override
+  String get expenseUpdated => 'Expense updated!';
+
+  @override
+  String get editedLabel => 'edited';
+
+  @override
+  String get cantEditMemberLeft =>
+      'This expense can\'t be changed: someone in it has left the group.';
+
+  @override
+  String get onlyPayerOrAdminCanEdit =>
+      'Only the person who paid or a group admin can change this expense.';
+
+  @override
+  String get expenseEditHasPaymentsWarning =>
+      'Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person.';
 }

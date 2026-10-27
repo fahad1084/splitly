@@ -1192,4 +1192,25 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get expenseDateLabel => 'تاریخ';
+
+  @override
+  String get editExpense => 'خرچے میں ترمیم کریں';
+
+  @override
+  String get expenseUpdated => 'خرچہ اپ ڈیٹ ہو گیا!';
+
+  @override
+  String get editedLabel => 'ترمیم شدہ';
+
+  @override
+  String get cantEditMemberLeft =>
+      'یہ خرچہ تبدیل نہیں ہو سکتا: اس میں شامل کوئی شخص گروپ چھوڑ چکا ہے۔';
+
+  @override
+  String get onlyPayerOrAdminCanEdit =>
+      'یہ خرچہ صرف ادائیگی کرنے والا یا گروپ ایڈمن تبدیل کر سکتا ہے۔';
+
+  @override
+  String get expenseEditHasPaymentsWarning =>
+      'اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے تبدیل کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔';
 }

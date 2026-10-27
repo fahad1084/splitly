@@ -4,7 +4,9 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
+import 'add_expense_sheet.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import 'expense_tile.dart';
@@ -52,6 +54,10 @@ class _ExpenseDetailSheet extends ConsumerWidget {
     final currentUserId =
         ref.watch(currentUserProvider)?.id ?? '';
     final iPaid = expense.paidBy == currentUserId;
+    // The payer or a group admin can edit
+    final amAdmin = ref.watch(groupMembersProvider(group.id)).valueOrNull
+            ?.any((m) => m['user_id'] == currentUserId && m['role'] == 'admin') ??
+        false;
 
     final categoryIcon =
         _categoryIconMap[expense.category] ?? Icons.category_rounded;
@@ -167,6 +173,14 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                 style: TextStyle(
                     fontSize: 12, color: AppColors.primaryLight),
               ),
+              if (expense.editedAt != null) ...[
+                const SizedBox(width: 8),
+                Text('· ${l10n.editedLabel}',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.primaryLight)),
+              ],
             ],
           ),
 
@@ -280,6 +294,20 @@ class _ExpenseDetailSheet extends ConsumerWidget {
           }),
 
           const SizedBox(height: 16),
+
+          // ── Edit button (payer or group admin) ────────────────────
+          if (iPaid || amAdmin) ...[
+            SplitlyButton(
+              label: l10n.editExpense,
+              icon: Icons.edit_rounded,
+              onPressed: () {
+                final nav = Navigator.of(context);
+                nav.pop();
+                showAddExpenseSheet(nav.context, group, expense: expense);
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
 
           // ── Delete button (only if you paid) ──────────────────────
           if (iPaid)

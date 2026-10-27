@@ -428,5 +428,11 @@
   "userOwesUser": "{debtor} owes {creditor} {amount}",
   "@userOwesUser": { "placeholders": { "debtor": { "type": "String" }, "creditor": { "type": "String" }, "amount": { "type": "String" } } },
   "expenseHasPaymentsWarning": "Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person.",
-  "expenseDateLabel": "Date"
+  "expenseDateLabel": "Date",
+  "editExpense": "Edit expense",
+  "expenseUpdated": "Expense updated!",
+  "editedLabel": "edited",
+  "cantEditMemberLeft": "This expense can't be changed: someone in it has left the group.",
+  "onlyPayerOrAdminCanEdit": "Only the person who paid or a group admin can change this expense.",
+  "expenseEditHasPaymentsWarning": "Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person."
 }

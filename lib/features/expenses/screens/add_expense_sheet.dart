@@ -8,18 +8,21 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/controllers/groups_controller.dart';
 import '../../groups/models/group_model.dart';
+import '../../balances/controllers/balances_controller.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
 import 'receipt_scanner_screen.dart';
 import '../../../core/utils/string_utils.dart';
 import '../../../core/utils/money_format.dart';
 
-void showAddExpenseSheet(BuildContext context, GroupModel group) {
+// With [expense]: edit that expense instead of adding a new one.
+void showAddExpenseSheet(BuildContext context, GroupModel group,
+    {ExpenseModel? expense}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _AddExpenseSheet(group: group),
+    builder: (_) => _AddExpenseSheet(group: group, expense: expense),
   );
 }
 
@@ -38,7 +41,8 @@ const _categoryIcons = [
 
 class _AddExpenseSheet extends ConsumerStatefulWidget {
   final GroupModel group;
-  const _AddExpenseSheet({required this.group});
+  final ExpenseModel? expense; // null = add a new expense
+  const _AddExpenseSheet({required this.group, this.expense});
 
   @override
   ConsumerState<_AddExpenseSheet> createState() => _AddExpenseSheetState();
@@ -64,13 +68,32 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   }
 
   List<Map<String, dynamic>> _members = [];
+  // Editing: someone in this expense's split has left the group, so the
+  // split can't be saved again (the server would refuse it too)
+  bool _someoneLeft = false;
 
   late TabController _splitTabCtrl;
+
+  bool get _editing => widget.expense != null;
 
   @override
   void initState() {
     super.initState();
-    _splitTabCtrl = TabController(length: 3, vsync: this);
+    final e = widget.expense;
+    if (e != null) {
+      _titleCtrl.text = e.title;
+      _amountCtrl.text = e.amount.toStringAsFixed(2);
+      _notesCtrl.text = e.notes ?? '';
+      _category = e.category;
+      _splitType = e.splitType;
+      _expenseDate = e.expenseDate;
+    }
+    _splitTabCtrl = TabController(
+        length: 3,
+        vsync: this,
+        initialIndex: ['equal', 'custom', 'percentage']
+            .indexOf(_splitType)
+            .clamp(0, 2));
     _splitTabCtrl.addListener(() {
       if (!_splitTabCtrl.indexIsChanging) {
         setState(() {
@@ -90,37 +113,39 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   }
 
   void _loadMembers() {
-    final currentUserId =
-        ref.read(currentUserProvider)?.id ?? '';
-
     // Read members synchronously from the provider cache
-    final membersAsync =
-    ref.read(groupMembersProvider(widget.group.id));
-
-    membersAsync.whenData((members) {
-      if (_members.isNotEmpty) return; // already loaded
-      final loaded = members.map((m) {
-        final profile =
-            m['profiles'] as Map<String, dynamic>? ?? {};
-        return {
-          'user_id': profile['id'] as String? ?? '',
-          'name': profile['full_name'] as String? ?? 'Unknown',
-          'avatar_color':
-          profile['avatar_color'] as String? ?? '#0F766E',
-          'avatar_url': profile['avatar_url'] as String?,
-          'included': true,
-          'custom_amount': 0.0,
-          'percentage': 0.0,
-        };
-      }).toList();
-
-      if (mounted) {
-        setState(() {
-          _members = loaded;
-          _paidBy = currentUserId;
-        });
-      }
+    ref.read(groupMembersProvider(widget.group.id)).whenData((members) {
+      if (_members.isNotEmpty || members.isEmpty) return; // already loaded
+      if (mounted) setState(() => _setMembers(members));
     });
+  }
+
+  // Group members -> split rows. Adding: everyone included, I paid.
+  // Editing: the expense's own split and payer.
+  void _setMembers(List<Map<String, dynamic>> members) {
+    final e = widget.expense;
+    final splitOf = {
+      for (final s in e?.splits ?? const <ExpenseSplit>[]) s.userId: s
+    };
+    _members = members.map((m) {
+      final profile = m['profiles'] as Map<String, dynamic>? ?? {};
+      final userId = profile['id'] as String? ?? '';
+      final split = splitOf[userId];
+      return <String, dynamic>{
+        'user_id': userId,
+        'name': profile['full_name'] as String? ?? 'Unknown',
+        'avatar_color': profile['avatar_color'] as String? ?? '#0F766E',
+        'avatar_url': profile['avatar_url'] as String?,
+        'included': e == null || split != null,
+        'custom_amount': split?.amountOwed ?? 0.0,
+        'percentage': split != null && e!.amount > 0
+            ? (split.amountOwed * 10000 / e.amount).round() / 100
+            : 0.0,
+      };
+    }).toList();
+    _paidBy = e?.paidBy ?? ref.read(currentUserProvider)?.id ?? '';
+    _someoneLeft = e != null &&
+        splitOf.keys.any((id) => !_members.any((m) => m['user_id'] == id));
   }
 
   @override
@@ -150,6 +175,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
     }
     if (_paidBy == null) {
       showErrorSnack(context, l10n.pleaseSelectWhoPaid);
+      return;
+    }
+    if (_someoneLeft) {
+      showErrorSnack(context, l10n.cantEditMemberLeft);
       return;
     }
 
@@ -184,11 +213,26 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       }
     }
 
+    if (_editing && !await _confirmEditWithPayments()) return;
+    if (!mounted) return;
+
     setState(() => _isLoading = true);
 
-    final error = await ref
-        .read(expensesProvider(widget.group.id).notifier)
-        .addExpense(
+    final notifier = ref.read(expensesProvider(widget.group.id).notifier);
+    final notes =
+        _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim();
+    final error = _editing
+        ? await notifier.editExpense(
+            expenseId: widget.expense!.id,
+            title: _titleCtrl.text.trim(),
+            amount: amount,
+            category: _category,
+            splitType: _splitType,
+            members: _members,
+            expenseDate: _expenseDate,
+            notes: notes,
+          )
+        : await notifier.addExpense(
       title: _titleCtrl.text.trim(),
       amount: amount,
       category: _category,
@@ -197,9 +241,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       members: _members,
       currency: widget.group.currency,
       expenseDate: _expenseDate,
-      notes: _notesCtrl.text.trim().isEmpty
-          ? null
-          : _notesCtrl.text.trim(),
+      notes: notes,
       isRecurring: _isRecurring,
       recurEvery: _isRecurring ? _recurEvery : null,
     );
@@ -216,13 +258,69 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
         'SPLITS_DONT_ADD_UP' || 'INVALID_SPLIT_AMOUNT' =>
             l10n.customAmountsMustAddUp(
                 widget.group.currency, formatAmount(amount)),
+        'SPLIT_USER_NOT_MEMBER' || 'PAYER_NOT_MEMBER' => l10n.cantEditMemberLeft,
+        'NOT_ALLOWED' => l10n.onlyPayerOrAdminCanEdit,
         _ => l10n.somethingWentWrong,
       };
       showErrorSnack(context, message);
     } else {
-      showSuccessSnack(context, l10n.expenseAdded);
+      showSuccessSnack(
+          context, _editing ? l10n.expenseUpdated : l10n.expenseAdded);
       Navigator.pop(context);
     }
+  }
+
+  // Payments already made after this expense between its people? Changing
+  // it changes balances they paid against (same check as delete, Phase 1).
+  Future<bool> _confirmEditWithPayments() async {
+    final l10n = AppLocalizations.of(context)!;
+    var warn = false;
+    try {
+      final payments =
+          await ref.read(settlementsProvider(widget.group.id).future);
+      warn = hasPaymentsAfterExpense(widget.expense!, payments);
+    } catch (_) {
+      warn = false; // can't check (offline?) - the save itself still works
+    }
+    if (!warn || !mounted) return true;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.editExpense),
+        content: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.warning_amber_rounded,
+                color: AppColors.accentDark, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(l10n.expenseEditHasPaymentsWarning,
+                  style: const TextStyle(
+                      color: AppColors.accentDark,
+                      fontWeight: FontWeight.w500)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.saveChanges),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  // Pre-filled custom amount / percentage: '' when 0, no needless '.00'
+  String _initialField(Object? value) {
+    final v = (value as num?)?.toDouble() ?? 0;
+    if (v == 0) return '';
+    return v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2);
   }
 
   Future<void> _pickDate() async {
@@ -261,34 +359,11 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
     dark ? AppColors.primaryTint : AppColors.primaryDark;
     final subBg = dark ? AppColors.primaryDark : AppColors.primaryTint;
 
-    // ✅ FIX: Also watch the provider so sheet rebuilds when members load
-    final membersAsync =
-    ref.watch(groupMembersProvider(widget.group.id));
-
-    // Update _members when provider data arrives
-    membersAsync.whenData((members) {
+    // Watch the members so the sheet fills in when they finish loading
+    ref.watch(groupMembersProvider(widget.group.id)).whenData((members) {
       if (_members.isEmpty && members.isNotEmpty) {
-        final currentUserId =
-            ref.read(currentUserProvider)?.id ?? '';
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          setState(() {
-            _members = members.map((m) {
-              final profile =
-                  m['profiles'] as Map<String, dynamic>? ?? {};
-              return {
-                'user_id': profile['id'] as String? ?? '',
-                'name': profile['full_name'] as String? ?? 'Unknown',
-                'avatar_color':
-                profile['avatar_color'] as String? ?? '#0F766E',
-                'avatar_url': profile['avatar_url'] as String?,
-                'included': true,
-                'custom_amount': 0.0,
-                'percentage': 0.0,
-              };
-            }).toList();
-            _paidBy = currentUserId;
-          });
+          if (mounted && _members.isEmpty) setState(() => _setMembers(members));
         });
       }
     });
@@ -322,7 +397,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
             const SizedBox(height: 20),
 
-            Text(l10n.addExpense,
+            Text(_editing ? l10n.editExpense : l10n.addExpense,
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -342,7 +417,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
               hint: l10n.expenseTitleHint,
               prefixIcon: Icons.receipt_outlined,
               textCapitalization: TextCapitalization.sentences,
-              autofocus: true,
+              autofocus: !_editing,
             ),
 
             const SizedBox(height: 14),
@@ -553,7 +628,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                   final color = _parseColor(
                       m['avatar_color'] as String);
                   return GestureDetector(
-                    onTap: () => setState(
+                    // The payer can't change when editing
+                    onTap: _editing
+                        ? null
+                        : () => setState(
                             () => _paidBy = m['user_id'] as String),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
@@ -812,7 +890,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                   color: AppColors.primary.withOpacity(0.6),
                                   width: 1.2),
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              key: ValueKey('custom-${m['user_id']}'),
+                              initialValue: _initialField(m['custom_amount']),
                               keyboardType:
                               const TextInputType.numberWithOptions(
                                   decimal: true),
@@ -858,7 +938,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                   color: AppColors.primary.withOpacity(0.6),
                                   width: 1.2),
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              key: ValueKey('percent-${m['user_id']}'),
+                              initialValue: _initialField(m['percentage']),
                               keyboardType:
                               const TextInputType.numberWithOptions(
                                   decimal: true),
@@ -907,8 +989,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
             const SizedBox(height: 14),
 
-            // ── Recurring toggle ─────────────────────────────────────
-            Container(
+            // ── Recurring toggle (not when editing) ──────────────────
+            if (!_editing) Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: dark ? AppColors.primaryDark.withOpacity(0.4) : AppColors.primaryTint.withOpacity(0.4),
@@ -968,10 +1050,10 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
 
             // ── Submit ────────────────────────────────────────────────
             SplitlyButton(
-              label: l10n.addExpense,
+              label: _editing ? l10n.saveChanges : l10n.addExpense,
               isLoading: _isLoading,
               onPressed: _submit,
-              icon: Icons.add_rounded,
+              icon: _editing ? Icons.check_rounded : Icons.add_rounded,
             ),
           ],
         ),

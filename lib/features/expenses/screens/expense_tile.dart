@@ -190,9 +190,12 @@ class ExpenseTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    iPaid
-                        ? l10n.youPaid
-                        : l10n.userPaid(expense.paidByName),
+                    (iPaid
+                            ? l10n.youPaid
+                            : l10n.userPaid(expense.paidByName)) +
+                        (expense.editedAt != null
+                            ? ' · ${l10n.editedLabel}'
+                            : ''),
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primaryLight,

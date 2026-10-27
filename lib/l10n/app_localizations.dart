@@ -2263,6 +2263,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date'**
   String get expenseDateLabel;
+
+  /// No description provided for @editExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit expense'**
+  String get editExpense;
+
+  /// No description provided for @expenseUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense updated!'**
+  String get expenseUpdated;
+
+  /// No description provided for @editedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get editedLabel;
+
+  /// No description provided for @cantEditMemberLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'This expense can\'t be changed: someone in it has left the group.'**
+  String get cantEditMemberLeft;
+
+  /// No description provided for @onlyPayerOrAdminCanEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the person who paid or a group admin can change this expense.'**
+  String get onlyPayerOrAdminCanEdit;
+
+  /// No description provided for @expenseEditHasPaymentsWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person.'**
+  String get expenseEditHasPaymentsWarning;
 }
 
 class _AppLocalizationsDelegate

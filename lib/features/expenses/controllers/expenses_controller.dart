@@ -57,6 +57,14 @@ class ExpensesController
             _scheduleRefresh();
           },
         )
+        // Someone edited an expense of this group
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'expenses',
+          filter: groupFilter,
+          callback: (_) => _scheduleRefresh(),
+        )
         // DELETE events can't be filtered and carry only the id: react only
         // when it is one of this group's expenses that we still show.
         .onPostgresChanges(
@@ -197,6 +205,50 @@ class ExpensesController
     }
   }
 
+  // ── Edit expense ────────────────────────────────────────────────────────────
+  // Payer or group admin. Same split rules as adding; the payer can't change.
+  // Returns null on success, or an error code (see expenseErrorCode).
+  Future<String?> editExpense({
+    required String expenseId,
+    required String title,
+    required double amount,
+    required String category,
+    required String splitType,
+    required List<Map<String, dynamic>> members,
+    required DateTime expenseDate,
+    String? notes,
+  }) async {
+    try {
+      final splits = calculateSplits(
+        amount: amount,
+        splitType: splitType,
+        members: members,
+      );
+
+      // ONE call: the expense and its new splits change together
+      await SupabaseConfig.client.rpc('edit_expense', params: {
+        'p_expense_id': expenseId,
+        'p_title': title.trim(),
+        'p_amount': amount,
+        'p_splits': splits,
+        'p_category': category,
+        'p_split_type': splitType,
+        'p_notes': notes?.trim(),
+        'p_expense_date': dateOnly(expenseDate),
+      });
+
+      ref.invalidate(myDebtsProvider);
+      state = AsyncValue.data(await _fetchExpenses());
+      return null;
+    } on PostgrestException catch (e) {
+      logDebug('=== EDIT EXPENSE ERROR: ${e.message} ===');
+      return expenseErrorCode(e.message);
+    } catch (e) {
+      logDebug('=== EDIT EXPENSE ERROR: $e ===');
+      return 'UNKNOWN';
+    }
+  }
+
   // ── Delete expense ──────────────────────────────────────────────────────────
   // Returns null on success, or an error code (see expenseErrorCode).
   Future<String?> deleteExpense(String expenseId) async {
@@ -319,8 +371,9 @@ bool percentagesAddUp(List<double> percentages) {
 }
 
 // ── Server error → code the UI can translate ─────────────────────────────────
-// add_expense / delete_expense raise these codes as the error message
-// (see supabase/migrations/20261027130000_transactions.sql).
+// add_expense / edit_expense / delete_expense raise these codes as the
+// error message (see supabase/migrations/20261027130000_transactions.sql
+// and 20261030000100_edit_expense.sql).
 const _expenseErrorCodes = {
   'NOT_A_MEMBER', 'INVALID_TITLE', 'INVALID_AMOUNT', 'PAYER_NOT_MEMBER',
   'INVALID_SPLIT_TYPE', 'INVALID_RECURRENCE', 'NO_MEMBERS', 'DUPLICATE_SPLIT',

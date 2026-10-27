@@ -14,6 +14,7 @@ class ExpenseModel {
   // The day the money was spent (picked by the user). Lists, reports and
   // exports use this; createdAt is when the expense was saved.
   final DateTime expenseDate;
+  final DateTime? editedAt; // set when someone edited the expense
   final bool isRecurring;
   final String? recurEvery;
   final List<ExpenseSplit> splits;
@@ -32,6 +33,7 @@ class ExpenseModel {
     this.notes,
     required this.createdAt,
     required this.expenseDate,
+    this.editedAt,
     this.isRecurring = false,
     this.recurEvery,
     required this.splits,
@@ -59,6 +61,9 @@ class ExpenseModel {
       expenseDate: map['expense_date'] != null
           ? DateTime.parse(map['expense_date'] as String) // 'yyyy-MM-dd'
           : DateTime(createdAt.year, createdAt.month, createdAt.day),
+      editedAt: map['edited_at'] != null
+          ? DateTime.parse(map['edited_at'] as String).toLocal()
+          : null,
       isRecurring: map['is_recurring'] as bool? ?? false,
       recurEvery: map['recur_every'] as String?,
       splits: splitsList,
