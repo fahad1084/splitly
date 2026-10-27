@@ -99,7 +99,23 @@ You need: the [Supabase CLI](https://supabase.com/docs/guides/cli), a Supabase a
    supabase functions deploy send-debt-reminders
    ```
 
-6. **Create the webhooks and cron jobs.** Open `setup/webhooks_and_cron.sql`, copy it, and replace `<PROJECT_REF>` and `<WEBHOOK_SECRET>`. Use the same secret as step 4. Run it in **Dashboard → SQL Editor**. Don't save the filled-in copy in the repo.
+6. **Create the webhooks and cron jobs.**
+   1. **First, switch on Database Webhooks:** Dashboard → **Integrations → Database Webhooks → Enable webhooks**. Don't create any webhooks there. On a new project, the SQL below fails with `schema "supabase_functions" does not exist` until you do this.
+   2. Open `setup/webhooks_and_cron.sql`, copy it, and replace **every** `<PROJECT_REF>` and `<WEBHOOK_SECRET>`. Use the same secret as step 4.
+   3. Run it in **Dashboard → SQL Editor**. Check that the project name at the top is the right project. ✅ It should show "Success" and 2 rows from `cron.schedule`.
+   4. Don't save the filled-in copy in the repo.
+   5. **Check that the secret matches:** in the SQL Editor run
+      ```sql
+      do $$ declare c text; begin
+        select command into c from cron.job where jobname = 'debt-reminders-daily';
+        execute c;
+      end $$;
+      ```
+      Then, after a few seconds:
+      ```sql
+      select status_code from net._http_response order by created desc limit 1;
+      ```
+      ✅ `200` means the secret matches. `401` means the database and the function have different secrets.
 
 7. **Auth settings.** These are not stored in SQL, so set them in the Dashboard:
    - **Authentication → URL Configuration**
