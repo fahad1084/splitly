@@ -11,6 +11,9 @@ class ExpenseModel {
   final String? receiptUrl;
   final String? notes;
   final DateTime createdAt;
+  // The day the money was spent (picked by the user). Lists, reports and
+  // exports use this; createdAt is when the expense was saved.
+  final DateTime expenseDate;
   final bool isRecurring;
   final String? recurEvery;
   final List<ExpenseSplit> splits;
@@ -28,6 +31,7 @@ class ExpenseModel {
     this.receiptUrl,
     this.notes,
     required this.createdAt,
+    required this.expenseDate,
     this.isRecurring = false,
     this.recurEvery,
     required this.splits,
@@ -37,6 +41,7 @@ class ExpenseModel {
     final splitsList = (map['expense_splits'] as List? ?? [])
         .map((s) => ExpenseSplit.fromMap(Map<String, dynamic>.from(s)))
         .toList();
+    final createdAt = DateTime.parse(map['created_at'] as String).toLocal();
 
     return ExpenseModel(
       id: map['id'] as String,
@@ -50,7 +55,10 @@ class ExpenseModel {
       splitType: map['split_type'] as String? ?? 'equal',
       receiptUrl: map['receipt_url'] as String?,
       notes: map['notes'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
+      createdAt: createdAt,
+      expenseDate: map['expense_date'] != null
+          ? DateTime.parse(map['expense_date'] as String) // 'yyyy-MM-dd'
+          : DateTime(createdAt.year, createdAt.month, createdAt.day),
       isRecurring: map['is_recurring'] as bool? ?? false,
       recurEvery: map['recur_every'] as String?,
       splits: splitsList,

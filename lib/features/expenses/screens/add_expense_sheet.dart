@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:splitly/features/auth/controllers/auth_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
@@ -55,6 +56,12 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
   bool _isLoading = false;
   bool _isRecurring = false;
   String _recurEvery = 'monthly'; // daily | weekly | monthly
+  DateTime _expenseDate = _today();
+
+  static DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
 
   List<Map<String, dynamic>> _members = [];
 
@@ -189,6 +196,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       splitType: _splitType,
       members: _members,
       currency: widget.group.currency,
+      expenseDate: _expenseDate,
       notes: _notesCtrl.text.trim().isEmpty
           ? null
           : _notesCtrl.text.trim(),
@@ -215,6 +223,25 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       showSuccessSnack(context, l10n.expenseAdded);
       Navigator.pop(context);
     }
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _expenseDate,
+      firstDate: DateTime(2000),
+      lastDate: _today(), // no future dates (the server checks too)
+    );
+    if (picked != null) setState(() => _expenseDate = picked);
+  }
+
+  String _dateText(AppLocalizations l10n) {
+    final today = _today();
+    if (_expenseDate == today) return l10n.todayLabel;
+    if (_expenseDate == today.subtract(const Duration(days: 1))) {
+      return l10n.yesterdayLabel;
+    }
+    return DateFormat.yMMMd(l10n.localeName).format(_expenseDate);
   }
 
   Color _parseColor(String hex) {
@@ -372,6 +399,40 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                       });
                     }
                   },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // ── Date ──────────────────────────────────────────────────
+            InkWell(
+              onTap: _pickDate,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 52),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: subBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded,
+                        size: 20, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Text(l10n.expenseDateLabel,
+                        style: TextStyle(fontSize: 14, color: headingColor)),
+                    const Spacer(),
+                    Text(_dateText(l10n),
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primary)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: AppColors.primary),
+                  ],
                 ),
               ),
             ),

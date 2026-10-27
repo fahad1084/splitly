@@ -1190,4 +1190,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get expenseHasPaymentsWarning =>
       'Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person.';
+
+  @override
+  String get expenseDateLabel => 'Date';
 }

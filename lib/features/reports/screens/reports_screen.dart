@@ -321,13 +321,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
       case 'week':
         final weekAgo = now.subtract(const Duration(days: 7));
         return expenses
-            .where((e) => e.createdAt.isAfter(weekAgo))
+            .where((e) => e.expenseDate.isAfter(weekAgo))
             .toList();
       case 'month':
         return expenses
             .where((e) =>
-        e.createdAt.year == now.year &&
-            e.createdAt.month == now.month)
+        e.expenseDate.year == now.year &&
+            e.expenseDate.month == now.month)
             .toList();
       case 'custom':
         if (_customRange == null) return expenses;
@@ -338,8 +338,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
             hours: 23, minutes: 59, seconds: 59));
         return expenses
             .where((e) =>
-        e.createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
-            e.createdAt.isBefore(end))
+        e.expenseDate.isAfter(start.subtract(const Duration(seconds: 1))) &&
+            e.expenseDate.isBefore(end))
             .toList();
       default:
         return expenses;

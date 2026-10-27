@@ -101,6 +101,8 @@ class ExpensesController
           .from('expenses')
           .select('*, expense_splits(*)')
           .eq('group_id', _groupId)
+          // Newest spending day first; same day → newest saved first
+          .order('expense_date', ascending: false)
           .order('created_at', ascending: false);
 
       if (rows.isEmpty) return [];
@@ -153,6 +155,7 @@ class ExpensesController
     required String splitType,
     required List<Map<String, dynamic>> members,
     required String currency,
+    required DateTime expenseDate,
     String? notes,
     bool isRecurring = false,
     String? recurEvery, // 'daily' | 'weekly' | 'monthly'
@@ -179,6 +182,7 @@ class ExpensesController
         'p_notes': notes?.trim(),
         'p_is_recurring': isRecurring,
         'p_recur_every': isRecurring ? recurEvery : null,
+        'p_expense_date': dateOnly(expenseDate),
       });
 
       ref.invalidate(myDebtsProvider); // balances come from the database
@@ -232,6 +236,12 @@ class ExpensesController
 // floating-point rounding.
 int toPaisa(double amount) => (amount * 100).round();
 double fromPaisa(int paisa) => paisa / 100;
+
+// 'yyyy-MM-dd' for a date column (the phone's own calendar day)
+String dateOnly(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-'
+    '${d.month.toString().padLeft(2, '0')}-'
+    '${d.day.toString().padLeft(2, '0')}';
 
 // ── Split calculation ─────────────────────────────────────────────────────────
 // Returns [{user_id, amount_owed}] for the members marked 'included'.
@@ -315,7 +325,7 @@ const _expenseErrorCodes = {
   'NOT_A_MEMBER', 'INVALID_TITLE', 'INVALID_AMOUNT', 'PAYER_NOT_MEMBER',
   'INVALID_SPLIT_TYPE', 'INVALID_RECURRENCE', 'NO_MEMBERS', 'DUPLICATE_SPLIT',
   'INVALID_SPLIT_AMOUNT', 'SPLIT_USER_NOT_MEMBER', 'SPLITS_DONT_ADD_UP',
-  'EXPENSE_NOT_FOUND', 'NOT_ALLOWED',
+  'EXPENSE_NOT_FOUND', 'NOT_ALLOWED', 'INVALID_DATE',
 };
 
 String expenseErrorCode(String message) =>

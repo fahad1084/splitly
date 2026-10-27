@@ -15,6 +15,7 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../groups/models/group_model.dart';
 import '../../expenses/models/expense_model.dart';
+import '../controllers/expenses_controller.dart' show dateOnly;
 import '../../security/controllers/app_lock_controller.dart';
 import '../../../core/utils/money_format.dart';
 
@@ -174,7 +175,7 @@ class ExportService {
         e.paidByName,
         e.amount.toStringAsFixed(2),
         e.currency,
-        e.createdAt.toIso8601String(),
+        dateOnly(e.expenseDate),
       ]),
     ];
 

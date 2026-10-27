@@ -1189,4 +1189,7 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get expenseHasPaymentsWarning =>
       'اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے ڈیلیٹ کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔';
+
+  @override
+  String get expenseDateLabel => 'تاریخ';
 }

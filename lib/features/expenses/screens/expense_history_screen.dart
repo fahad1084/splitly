@@ -276,7 +276,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
     final now = DateTime.now();
     if (dateFilter == 'today') {
       result = result.where((e) {
-        final d = e.createdAt;
+        final d = e.expenseDate;
         return d.year == now.year &&
             d.month == now.month &&
             d.day == now.day;
@@ -284,12 +284,12 @@ class ExpenseHistoryScreen extends ConsumerWidget {
     } else if (dateFilter == 'week') {
       final weekAgo = now.subtract(const Duration(days: 7));
       result = result
-          .where((e) => e.createdAt.isAfter(weekAgo))
+          .where((e) => e.expenseDate.isAfter(weekAgo))
           .toList();
     } else if (dateFilter == 'month') {
       result = result.where((e) {
-        return e.createdAt.year == now.year &&
-            e.createdAt.month == now.month;
+        return e.expenseDate.year == now.year &&
+            e.expenseDate.month == now.month;
       }).toList();
     } else if (dateFilter == 'custom' && customRange != null) {
       final start = customRange.start;
@@ -297,9 +297,9 @@ class ExpenseHistoryScreen extends ConsumerWidget {
           .add(const Duration(hours: 23, minutes: 59, seconds: 59));
       result = result
           .where((e) =>
-      e.createdAt
+      e.expenseDate
           .isAfter(start.subtract(const Duration(seconds: 1))) &&
-          e.createdAt.isBefore(end))
+          e.expenseDate.isBefore(end))
           .toList();
     }
 
@@ -323,7 +323,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
     final now = DateTime.now();
 
     for (final expense in expenses) {
-      final d = expense.createdAt;
+      final d = expense.expenseDate;
       String label;
 
       if (d.year == now.year &&

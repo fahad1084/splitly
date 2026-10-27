@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:splitly/core/widgets/shared_widgets.dart';
+import 'package:splitly/features/expenses/controllers/expenses_controller.dart'
+    show dateOnly;
 import 'package:splitly/features/expenses/models/expense_model.dart';
 
 Widget _wrap(Widget child) =>
@@ -68,6 +70,21 @@ void main() {
       expect(expense.splits.first.userName, 'Bilal');
       expect(expense.splits.first.amountOwed, 150.5);
       expect(expense.splits.first.isSettled, isFalse);
+    });
+
+    test('uses expense_date, or the saved day when it is missing', () {
+      Map<String, dynamic> row([String? date]) => {
+            'id': 'e1', 'group_id': 'g1', 'paid_by': 'u1', 'title': 'Dinner',
+            'amount': 300, 'created_at': '2026-10-05T12:00:00Z',
+            if (date != null) 'expense_date': date,
+          };
+
+      expect(ExpenseModel.fromMap(row('2026-09-30')).expenseDate,
+          DateTime(2026, 9, 30));
+      final saved = DateTime.parse('2026-10-05T12:00:00Z').toLocal();
+      expect(ExpenseModel.fromMap(row()).expenseDate,
+          DateTime(saved.year, saved.month, saved.day));
+      expect(dateOnly(DateTime(2026, 2, 3)), '2026-02-03');
     });
   });
 }

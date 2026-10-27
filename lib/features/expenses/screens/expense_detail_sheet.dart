@@ -163,7 +163,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                _formatDate(expense.createdAt),
+                _formatDate(expense.expenseDate),
                 style: TextStyle(
                     fontSize: 12, color: AppColors.primaryLight),
               ),

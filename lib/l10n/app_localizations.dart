@@ -2257,6 +2257,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person.'**
   String get expenseHasPaymentsWarning;
+
+  /// No description provided for @expenseDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get expenseDateLabel;
 }
 
 class _AppLocalizationsDelegate
