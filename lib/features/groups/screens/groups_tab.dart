@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -26,7 +27,9 @@ class GroupsTab extends ConsumerWidget {
     final groupsAsync = ref.watch(groupsProvider);
     final unreadAsync = ref.watch(unreadCountsProvider);
     final unreadCounts = unreadAsync.value ?? {};
-    final debtsFailed = ref.watch(myDebtsProvider).hasError;
+    final online = ref.watch(isOnlineProvider).value ?? true;
+    final debtsAsync = ref.watch(myDebtsProvider);
+    final debtsFailed = online && debtsAsync.hasError && !debtsAsync.hasValue;
     final userName =
         user?.userMetadata?['full_name'] as String? ?? 'there';
     final firstName = userName.split(' ').first;
@@ -100,6 +103,7 @@ class GroupsTab extends ConsumerWidget {
         ],
       ),
       body: groupsAsync.when(
+        skipError: true, // keep the last data if a reload fails
         loading: () => const Padding(
           padding: EdgeInsets.only(top: 16),
           child: ShimmerList(),
@@ -152,7 +156,7 @@ class GroupsTab extends ConsumerWidget {
                       onRetry: () => ref.invalidate(myDebtsProvider),
                     ),
                   ),
-                if (unreadAsync.hasError)
+                if (online && unreadAsync.hasError && !unreadAsync.hasValue)
                   SliverToBoxAdapter(
                     child: ErrorBanner(
                       message: l10n.couldNotLoadUnread,

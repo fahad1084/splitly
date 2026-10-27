@@ -288,13 +288,14 @@ class ExpensesController
     }
   }
 
+  // Keeps showing the current list while loading, and if loading fails
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
+    state = const AsyncValue<List<ExpenseModel>>.loading().copyWithPrevious(state);
     ref.invalidate(myDebtsProvider); // pull-to-refresh reloads balances too
     try {
       state = AsyncValue.data(await _fetchExpenses());
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncValue<List<ExpenseModel>>.error(e, st).copyWithPrevious(state);
     }
   }
 

@@ -99,6 +99,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: notificationsAsync.when(
+        skipError: true, // keep the last data if a reload fails
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),

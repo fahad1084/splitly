@@ -147,6 +147,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
           // ── Expense list ────────────────────────────────────────────
           Expanded(
             child: expensesAsync.when(
+              skipError: true, // keep the last data if a reload fails
               loading: () => const Center(
                 child: CircularProgressIndicator(
                     color: AppColors.primary, strokeWidth: 2),

@@ -7,6 +7,7 @@ import '../models/group_model.dart';
 import 'dart:io';
 import 'package:splitly/core/utils/app_logger.dart';
 import 'package:splitly/core/utils/app_errors.dart';
+import '../../../core/services/offline_cache.dart';
 
 final groupsProvider =
 AsyncNotifierProvider<GroupsController, List<GroupModel>>(
@@ -71,8 +72,30 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
   SupabaseClient get _db => SupabaseConfig.client;
 
   @override
-  Future<List<GroupModel>> build() async {
-    return _fetchGroups();
+  Future<List<GroupModel>> build() => _load();
+
+  // From the server (and keep a copy on the phone). No internet → the copy
+  // from the last time, if there is one.
+  Future<List<GroupModel>> _load() async {
+    final userId = _db.auth.currentUser?.id;
+    try {
+      final groups = await _fetchGroups();
+      if (userId != null) {
+        OfflineCache.save('groups', userId, [for (final g in groups) g.toMap()]);
+      }
+      return groups;
+    } catch (e) {
+      if (userId != null && codeForError(e) == kErrNetwork) {
+        final saved = await OfflineCache.load('groups', userId);
+        if (saved is List) {
+          return [
+            for (final m in saved)
+              GroupModel.fromMap(Map<String, dynamic>.from(m as Map))
+          ];
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<List<GroupModel>> _fetchGroups() async {
@@ -173,13 +196,14 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     }
   }
 
+  // Keeps showing the current list while loading, and if loading fails
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
+    state = const AsyncValue<List<GroupModel>>.loading().copyWithPrevious(state);
     ref.invalidate(myDebtsProvider); // pull-to-refresh reloads balances too
     try {
-      state = AsyncValue.data(await _fetchGroups());
+      state = AsyncValue.data(await _load());
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncValue<List<GroupModel>>.error(e, st).copyWithPrevious(state);
     }
   }
 

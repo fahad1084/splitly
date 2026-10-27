@@ -67,6 +67,27 @@ class DebtRow {
     required this.amount,
     this.pendingAmount = 0,
   });
+
+  // For OfflineCache
+  Map<String, dynamic> toMap() => {
+        'group_id': groupId,
+        'debtor_id': debtorId,
+        'debtor_name': debtorName,
+        'creditor_id': creditorId,
+        'creditor_name': creditorName,
+        'amount': amount,
+        'pending_amount': pendingAmount,
+      };
+
+  factory DebtRow.fromMap(Map<String, dynamic> m) => DebtRow(
+        groupId: m['group_id'] as String,
+        debtorId: m['debtor_id'] as String,
+        debtorName: m['debtor_name'] as String,
+        creditorId: m['creditor_id'] as String,
+        creditorName: m['creditor_name'] as String,
+        amount: (m['amount'] as num).toDouble(),
+        pendingAmount: (m['pending_amount'] as num?)?.toDouble() ?? 0,
+      );
 }
 
 // One payment in a group's payment history

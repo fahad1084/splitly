@@ -36,6 +36,7 @@ class BalancesTab extends ConsumerWidget {
         ),
       ),
       body: groupsAsync.when(
+        skipError: true, // keep the last data if a reload fails
         loading: () => const Padding(
           padding: EdgeInsets.only(top: 16),
           child: ShimmerList(),
@@ -47,7 +48,8 @@ class BalancesTab extends ConsumerWidget {
           if (groups.isEmpty) return const _EmptyState();
 
           // Balances failed → say so; showing 0 / "all settled" would be wrong
-          if (ref.watch(myDebtsProvider).hasError) {
+          final debtsAsync = ref.watch(myDebtsProvider);
+          if (debtsAsync.hasError && !debtsAsync.hasValue) {
             return ErrorRetry(
               message: l10n.couldNotLoadBalances,
               onRetry: () => ref.invalidate(myDebtsProvider),

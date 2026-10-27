@@ -80,6 +80,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
         ),
       ),
       body: groupsAsync.when(
+        skipError: true, // keep the last data if a reload fails
         loading: () => const Center(
             child: CircularProgressIndicator(
                 color: AppColors.primary, strokeWidth: 2)),

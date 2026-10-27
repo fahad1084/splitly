@@ -321,6 +321,7 @@ class GroupDetailScreen extends ConsumerWidget {
                             fontWeight: FontWeight.w500,
                             color: headingColor)),
                     membersAsync.when(
+                      skipError: true, // keep the last data if a reload fails
                       data: (members) => Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 3),
@@ -344,6 +345,7 @@ class GroupDetailScreen extends ConsumerWidget {
 
             // ── Members list ──────────────────────────────────────────
             membersAsync.when(
+              skipError: true, // keep the last data if a reload fails
               data: (members) => SliverList(
                 delegate: SliverChildBuilderDelegate(
                       (_, i) => _MemberTile(
@@ -428,6 +430,7 @@ class GroupDetailScreen extends ConsumerWidget {
 
             // ── Expenses list (recent only) or empty state ─────────────
             expensesAsync.when(
+              skipError: true, // keep the last data if a reload fails
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),

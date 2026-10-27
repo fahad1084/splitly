@@ -449,6 +449,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           Expanded(
             child: messagesAsync.when(
+              skipError: true, // keep the last data if a reload fails
               loading: () => const Center(
                 child: CircularProgressIndicator(
                     color: AppColors.primary, strokeWidth: 2),

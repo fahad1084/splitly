@@ -46,6 +46,7 @@ class SettlementHistoryScreen extends ConsumerWidget {
           await ref.read(settlementsProvider(group.id).future);
         },
         child: settlementsAsync.when(
+          skipError: true, // keep the last data if a reload fails
           loading: () => const Padding(
             padding: EdgeInsets.only(top: 16),
             child: ShimmerList(),

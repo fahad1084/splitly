@@ -45,6 +45,7 @@ class RecurringExpensesScreen extends ConsumerWidget {
         color: AppColors.primary,
         onRefresh: () => ref.read(expensesProvider(group.id).notifier).refresh(),
         child: expensesAsync.when(
+          skipError: true, // keep the last data if a reload fails
           loading: () => const Padding(
             padding: EdgeInsets.only(top: 16),
             child: ShimmerList(),

@@ -42,6 +42,7 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                 color: AppColors.primaryTint)),
       ),
       body: archivedAsync.when(
+        skipError: true, // keep the last data if a reload fails
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary)),
         error: (_, __) => ErrorRetry(

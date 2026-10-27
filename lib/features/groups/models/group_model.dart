@@ -46,6 +46,21 @@ class GroupModel {
         memberCount: memberCount,
       );
 
+  // Same keys as fromMap reads (for OfflineCache)
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'currency': currency,
+        'created_by': createdBy,
+        'invite_code': inviteCode,
+        'is_archived': isArchived,
+        'created_at': createdAt.toIso8601String(),
+        'category': category,
+        'photo_url': photoUrl,
+        'member_count': memberCount,
+      };
+
   factory GroupModel.fromMap(Map<String, dynamic> map) {
     return GroupModel(
       id: map['id'] as String,

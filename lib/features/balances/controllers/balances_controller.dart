@@ -5,6 +5,8 @@ import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/models/expense_model.dart';
 import '../../balances/models/balance_model.dart';
 import 'package:splitly/core/utils/app_logger.dart';
+import 'package:splitly/core/utils/app_errors.dart';
+import '../../../core/services/offline_cache.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The balance math lives in the DATABASE (group_debts() in
@@ -15,9 +17,29 @@ import 'package:splitly/core/utils/app_logger.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── All debts in all my groups (ONE database call + one for names) ────────────
+// A copy is kept on the phone; with no internet the last copy is shown.
 final myDebtsProvider = FutureProvider<List<DebtRow>>((ref) async {
+  final userId = SupabaseConfig.client.auth.currentUser?.id;
+  if (userId == null) return [];
+  try {
+    final rows = await _fetchMyDebts();
+    OfflineCache.save('debts', userId, [for (final r in rows) r.toMap()]);
+    return rows;
+  } catch (e) {
+    if (codeForError(e) == kErrNetwork) {
+      final saved = await OfflineCache.load('debts', userId);
+      if (saved is List) {
+        return [
+          for (final m in saved) DebtRow.fromMap(Map<String, dynamic>.from(m as Map))
+        ];
+      }
+    }
+    rethrow;
+  }
+});
+
+Future<List<DebtRow>> _fetchMyDebts() async {
   final db = SupabaseConfig.client;
-  if (db.auth.currentUser == null) return [];
 
   final List<dynamic> rows = await db.rpc('get_my_debts');
   if (rows.isEmpty) return [];
@@ -47,7 +69,7 @@ final myDebtsProvider = FutureProvider<List<DebtRow>>((ref) async {
       pendingAmount: (r['pending_amount'] as num?)?.toDouble() ?? 0,
     );
   }).toList();
-});
+}
 
 // ── Single group balance ──────────────────────────────────────────────────────
 // Keyed by a Dart record, which compares by VALUE — so the same group always
