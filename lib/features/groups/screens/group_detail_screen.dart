@@ -10,6 +10,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../balances/controllers/balances_controller.dart';
 import '../../balances/screens/settle_up_sheet.dart';
 import '../../balances/screens/settlement_history_screen.dart';
+import '../../expenses/screens/recurring_expenses_screen.dart';
 import '../../expenses/controllers/expenses_controller.dart';
 import '../../expenses/screens/add_expense_sheet.dart';
 import '../../expenses/screens/expense_detail_sheet.dart';
@@ -759,6 +760,23 @@ class GroupDetailScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(sheetContext);
                 _openPayments(context);
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.repeat_rounded,
+              iconColor: AppColors.primary,
+              label: l10n.recurringExpenses,
+              textColor: textColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => RecurringExpensesScreen(group: group)),
+                );
               },
             ),
             const SizedBox(height: 8),

@@ -249,6 +249,23 @@ class ExpensesController
     }
   }
 
+  // ── Pause / resume / stop a recurring expense ───────────────────────────────
+  // action: 'pause' | 'resume' | 'stop'. Creator, payer or group admin.
+  Future<String?> setRecurringStatus(String expenseId, String action) async {
+    try {
+      await SupabaseConfig.client.rpc('set_recurring_status',
+          params: {'p_expense_id': expenseId, 'p_action': action});
+      state = AsyncValue.data(await _fetchExpenses());
+      return null;
+    } on PostgrestException catch (e) {
+      logDebug('=== RECURRING STATUS ERROR: ${e.message} ===');
+      return expenseErrorCode(e.message);
+    } catch (e) {
+      logDebug('=== RECURRING STATUS ERROR: $e ===');
+      return 'UNKNOWN';
+    }
+  }
+
   // ── Delete expense ──────────────────────────────────────────────────────────
   // Returns null on success, or an error code (see expenseErrorCode).
   Future<String?> deleteExpense(String expenseId) async {
@@ -378,7 +395,7 @@ const _expenseErrorCodes = {
   'NOT_A_MEMBER', 'INVALID_TITLE', 'INVALID_AMOUNT', 'PAYER_NOT_MEMBER',
   'INVALID_SPLIT_TYPE', 'INVALID_RECURRENCE', 'NO_MEMBERS', 'DUPLICATE_SPLIT',
   'INVALID_SPLIT_AMOUNT', 'SPLIT_USER_NOT_MEMBER', 'SPLITS_DONT_ADD_UP',
-  'EXPENSE_NOT_FOUND', 'NOT_ALLOWED', 'INVALID_DATE',
+  'EXPENSE_NOT_FOUND', 'NOT_ALLOWED', 'INVALID_DATE', 'NOT_RECURRING',
 };
 
 String expenseErrorCode(String message) =>

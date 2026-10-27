@@ -17,6 +17,9 @@ class ExpenseModel {
   final DateTime? editedAt; // set when someone edited the expense
   final bool isRecurring;
   final String? recurEvery;
+  final bool recurPaused;
+  final DateTime? nextRecurAt; // the next day a copy is due
+  final String? createdBy;
   final List<ExpenseSplit> splits;
 
   const ExpenseModel({
@@ -36,6 +39,9 @@ class ExpenseModel {
     this.editedAt,
     this.isRecurring = false,
     this.recurEvery,
+    this.recurPaused = false,
+    this.nextRecurAt,
+    this.createdBy,
     required this.splits,
   });
 
@@ -66,6 +72,11 @@ class ExpenseModel {
           : null,
       isRecurring: map['is_recurring'] as bool? ?? false,
       recurEvery: map['recur_every'] as String?,
+      recurPaused: map['recur_paused'] as bool? ?? false,
+      nextRecurAt: map['next_recur_at'] != null
+          ? DateTime.parse(map['next_recur_at'] as String).toLocal()
+          : null,
+      createdBy: map['created_by'] as String?,
       splits: splitsList,
     );
   }

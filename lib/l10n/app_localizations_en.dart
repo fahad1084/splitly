@@ -1214,4 +1214,42 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get expenseEditHasPaymentsWarning =>
       'Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person.';
+
+  @override
+  String get recurringExpenses => 'Recurring expenses';
+
+  @override
+  String get noRecurringExpenses =>
+      'No recurring expenses yet. Turn on \"Repeat this expense\" when you add an expense.';
+
+  @override
+  String nextOn(String date) {
+    return 'Next: $date';
+  }
+
+  @override
+  String get recurPausedLabel => 'Paused';
+
+  @override
+  String get pauseRepeating => 'Pause';
+
+  @override
+  String get resumeRepeating => 'Resume';
+
+  @override
+  String get stopRepeating => 'Stop repeating';
+
+  @override
+  String stopRepeatingConfirm(String title) {
+    return 'Stop repeating \"$title\"? Copies that were already added stay.';
+  }
+
+  @override
+  String get recurringPausedMsg => 'Paused. No new copies until you resume.';
+
+  @override
+  String get recurringResumedMsg => 'Resumed.';
+
+  @override
+  String get recurringStoppedMsg => 'Stopped repeating.';
 }

@@ -416,5 +416,16 @@
   "editedLabel": "ترمیم شدہ",
   "cantEditMemberLeft": "یہ خرچہ تبدیل نہیں ہو سکتا: اس میں شامل کوئی شخص گروپ چھوڑ چکا ہے۔",
   "onlyPayerOrAdminCanEdit": "یہ خرچہ صرف ادائیگی کرنے والا یا گروپ ایڈمن تبدیل کر سکتا ہے۔",
-  "expenseEditHasPaymentsWarning": "اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے تبدیل کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔"
+  "expenseEditHasPaymentsWarning": "اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے تبدیل کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔",
+  "recurringExpenses": "بار بار ہونے والے خرچے",
+  "noRecurringExpenses": "ابھی کوئی بار بار ہونے والا خرچہ نہیں۔ خرچہ شامل کرتے وقت \"یہ خرچہ دہرائیں\" آن کریں۔",
+  "nextOn": "اگلا: {date}",
+  "recurPausedLabel": "رکا ہوا",
+  "pauseRepeating": "روکیں",
+  "resumeRepeating": "دوبارہ شروع کریں",
+  "stopRepeating": "دہرانا بند کریں",
+  "stopRepeatingConfirm": "\"{title}\" کو دہرانا بند کریں؟ جو خرچے پہلے شامل ہو چکے ہیں وہ رہیں گے۔",
+  "recurringPausedMsg": "روک دیا گیا۔ دوبارہ شروع کرنے تک کوئی نیا خرچہ شامل نہیں ہوگا۔",
+  "recurringResumedMsg": "دوبارہ شروع ہو گیا۔",
+  "recurringStoppedMsg": "دہرانا بند ہو گیا۔"
 }

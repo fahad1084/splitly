@@ -2299,6 +2299,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person.'**
   String get expenseEditHasPaymentsWarning;
+
+  /// No description provided for @recurringExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring expenses'**
+  String get recurringExpenses;
+
+  /// No description provided for @noRecurringExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'No recurring expenses yet. Turn on \"Repeat this expense\" when you add an expense.'**
+  String get noRecurringExpenses;
+
+  /// No description provided for @nextOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {date}'**
+  String nextOn(String date);
+
+  /// No description provided for @recurPausedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get recurPausedLabel;
+
+  /// No description provided for @pauseRepeating.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pauseRepeating;
+
+  /// No description provided for @resumeRepeating.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resumeRepeating;
+
+  /// No description provided for @stopRepeating.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop repeating'**
+  String get stopRepeating;
+
+  /// No description provided for @stopRepeatingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop repeating \"{title}\"? Copies that were already added stay.'**
+  String stopRepeatingConfirm(String title);
+
+  /// No description provided for @recurringPausedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused. No new copies until you resume.'**
+  String get recurringPausedMsg;
+
+  /// No description provided for @recurringResumedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Resumed.'**
+  String get recurringResumedMsg;
+
+  /// No description provided for @recurringStoppedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped repeating.'**
+  String get recurringStoppedMsg;
 }
 
 class _AppLocalizationsDelegate

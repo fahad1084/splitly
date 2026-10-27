@@ -434,5 +434,18 @@
   "editedLabel": "edited",
   "cantEditMemberLeft": "This expense can't be changed: someone in it has left the group.",
   "onlyPayerOrAdminCanEdit": "Only the person who paid or a group admin can change this expense.",
-  "expenseEditHasPaymentsWarning": "Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person."
+  "expenseEditHasPaymentsWarning": "Payments were already made after this expense. Changing it changes the balances, and the debt can switch to the other person.",
+  "recurringExpenses": "Recurring expenses",
+  "noRecurringExpenses": "No recurring expenses yet. Turn on \"Repeat this expense\" when you add an expense.",
+  "nextOn": "Next: {date}",
+  "@nextOn": {"placeholders": {"date": {"type": "String"}}},
+  "recurPausedLabel": "Paused",
+  "pauseRepeating": "Pause",
+  "resumeRepeating": "Resume",
+  "stopRepeating": "Stop repeating",
+  "stopRepeatingConfirm": "Stop repeating \"{title}\"? Copies that were already added stay.",
+  "@stopRepeatingConfirm": {"placeholders": {"title": {"type": "String"}}},
+  "recurringPausedMsg": "Paused. No new copies until you resume.",
+  "recurringResumedMsg": "Resumed.",
+  "recurringStoppedMsg": "Stopped repeating."
 }

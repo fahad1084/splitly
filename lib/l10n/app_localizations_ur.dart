@@ -1213,4 +1213,43 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get expenseEditHasPaymentsWarning =>
       'اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے تبدیل کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔';
+
+  @override
+  String get recurringExpenses => 'بار بار ہونے والے خرچے';
+
+  @override
+  String get noRecurringExpenses =>
+      'ابھی کوئی بار بار ہونے والا خرچہ نہیں۔ خرچہ شامل کرتے وقت \"یہ خرچہ دہرائیں\" آن کریں۔';
+
+  @override
+  String nextOn(String date) {
+    return 'اگلا: $date';
+  }
+
+  @override
+  String get recurPausedLabel => 'رکا ہوا';
+
+  @override
+  String get pauseRepeating => 'روکیں';
+
+  @override
+  String get resumeRepeating => 'دوبارہ شروع کریں';
+
+  @override
+  String get stopRepeating => 'دہرانا بند کریں';
+
+  @override
+  String stopRepeatingConfirm(String title) {
+    return '\"$title\" کو دہرانا بند کریں؟ جو خرچے پہلے شامل ہو چکے ہیں وہ رہیں گے۔';
+  }
+
+  @override
+  String get recurringPausedMsg =>
+      'روک دیا گیا۔ دوبارہ شروع کرنے تک کوئی نیا خرچہ شامل نہیں ہوگا۔';
+
+  @override
+  String get recurringResumedMsg => 'دوبارہ شروع ہو گیا۔';
+
+  @override
+  String get recurringStoppedMsg => 'دہرانا بند ہو گیا۔';
 }

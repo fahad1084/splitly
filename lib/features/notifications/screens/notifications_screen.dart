@@ -39,6 +39,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         return Icons.person_add_alt_1_rounded;
       case 'debt_reminder':
         return Icons.alarm_rounded;
+      case 'recurring_skipped':
+        return Icons.event_busy_rounded;
       default:
         return Icons.notifications_outlined;
     }
