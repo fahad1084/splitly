@@ -147,7 +147,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           const SizedBox(height: 4),
           Text(
             l10n.enterConfirmNewPassword,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.primary,
               height: 1.5,
@@ -243,7 +243,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           Text(
             l10n.passwordUpdatedDesc,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.primary,
               height: 1.5,

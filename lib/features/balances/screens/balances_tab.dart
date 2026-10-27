@@ -605,7 +605,7 @@ class _EmptyState extends StatelessWidget {
           Text(
             l10n.createOrJoinGroup,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.primary,
                 height: 1.5),
@@ -649,7 +649,7 @@ class _SettledState extends StatelessWidget {
           Text(
             l10n.noOutstandingBalances,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.primary,
                 height: 1.5),

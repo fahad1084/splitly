@@ -74,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Nav bar colors
     final navBg =
     dark ? AppColors.primaryDark : Colors.white;
-    final navSelected = AppColors.primary;
+    const navSelected = AppColors.primary;
     final navUnselected =
     dark ? AppColors.primaryLight.withValues(alpha: 0.5) : AppColors.primaryLight;
     final indicatorColor =
@@ -97,19 +97,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         destinations: [
           NavigationDestination(
             icon: Icon(Icons.group_outlined, color: navUnselected),
-            selectedIcon: Icon(Icons.group_rounded, color: navSelected),
+            selectedIcon: const Icon(Icons.group_rounded, color: navSelected),
             label: l10n.groups,
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined,
                 color: navUnselected),
-            selectedIcon: Icon(Icons.account_balance_wallet_rounded,
+            selectedIcon: const Icon(Icons.account_balance_wallet_rounded,
                 color: navSelected),
             label: l10n.balances,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outlined, color: navUnselected),
-            selectedIcon: Icon(Icons.person_rounded, color: navSelected),
+            selectedIcon: const Icon(Icons.person_rounded, color: navSelected),
             label: l10n.profile,
           ),
         ],

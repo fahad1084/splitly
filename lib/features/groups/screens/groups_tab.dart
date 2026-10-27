@@ -39,14 +39,14 @@ class GroupsTab extends ConsumerWidget {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Row(
+        title: const Row(
           children: [
             SizedBox(
               width: 28,
               height: 28,
-              child: const CustomPaint(painter: SBlobPainter()),
+              child: CustomPaint(painter: SBlobPainter()),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Text(
               'Splitly',
               style: TextStyle(
@@ -112,7 +112,7 @@ class GroupsTab extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
+              const Icon(Icons.error_outline,
                   color: AppColors.danger, size: 40),
               const SizedBox(height: 12),
               Text(l10n.somethingWentWrong,
@@ -215,12 +215,12 @@ class GroupsTab extends ConsumerWidget {
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.login_rounded,
+                                    const Icon(Icons.login_rounded,
                                         size: 13,
                                         color: AppColors.primary),
                                     const SizedBox(width: 4),
                                     Text(l10n.join,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 12,
                                             color: AppColors.primary,
                                             fontWeight:
@@ -413,7 +413,7 @@ class _GroupCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      Icon(Icons.people_outline_rounded,
+                      const Icon(Icons.people_outline_rounded,
                           size: 12, color: AppColors.primaryLight),
                       const SizedBox(width: 4),
                       Flexible(child: Text(l10n.membersCount(group.memberCount ?? 0),
@@ -434,7 +434,7 @@ class _GroupCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(group.currency,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.primaryDark)),
@@ -444,7 +444,7 @@ class _GroupCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded,
+            const Icon(Icons.arrow_forward_ios_rounded,
                 size: 14, color: AppColors.primaryLight),
           ],
         ),
@@ -480,14 +480,14 @@ class _SummaryBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.hey(firstName) + ' 👋',
+          Text('${l10n.hey(firstName)} 👋',
               style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: AppColors.primaryTint)),
           const SizedBox(height: 4),
           Text(l10n.balanceSummary,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 13, color: AppColors.primaryTint)),
           const SizedBox(height: 20),
           Row(
@@ -614,7 +614,7 @@ class _EmptyGroupsState extends StatelessWidget {
             Text(
               l10n.createFirstGroupDesc,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.primary,
                   height: 1.5),

@@ -95,7 +95,7 @@ class ProfileTab extends ConsumerWidget {
                     color: textColor)),
             const SizedBox(height: 4),
             Text(email,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 14, color: AppColors.primary)),
 
             const SizedBox(height: 32),
@@ -353,7 +353,7 @@ class ProfileTab extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppColors.primary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -409,7 +409,7 @@ class ProfileTab extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+                child: Text(l10n.cancel, style: const TextStyle(color: AppColors.primary)),
               ),
               TextButton(
                 onPressed: matches ? () => Navigator.pop(ctx, true) : null,
@@ -508,7 +508,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                       color: AppColors.primary.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.lock_outline_rounded,
+                    child: const Icon(Icons.lock_outline_rounded,
                         color: AppColors.primary, size: 26),
                   ),
                 ),
@@ -525,7 +525,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                       ? l10n.protectSplitly
                       : l10n.addExtraLayer,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.primary),
+                  style: const TextStyle(fontSize: 13, color: AppColors.primary),
                 ),
                 const SizedBox(height: 24),
 
@@ -615,7 +615,7 @@ void _confirmDisableAppLock(BuildContext context, WidgetRef ref) {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+          child: Text(l10n.cancel, style: const TextStyle(color: AppColors.primary)),
         ),
         TextButton(
           onPressed: () async {
@@ -698,7 +698,7 @@ class _ProfileTile extends StatelessWidget {
                       color: labelColor ?? defaultTextColor)),
             ),
             trailing ??
-                Icon(Icons.arrow_forward_ios_rounded,
+                const Icon(Icons.arrow_forward_ios_rounded,
                     size: 14, color: AppColors.primaryLight),
           ],
         ),
@@ -710,8 +710,8 @@ class _ProfileTile extends StatelessWidget {
 class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(start: 50),
+    return const Padding(
+      padding: EdgeInsetsDirectional.only(start: 50),
       child: Divider(
           height: 0.5,
           thickness: 0.5,
@@ -761,7 +761,7 @@ class _LangTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (selected) Icon(Icons.check_circle_rounded, color: AppColors.primary),
+            if (selected) const Icon(Icons.check_circle_rounded, color: AppColors.primary),
           ],
         ),
       ),

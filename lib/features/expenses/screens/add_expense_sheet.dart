@@ -406,7 +406,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(height: 4),
             Text(widget.group.name,
                 style:
-                TextStyle(fontSize: 13, color: AppColors.primary)),
+                const TextStyle(fontSize: 13, color: AppColors.primary)),
 
             const SizedBox(height: 24),
 
@@ -450,7 +450,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                 prefixIcon: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
                   child: Text(widget.group.currency,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: AppColors.primary)),
@@ -520,7 +520,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: headingColor)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             SizedBox(
               // Grows with the phone's text size
               height: MediaQuery.textScalerOf(context).scale(72),
@@ -600,7 +600,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: 14,
                       height: 14,
                       child: CircularProgressIndicator(
@@ -610,7 +610,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     ),
                     const SizedBox(width: 8),
                     Flexible(child: Text(l10n.loadingMembers,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.primary))),
                   ],
@@ -749,14 +749,14 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: 14, height: 14,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppColors.primary),
                     ),
                     const SizedBox(width: 8),
                     Flexible(child: Text(l10n.loadingMembers,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 12, color: AppColors.primary))),
                   ],
                 ),
@@ -901,7 +901,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               const TextInputType.numberWithOptions(
                                   decimal: true),
                               textAlign: TextAlign.end,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.primary),
@@ -949,7 +949,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               const TextInputType.numberWithOptions(
                                   decimal: true),
                               textAlign: TextAlign.end,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.primary),
@@ -960,7 +960,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                                         .withValues(alpha: 0.4),
                                     fontSize: 13),
                                 suffixText: l10n.percentSymbol,
-                                suffixStyle: TextStyle(
+                                suffixStyle: const TextStyle(
                                     color: AppColors.primary,
                                     fontSize: 13),
                                 border: InputBorder.none,

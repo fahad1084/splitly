@@ -160,7 +160,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                 ),
                 child: Text(
                   l10n.splitLabel(expense.splitType),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryDark,
@@ -198,7 +198,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.notes_rounded,
+                  const Icon(Icons.notes_rounded,
                       size: 16, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Expanded(

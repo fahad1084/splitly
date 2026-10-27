@@ -567,7 +567,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       constraints: const BoxConstraints(maxHeight: 160),
                       decoration: BoxDecoration(
                         color: isDark(context) ? AppColors.primaryDark : Colors.white,
-                        border: Border(top: BorderSide(color: AppColors.primaryTint)),
+                        border: const Border(top: BorderSide(color: AppColors.primaryTint)),
                       ),
                       child: ListView(
                         shrinkWrap: true,
@@ -654,7 +654,7 @@ class _AttachmentTile extends StatelessWidget {
               child: Text(label,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor)),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight, size: 20),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight, size: 20),
           ],
         ),
       ),
@@ -1096,10 +1096,12 @@ class _AudioBubbleState extends State<_AudioBubble> {
       if (mounted) setState(() => _position = p);
     });
     _player.onPlayerComplete.listen((_) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _isPlaying = false;
         _position = Duration.zero;
       });
+      }
     });
   }
 
@@ -1237,7 +1239,7 @@ class _DateSeparator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
               child: Divider(color: AppColors.primaryTint, thickness: 0.5)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1247,7 +1249,7 @@ class _DateSeparator extends StatelessWidget {
                     color: AppColors.mutedText(context),
                     fontWeight: FontWeight.w500)),
           ),
-          Expanded(
+          const Expanded(
               child: Divider(color: AppColors.primaryTint, thickness: 0.5)),
         ],
       ),
@@ -1311,7 +1313,7 @@ class _MessageInput extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
-                border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
+                border: const Border(left: BorderSide(color: AppColors.primary, width: 3)),
               ),
               child: Row(
                 children: [
@@ -1336,7 +1338,7 @@ class _MessageInput extends StatelessWidget {
                   LabeledTap(
                     label: AppLocalizations.of(context)!.cancelReply,
                     onTap: onCancelReply,
-                    child: Icon(Icons.close_rounded, size: 18, color: AppColors.primaryLight),
+                    child: const Icon(Icons.close_rounded, size: 18, color: AppColors.primaryLight),
                   ),
                 ],
               ),
@@ -1345,7 +1347,7 @@ class _MessageInput extends StatelessWidget {
           isRecording
               ? Row(
             children: [
-              Icon(Icons.fiber_manual_record_rounded,
+              const Icon(Icons.fiber_manual_record_rounded,
                   color: AppColors.danger, size: 16),
               const SizedBox(width: 8),
               Flexible(child: Text(l10n.recording,
@@ -1513,7 +1515,7 @@ class _EmptyChat extends StatelessWidget {
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
           Text(l10n.startTheConversation,
-              style: TextStyle(fontSize: 13, color: AppColors.primary)),
+              style: const TextStyle(fontSize: 13, color: AppColors.primary)),
         ],
       ),
     );

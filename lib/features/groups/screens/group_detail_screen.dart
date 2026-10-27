@@ -102,7 +102,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Text(group.currency,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.accent,
                             fontWeight: FontWeight.w500)),
@@ -333,7 +333,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text('${members.length}',
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.primaryDark)),
@@ -397,7 +397,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                   group: group),
                             ),
                           ),
-                          icon: Icon(Icons.history_rounded,
+                          icon: const Icon(Icons.history_rounded,
                               size: 16,
                               color: AppColors.primaryLight),
                           label: Text(l10n.history,
@@ -413,10 +413,10 @@ class GroupDetailScreen extends ConsumerWidget {
                         TextButton.icon(
                           onPressed: () =>
                               showAddExpenseSheet(context, group),
-                          icon: Icon(Icons.add,
+                          icon: const Icon(Icons.add,
                               size: 16, color: AppColors.primary),
                           label: Text(l10n.add,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.primary)),
                           style: TextButton.styleFrom(
@@ -572,7 +572,7 @@ class GroupDetailScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 l10n.shareCodeDesc,
-                style: TextStyle(fontSize: 13, color: AppColors.primary),
+                style: const TextStyle(fontSize: 13, color: AppColors.primary),
               ),
               const SizedBox(height: 24),
 
@@ -611,7 +611,7 @@ class GroupDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     Text(
                       group.inviteCode,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 4,
@@ -874,7 +874,7 @@ class GroupDetailScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppColors.primary)),
           ),
           TextButton(
             onPressed: () async {
@@ -904,7 +904,7 @@ class GroupDetailScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel, style: TextStyle(color: AppColors.primary)),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppColors.primary)),
           ),
           TextButton(
             onPressed: () async {
@@ -987,7 +987,7 @@ void showOpenDebtsDialog(BuildContext context, WidgetRef ref,
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
           child: Text(MaterialLocalizations.of(context).okButtonLabel,
-              style: TextStyle(color: AppColors.primary)),
+              style: const TextStyle(color: AppColors.primary)),
         ),
       ],
     ),
@@ -1040,7 +1040,7 @@ class _MenuTile extends StatelessWidget {
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight, size: 20),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight, size: 20),
           ],
         ),
       ),
@@ -1235,7 +1235,7 @@ class _MemberTile extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(l10n.admin,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: AppColors.primaryDark)),
@@ -1245,8 +1245,8 @@ class _MemberTile extends ConsumerWidget {
                   label: AppLocalizations.of(context)!.memberOptions(name),
                   onTap: () => _showMemberActions(
                       context, ref, name, memberUserId, role),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
                     child: Icon(Icons.more_vert_rounded,
                         size: 18, color: AppColors.primaryLight),
                   ),
@@ -1410,7 +1410,7 @@ class _ExpensesEmptyState extends StatelessWidget {
                     : AppColors.primaryTint,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.receipt_long_outlined,
+              child: const Icon(Icons.receipt_long_outlined,
                   size: 32, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
@@ -1425,7 +1425,7 @@ class _ExpensesEmptyState extends StatelessWidget {
             Text(
               l10n.addFirstExpenseDesc,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.primary,
                   height: 1.5),

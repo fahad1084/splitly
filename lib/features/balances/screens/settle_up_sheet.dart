@@ -293,7 +293,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded,
+                const Icon(Icons.info_outline_rounded,
                     size: 16, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(
@@ -301,7 +301,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                     _iAmReceiving
                         ? l10n.settleReceiverInfo
                         : l10n.settlePendingInfo(widget.debt.toUserName),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.primary,
                       height: 1.4,

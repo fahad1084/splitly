@@ -131,7 +131,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
     final dark = isDark(context);
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
-    final dotColor = AppColors.primary;
+    const dotColor = AppColors.primary;
     final waitLeft = _waitLeft;
     final message = waitLeft > Duration.zero
         ? l10n.tooManyPinAttempts(_formatWait(waitLeft))
@@ -150,7 +150,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                 color: AppColors.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.lock_rounded, size: 30, color: AppColors.primary),
+              child: const Icon(Icons.lock_rounded, size: 30, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
             Text(
@@ -160,7 +160,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
             const SizedBox(height: 8),
             Text(
               l10n.enterPinToContinue,
-              style: TextStyle(fontSize: 13, color: AppColors.primary),
+              style: const TextStyle(fontSize: 13, color: AppColors.primary),
             ),
             const SizedBox(height: 32),
 
@@ -207,8 +207,8 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                   const SizedBox(height: 12),
                   TextButton.icon(
                     onPressed: _tryBiometric,
-                    icon: Icon(Icons.fingerprint_rounded, color: AppColors.primary),
-                    label: Text(l10n.useBiometricsButton, style: TextStyle(color: AppColors.primary)),
+                    icon: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
+                    label: Text(l10n.useBiometricsButton, style: const TextStyle(color: AppColors.primary)),
                   ),
                 ],
               ),
@@ -252,8 +252,8 @@ class _UnlockNumberPad extends StatelessWidget {
               if (key == 'back') {
                 return _Btn(
                   textColor: textColor,
-                  child: Icon(Icons.backspace_outlined, size: 22, color: textColor),
                   onTap: onBackspace,
+                  child: Icon(Icons.backspace_outlined, size: 22, color: textColor),
                 );
               }
               return _Btn(

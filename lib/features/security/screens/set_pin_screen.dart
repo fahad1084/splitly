@@ -85,7 +85,7 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            Icon(Icons.lock_outline_rounded, size: 56, color: AppColors.primary),
+            const Icon(Icons.lock_outline_rounded, size: 56, color: AppColors.primary),
             const SizedBox(height: 16),
             Text(
               _isConfirmStep ? l10n.confirmYourPin : l10n.createPin,
@@ -94,7 +94,7 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
             const SizedBox(height: 8),
             Text(
               _isConfirmStep ? l10n.enterSamePinAgain : l10n.pinUsageHint,
-              style: TextStyle(fontSize: 13, color: AppColors.primary),
+              style: const TextStyle(fontSize: 13, color: AppColors.primary),
             ),
             const SizedBox(height: 24),
 
@@ -161,8 +161,8 @@ class _NumberPad extends StatelessWidget {
               if (key.isEmpty) return const SizedBox(width: 64, height: 64);
               if (key == 'back') {
                 return _PadButton(
-                  child: const Icon(Icons.backspace_outlined, size: 22),
                   onTap: onBackspace,
+                  child: const Icon(Icons.backspace_outlined, size: 22),
                 );
               }
               return _PadButton(

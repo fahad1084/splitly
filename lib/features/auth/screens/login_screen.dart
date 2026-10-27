@@ -153,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         letterSpacing: -0.5)),
                 const SizedBox(height: 4),
                 Text(l10n.signInToAccount,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 14, color: AppColors.primary)),
 
                 const SizedBox(height: 28),
@@ -167,8 +167,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
                     if (v == null || v.isEmpty) return l10n.emailRequired;
-                    if (!v.contains('@') || !v.contains('.'))
+                    if (!v.contains('@') || !v.contains('.')) {
                       return l10n.enterValidEmail;
+                    }
                     return null;
                   },
                 ),
@@ -253,7 +254,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     GestureDetector(
                       onTap: _goToSignUp,
                       child: Text(l10n.signUp,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500)),

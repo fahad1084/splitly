@@ -190,7 +190,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
             const SizedBox(height: 4),
             Text(
                 l10n.enterInviteCodeDesc,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 13, color: AppColors.primary)),
 
             const SizedBox(height: 24),

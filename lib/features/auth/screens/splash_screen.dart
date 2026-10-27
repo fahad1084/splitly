@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               width: 96,
                               height: 96,
                               child: CustomPaint(

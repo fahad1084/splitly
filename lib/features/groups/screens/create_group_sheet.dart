@@ -81,7 +81,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final headingColor =
     dark ? AppColors.primaryTint : AppColors.primaryDark;
-    final labelColor = AppColors.primary;
+    const labelColor = AppColors.primary;
 
     return Container(
       decoration: BoxDecoration(
@@ -127,7 +127,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
               const SizedBox(height: 4),
               Text(
                 l10n.startSplittingCircle,
-                style: TextStyle(fontSize: 13, color: labelColor),
+                style: const TextStyle(fontSize: 13, color: labelColor),
               ),
 
               const SizedBox(height: 24),
@@ -138,7 +138,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: headingColor)),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               SizedBox(
                 // Grows with the phone's text size
                 height: MediaQuery.textScalerOf(context).scale(72),
@@ -263,7 +263,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     borderRadius: BorderRadius.circular(12),
                     dropdownColor: dark ? AppColors.primaryDark : Colors.white,
-                    icon: Icon(Icons.keyboard_arrow_down_rounded,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded,
                         color: AppColors.primary),
                     style: TextStyle(
                       color: dark ? AppColors.primaryTint : AppColors.primaryDark,
@@ -276,7 +276,7 @@ class _CreateGroupSheetState extends ConsumerState<_CreateGroupSheet> {
                           children: [
                             Text(
                               c['code']!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.primary,
                               ),

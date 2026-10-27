@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: _finish,
-                child: Text(l10n.skip, style: TextStyle(color: AppColors.primary)),
+                child: Text(l10n.skip, style: const TextStyle(color: AppColors.primary)),
               ),
             ),
             Expanded(
@@ -91,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           _descFor(l10n, slide.descKey),
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: AppColors.primary, height: 1.5),
+                          style: const TextStyle(fontSize: 14, color: AppColors.primary, height: 1.5),
                         ),
                       ],
                     ),

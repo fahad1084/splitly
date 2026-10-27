@@ -120,7 +120,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                         letterSpacing: -0.5)),
                 const SizedBox(height: 4),
                 Text(l10n.splitExpensesCircle,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 14, color: AppColors.primary)),
 
                 const SizedBox(height: 28),
@@ -133,8 +133,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                   prefixIcon: Icons.person_outlined,
                   textCapitalization: TextCapitalization.words,
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty)
+                    if (v == null || v.trim().isEmpty) {
                       return l10n.nameRequired;
+                    }
                     if (v.trim().length < 2) return l10n.nameTooShort;
                     return null;
                   },
@@ -151,8 +152,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
                     if (v == null || v.isEmpty) return l10n.emailRequired;
-                    if (!v.contains('@') || !v.contains('.'))
+                    if (!v.contains('@') || !v.contains('.')) {
                       return l10n.enterValidEmail;
+                    }
                     return null;
                   },
                 ),
@@ -184,10 +186,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                   prefixIcon: Icons.lock_outlined,
                   obscureText: true,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return l10n.confirmYourPassword;
-                    if (v != _passwordCtrl.text)
+                    }
+                    if (v != _passwordCtrl.text) {
                       return l10n.passwordsDoNotMatch;
+                    }
                     return null;
                   },
                 ),
@@ -237,7 +241,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(l10n.signIn,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500)),

@@ -47,7 +47,7 @@ class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.lightBg,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary:   AppColors.primary,
       secondary: AppColors.accent,
       surface:   AppColors.lightBg,
@@ -77,7 +77,7 @@ class AppTheme {
         ),
       ),
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: AppColors.accent,
       foregroundColor: AppColors.primaryDark,
     ),
@@ -89,9 +89,9 @@ class AppTheme {
         side: const BorderSide(color: AppColors.primaryTint),
       ),
     ),
-    chipTheme: ChipThemeData(
+    chipTheme: const ChipThemeData(
       backgroundColor: AppColors.primaryTint,
-      labelStyle: const TextStyle(color: AppColors.primaryDark),
+      labelStyle: TextStyle(color: AppColors.primaryDark),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -111,7 +111,7 @@ class AppTheme {
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.darkBg,
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary:   AppColors.primaryLight,
       secondary: AppColors.accent,
       surface:   AppColors.primaryDark,
@@ -120,7 +120,7 @@ class AppTheme {
     textTheme: GoogleFonts.poppinsTextTheme(
       ThemeData.dark().textTheme,
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.primaryDark,
       foregroundColor: AppColors.primaryTint,
       elevation: 0,
@@ -134,7 +134,7 @@ class AppTheme {
         ),
       ),
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: AppColors.accent,
       foregroundColor: AppColors.primaryDark,
     ),

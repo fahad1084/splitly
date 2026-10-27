@@ -105,7 +105,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: textColor)),
             const SizedBox(height: 4),
             Text(l10n.downloadExpenseRecords,
-                style: TextStyle(fontSize: 13, color: AppColors.primary)),
+                style: const TextStyle(fontSize: 13, color: AppColors.primary)),
             const SizedBox(height: 24),
             _ExportOptionTile(
               icon: Icons.picture_as_pdf_outlined,
@@ -192,7 +192,7 @@ class _ExportOptionTile extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
               )
             else
-              Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.primaryLight),
           ],
         ),
       ),

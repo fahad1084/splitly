@@ -643,7 +643,7 @@ class _EmptyFilterState extends StatelessWidget {
             hasFilters
                 ? l10n.tryChangingFilters
                 : l10n.addExpenseToSeeHere,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.primary,
                 height: 1.5),

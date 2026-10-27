@@ -139,7 +139,7 @@ class _ForgotPasswordScreenState
 
               Text(
                   l10n.resetLinkDesc,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.primary,
                       height: 1.5)),
@@ -155,8 +155,9 @@ class _ForgotPasswordScreenState
                 autofocus: true,
                 validator: (v) {
                   if (v == null || v.isEmpty) return l10n.emailRequired;
-                  if (!v.contains('@') || !v.contains('.'))
+                  if (!v.contains('@') || !v.contains('.')) {
                     return l10n.enterValidEmail;
+                  }
                   return null;
                 },
               ),
@@ -222,7 +223,7 @@ class _ForgotPasswordScreenState
 
               Text(l10n.weSentResetLink,
                   style:
-                  TextStyle(fontSize: 14, color: AppColors.primary),
+                  const TextStyle(fontSize: 14, color: AppColors.primary),
                   textAlign: TextAlign.center),
 
               const SizedBox(height: 4),
@@ -250,7 +251,7 @@ class _ForgotPasswordScreenState
                   Expanded(
                     child: Text(
                       l10n.checkSpamFolder,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.primary,
                           height: 1.4),

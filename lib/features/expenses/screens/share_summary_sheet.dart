@@ -90,7 +90,7 @@ class _ShareSummarySheet extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(l10n.shareGroupSummary(group.name),
               style:
-              TextStyle(fontSize: 13, color: AppColors.primary)),
+              const TextStyle(fontSize: 13, color: AppColors.primary)),
 
           const SizedBox(height: 20),
 
@@ -110,7 +110,7 @@ class _ShareSummarySheet extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.preview_rounded,
+                    const Icon(Icons.preview_rounded,
                         size: 14, color: AppColors.primaryLight),
                     const SizedBox(width: 6),
                     Flexible(child: Text(l10n.preview,
@@ -164,11 +164,11 @@ class _ShareSummarySheet extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.copy_rounded,
+                        const Icon(Icons.copy_rounded,
                             color: AppColors.primary, size: 18),
                         const SizedBox(width: 8),
                         Flexible(child: Text(l10n.copy,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14))),

@@ -60,7 +60,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
           ),
         ),
         title: Text(l10n.spendingReports,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: AppColors.primaryTint)),
@@ -87,7 +87,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
           if (groups.isEmpty) return _EmptyState();
 
           // Pre-load expenses for all groups
-          for (final g in groups) ref.watch(expensesProvider(g.id));
+          for (final g in groups) {
+            ref.watch(expensesProvider(g.id));
+          }
 
           final selectedGroup = groups[_selectedGroupIndex];
           final expenses =
@@ -758,8 +760,9 @@ class _MemberTabState extends State<_MemberTab> {
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         final i = value.toInt();
-                        if (i >= sorted.length)
+                        if (i >= sorted.length) {
                           return const SizedBox();
+                        }
                         final name =
                             memberNames[sorted[i].key] ?? '?';
                         return Padding(
@@ -938,7 +941,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(l10n.createGroupAddExpensesDesc,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 14, color: AppColors.primary, height: 1.5)),
         ],
       ),
@@ -972,7 +975,7 @@ class _NoDataState extends StatelessWidget {
                   color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
           const SizedBox(height: 8),
           Text(l10n.tryDifferentPeriod,
-              style: TextStyle(fontSize: 13, color: AppColors.primary)),
+              style: const TextStyle(fontSize: 13, color: AppColors.primary)),
         ],
       ),
     );
