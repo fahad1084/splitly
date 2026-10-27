@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,26 +9,42 @@ import '../models/message_model.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 
 // ── Messages provider per group ───────────────────────────────────────────────
-final messagesProvider =
-AsyncNotifierProviderFamily<ChatController, List<MessageModel>, String>(
+// autoDispose: leaving the chat frees the messages and closes the realtime
+// channel (ref.onDispose below).
+final messagesProvider = AsyncNotifierProvider.autoDispose
+    .family<ChatController, List<MessageModel>, String>(
   ChatController.new,
 );
 
+/// Messages per page — the newest page first, older ones on scroll up.
+const kChatPageSize = 50;
+
 class ChatController
-    extends FamilyAsyncNotifier<List<MessageModel>, String> {
+    extends AutoDisposeFamilyAsyncNotifier<List<MessageModel>, String> {
   String get _groupId => arg;
   RealtimeChannel? _channel;
 
+  // Sender profiles already loaded (id → full_name, avatar_url,
+  // avatar_color), so a realtime message needs no extra request.
+  final _profiles = <String, Map<String, dynamic>>{};
+
+  bool _hasMore = true;
+  bool _loadingOlder = false;
+
+  /// False once the very first message of the group is loaded.
+  bool get hasMore => _hasMore;
+
   @override
   Future<List<MessageModel>> build(String arg) async {
-    // Load initial messages
-    final messages = await _fetchMessages();
+    // Newest page first
+    final messages = await _fetchPage();
 
     // Subscribe to realtime new messages
     _subscribeToRealtime();
 
-    // Clean up channel when provider is disposed
+    // Clean up channel (and the typing timer) when the chat is left
     ref.onDispose(() {
+      _typingIdle?.cancel();
       _channel?.unsubscribe();
     });
 
@@ -49,67 +66,87 @@ class ChatController
     }
   }
 
-// ── Fetch messages with sender names + reply info ──────────────────────────
-  Future<List<MessageModel>> _fetchMessages() async {
-    try {
-      final List<dynamic> rows = await SupabaseConfig.client
-          .from('messages')
-          .select('*')
-          .eq('group_id', _groupId)
-          .order('created_at', ascending: true)
-          .limit(100);
-
-      if (rows.isEmpty) return [];
-
-      final senderIds =
-      rows.map((r) => r['sender_id'] as String).toSet().toList();
-      final List<dynamic> profiles = await SupabaseConfig.client
-          .from('profiles')
-          .select('id, full_name, avatar_url, avatar_color')
-          .inFilter('id', senderIds);
-
-      final nameMap = <String, String>{
-        for (final p in profiles)
-          p['id'] as String: p['full_name'] as String,
-      };
-      final avatarUrlMap = <String, String?>{
-        for (final p in profiles)
-          p['id'] as String: p['avatar_url'] as String?,
-      };
-      final avatarColorMap = <String, String?>{
-        for (final p in profiles)
-          p['id'] as String: p['avatar_color'] as String?,
-      };
-
-      // Build a lookup for reply-to messages (id → content + sender)
-      final byId = <String, Map<String, dynamic>>{
-        for (final r in rows) r['id'] as String: Map<String, dynamic>.from(r),
-      };
-
-      return rows.map((r) {
-        final map = Map<String, dynamic>.from(r);
-        final replyToId = map['reply_to_id'] as String?;
-        String? replyContent;
-        String? replySender;
-        if (replyToId != null && byId.containsKey(replyToId)) {
-          final replyMsg = byId[replyToId]!;
-          replyContent = replyMsg['content'] as String?;
-          replySender = nameMap[replyMsg['sender_id']] ?? 'Unknown';
-        }
-
-        return MessageModel.fromMap({
-          ...map,
-          'sender_name': nameMap[r['sender_id']] ?? 'Unknown',
-          'sender_avatar_url': avatarUrlMap[r['sender_id']],
-          'sender_avatar_color': avatarColorMap[r['sender_id']],
-          'reply_to_content': replyContent,
-          'reply_to_sender': replySender,
-        });
-      }).toList();
-    } catch (e) {
-      logDebug('=== FETCH MESSAGES ERROR: $e ===');
-      return [];
+  // ── Load the page before the oldest message shown ─────────────────────────
+  Future<void> loadOlder() async {
+    final current = state.value;
+    if (!_hasMore || _loadingOlder || current == null || current.isEmpty) {
+      return;
     }
+    _loadingOlder = true;
+    try {
+      final older = await _fetchPage(
+          before: current.first.createdAt, alreadyLoaded: current);
+      final known = current.map((m) => m.id).toSet();
+      state = AsyncValue.data([
+        ...older.where((m) => !known.contains(m.id)),
+        ...state.value ?? current,
+      ]);
+    } catch (e) {
+      logDebug('=== LOAD OLDER MESSAGES ERROR: $e ===');
+    } finally {
+      _loadingOlder = false;
+    }
+  }
+
+  // ── Load sender profiles we don't have yet (one request, or none) ─────────
+  Future<void> _loadProfiles(Iterable<String> ids) async {
+    final missing = ids.where((id) => !_profiles.containsKey(id)).toSet();
+    if (missing.isEmpty) return;
+    final List<dynamic> rows = await SupabaseConfig.client
+        .from('profiles')
+        .select('id, full_name, avatar_url, avatar_color')
+        .inFilter('id', missing.toList());
+    for (final p in rows) {
+      _profiles[p['id'] as String] = Map<String, dynamic>.from(p);
+    }
+  }
+
+  MessageModel _toModel(
+      Map<String, dynamic> row, Map<String, Map<String, dynamic>> byId) {
+    final sender = _profiles[row['sender_id']];
+    final replyToId = row['reply_to_id'] as String?;
+    final reply = replyToId == null ? null : byId[replyToId];
+    return MessageModel.fromMap({
+      ...row,
+      'sender_name': sender?['full_name'] as String? ?? 'Unknown',
+      'sender_avatar_url': sender?['avatar_url'],
+      'sender_avatar_color': sender?['avatar_color'],
+      'reply_to_content': reply?['content'],
+      'reply_to_sender': reply == null
+          ? null
+          : _profiles[reply['sender_id']]?['full_name'] as String? ??
+              'Unknown',
+    });
+  }
+
+  // ── Fetch one page (newest first from the DB, returned oldest → newest) ───
+  // A reply can point to a message in this page or one already shown.
+  Future<List<MessageModel>> _fetchPage({
+    DateTime? before,
+    List<MessageModel> alreadyLoaded = const [],
+  }) async {
+    var query = SupabaseConfig.client
+        .from('messages')
+        .select('*')
+        .eq('group_id', _groupId);
+    if (before != null) {
+      query = query.lt('created_at', before.toUtc().toIso8601String());
+    }
+    final List<dynamic> desc =
+        await query.order('created_at', ascending: false).limit(kChatPageSize);
+    if (desc.length < kChatPageSize) _hasMore = false;
+    if (desc.isEmpty) return [];
+
+    final rows =
+        desc.reversed.map((r) => Map<String, dynamic>.from(r)).toList();
+    await _loadProfiles(rows.map((r) => r['sender_id'] as String));
+
+    final byId = <String, Map<String, dynamic>>{
+      for (final m in alreadyLoaded)
+        m.id: {'content': m.content, 'sender_id': m.senderId},
+      for (final r in rows) r['id'] as String: r,
+    };
+    return rows.map((r) => _toModel(r, byId)).toList();
   }
 
   // ── Realtime subscription ─────────────────────────────────────────────────
@@ -129,23 +166,17 @@ class ChatController
         final newRow = payload.newRecord;
         if (newRow.isEmpty) return;
 
-        // Fetch sender name for new message
         try {
-          final profile = await SupabaseConfig.client
-              .from('profiles')
-              .select('full_name, avatar_url, avatar_color')
-              .eq('id', newRow['sender_id'])
-              .single();
+          // Only asks the database for someone we haven't seen yet
+          await _loadProfiles([newRow['sender_id'] as String]);
 
-          final message = MessageModel.fromMap({
-            ...newRow,
-            'sender_name': profile['full_name'] ?? 'Unknown',
-            'sender_avatar_url': profile['avatar_url'],
-            'sender_avatar_color': profile['avatar_color'],
-          });
-
-          // Add to current list
           final current = state.value ?? [];
+          final byId = <String, Map<String, dynamic>>{
+            for (final m in current)
+              m.id: {'content': m.content, 'sender_id': m.senderId},
+          };
+          final message = _toModel(Map<String, dynamic>.from(newRow), byId);
+
           // Avoid duplicates
           if (!current.any((m) => m.id == message.id)) {
             state = AsyncValue.data([...current, message]);
@@ -192,33 +223,56 @@ class ChatController
   }
 
   // ── Typing indicator ──────────────────────────────────────────────────────
-  Future<void> setTyping(bool isTyping) async {
+  // Sent once when typing starts, refreshed at most every 3 s while the
+  // user keeps typing (others hide entries older than 5 s), and removed
+  // after 4 s without a key press, on send, or when the chat is left.
+  static const _typingRefresh = Duration(seconds: 3);
+  static const _typingIdleAfter = Duration(seconds: 4);
+  DateTime? _typingSentAt;
+  Timer? _typingIdle;
+
+  /// Call on every text change while the field is not empty.
+  void onUserTyping() {
+    _typingIdle?.cancel();
+    _typingIdle = Timer(_typingIdleAfter, stopTyping);
+    final sent = _typingSentAt;
+    if (sent != null && DateTime.now().difference(sent) < _typingRefresh) {
+      return;
+    }
+    _typingSentAt = DateTime.now();
+    _sendTyping();
+  }
+
+  Future<void> _sendTyping() async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
     if (userId == null) return;
-
     try {
-      if (isTyping) {
-        final profile = await SupabaseConfig.client
-            .from('profiles')
-            .select('full_name')
-            .eq('id', userId)
-            .single();
-
-        await SupabaseConfig.client.from('typing_status').upsert({
-          'group_id': _groupId,
-          'user_id': userId,
-          'user_name': profile['full_name'],
-          'updated_at': DateTime.now().toIso8601String(),
-        });
-      } else {
-        await SupabaseConfig.client
-            .from('typing_status')
-            .delete()
-            .eq('group_id', _groupId)
-            .eq('user_id', userId);
-      }
+      await _loadProfiles([userId]); // my name, loaded once
+      await SupabaseConfig.client.from('typing_status').upsert({
+        'group_id': _groupId,
+        'user_id': userId,
+        'user_name': _profiles[userId]?['full_name'],
+        'updated_at': DateTime.now().toIso8601String(),
+      });
     } catch (_) {}
   }
+
+  /// Removes "typing…" — only if we actually sent it.
+  Future<void> stopTyping() async {
+    _typingIdle?.cancel();
+    if (_typingSentAt == null) return;
+    _typingSentAt = null;
+    final userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await SupabaseConfig.client
+          .from('typing_status')
+          .delete()
+          .eq('group_id', _groupId)
+          .eq('user_id', userId);
+    } catch (_) {}
+  }
+
   // ── Send image attachment ─────────────────────────────────────────────────
 // ── Send image attachment ─────────────────────────────────────────────────
   Future<String?> sendImage(File imageFile, {String caption = ''}) async {
@@ -302,7 +356,9 @@ class ChatController
 }
 
 // ── Typing status stream — who is currently typing in this group ─────────────
-final typingUsersProvider = StreamProvider.family<List<String>, String>((ref, groupId) {
+// autoDispose: the stream (a realtime channel) closes when the chat is left.
+final typingUsersProvider =
+StreamProvider.autoDispose.family<List<String>, String>((ref, groupId) {
   final currentUserId = SupabaseConfig.client.auth.currentUser?.id;
   return SupabaseConfig.client
       .from('typing_status')

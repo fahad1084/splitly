@@ -42,9 +42,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   // ── Reply ────────────────────────────────────────────────────────────────
   MessageModel? _replyingTo;
 
-  // ── Typing indicator ─────────────────────────────────────────────────────
-  Timer? _typingTimer;
-
   // ── @Mentions ────────────────────────────────────────────────────────────
   String? _mentionQuery;
 
@@ -57,6 +54,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     _msgCtrl.addListener(_onTextChanged);
+    _scrollCtrl.addListener(_onScroll);
     _chatController = ref.read(messagesProvider(widget.group.id).notifier);
 
     // Mark this chat as read — clears its unread badge on the groups list.
@@ -66,16 +64,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  // No setState here: the send/mic button listens to the text itself, so
+  // a key press doesn't rebuild the whole chat.
   void _onTextChanged() {
-    setState(() {}); // rebuild so the send/mic icon reflects hasText
     _onMentionCheck(_msgCtrl.text);
 
-    _chatController.setTyping(_msgCtrl.text.trim().isNotEmpty);
+    if (_msgCtrl.text.trim().isNotEmpty) {
+      _chatController.onUserTyping();
+    } else {
+      _chatController.stopTyping();
+    }
+  }
 
-    _typingTimer?.cancel();
-    _typingTimer = Timer(const Duration(seconds: 3), () {
-      _chatController.setTyping(false);
-    });
+  // The list is reversed (newest at the bottom = offset 0), so the top —
+  // the oldest message shown — is maxScrollExtent. Near it → load older.
+  void _onScroll() {
+    if (!_scrollCtrl.hasClients) return;
+    final pos = _scrollCtrl.position;
+    if (pos.pixels >= pos.maxScrollExtent - 300) {
+      _chatController.loadOlder();
+    }
   }
 
   void _onMentionCheck(String text) {
@@ -87,7 +95,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final afterAt = text.substring(atIndex + 1);
     if (afterAt.contains(' ')) {
       if (_mentionQuery != null) setState(() => _mentionQuery = null);
-    } else {
+    } else if (_mentionQuery != afterAt) {
       setState(() => _mentionQuery = afterAt);
     }
   }
@@ -105,8 +113,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     _msgCtrl.removeListener(_onTextChanged);
-    _typingTimer?.cancel();
-    _chatController.setTyping(false);
+    _scrollCtrl.removeListener(_onScroll);
+    _chatController.stopTyping();
     _chatController.markAsRead(); // catches messages received while open
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
@@ -118,7 +126,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollCtrl.hasClients) {
         _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
+          0, // reversed list: 0 is the newest message
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -131,6 +139,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (text.isEmpty) return;
 
     setState(() => _isSending = true);
+    _chatController.stopTyping();
     _msgCtrl.clear();
     final replyId = _replyingTo?.id;
     setState(() => _replyingTo = null);
@@ -387,10 +396,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final dark = isDark(context);
     final messagesAsync = ref.watch(messagesProvider(widget.group.id));
 
-    ref.listen(messagesProvider(widget.group.id), (_, next) {
-      if (next.hasValue) _scrollToBottom();
-    });
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -456,15 +461,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   return const _EmptyChat();
                 }
 
-                WidgetsBinding.instance
-                    .addPostFrameCallback((_) => _scrollToBottom());
-
+                // Reversed: opens at the newest message, and older pages
+                // added at the top don't move what you are looking at.
+                final hasMore = _chatController.hasMore;
                 return ListView.builder(
                   controller: _scrollCtrl,
+                  reverse: true,
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  itemCount: messages.length,
-                  itemBuilder: (_, i) {
+                  itemCount: messages.length + (hasMore ? 1 : 0),
+                  itemBuilder: (_, index) {
+                    // Top item while older messages exist: a small spinner
+                    if (index == messages.length) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                color: AppColors.primary, strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    }
+                    final i = messages.length - 1 - index;
                     final msg = messages[i];
                     final isMe = msg.senderId == _currentUserId;
 
@@ -1253,7 +1274,6 @@ class _MessageInput extends StatelessWidget {
     final bg = dark ? AppColors.primaryDark : Colors.white;
     final borderColor =
     dark ? AppColors.primary.withOpacity(0.2) : AppColors.primaryTint;
-    final hasText = controller.text.trim().isNotEmpty;
 
     return Container(
       padding: EdgeInsets.only(
@@ -1392,33 +1412,39 @@ class _MessageInput extends StatelessWidget {
 
               const SizedBox(width: 10),
 
-              // Mic or send button
-              GestureDetector(
-                onTap: isSending
-                    ? null
-                    : (hasText ? onSend : onMicToggle),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isSending
-                        ? AppColors.primary.withOpacity(0.5)
-                        : AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: isSending
-                      ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2),
-                  )
-                      : Icon(
-                    hasText ? Icons.send_rounded : Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+              // Mic or send button — rebuilds alone when the text changes
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: controller,
+                builder: (context, value, _) {
+                  final hasText = value.text.trim().isNotEmpty;
+                  return GestureDetector(
+                    onTap: isSending
+                        ? null
+                        : (hasText ? onSend : onMicToggle),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: isSending
+                            ? AppColors.primary.withOpacity(0.5)
+                            : AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: isSending
+                          ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                          : Icon(
+                        hasText ? Icons.send_rounded : Icons.mic_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
