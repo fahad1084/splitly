@@ -7,6 +7,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:splitly/features/balances/controllers/balances_controller.dart';
 import 'package:splitly/features/balances/models/balance_model.dart';
+import 'package:splitly/features/expenses/models/expense_model.dart';
 
 const ali = 'ali', bilal = 'bilal', chand = 'chand';
 
@@ -78,5 +79,48 @@ void main() {
     final s = _summary([_row(ali, bilal, 40, group: 'other')]);
     expect(s.debts, isEmpty);
     expect(s.youOwe, 0);
+  });
+
+  group('hasPaymentsAfterExpense (delete warning)', () {
+    final expense = ExpenseModel.fromMap({
+      'id': 'e1', 'group_id': 'g1', 'paid_by': bilal, 'title': 'Dinner',
+      'amount': 200, 'created_at': '2026-10-01T12:00:00Z',
+      'expense_splits': [
+        {'id': 's1', 'expense_id': 'e1', 'user_id': ali, 'amount_owed': 100},
+        {'id': 's2', 'expense_id': 'e1', 'user_id': bilal, 'amount_owed': 100},
+      ],
+    });
+    SettlementModel pay(String from, String to, String status, String at) =>
+        SettlementModel(
+          id: 'p', groupId: 'g1', paidBy: from, paidByName: from,
+          paidTo: to, paidToName: to, amount: 10, currency: 'PKR',
+          status: status, createdAt: DateTime.parse(at),
+        );
+
+    test('Ali paid Bilal AFTER the expense → warn', () {
+      expect(hasPaymentsAfterExpense(expense,
+          [pay(ali, bilal, 'confirmed', '2026-10-02T09:00:00Z')]), isTrue);
+    });
+    test('a pending payment also counts → warn', () {
+      expect(hasPaymentsAfterExpense(expense,
+          [pay(ali, bilal, 'pending', '2026-10-02T09:00:00Z')]), isTrue);
+    });
+    test('payment BEFORE the expense → no warning', () {
+      expect(hasPaymentsAfterExpense(expense,
+          [pay(ali, bilal, 'confirmed', '2026-09-30T09:00:00Z')]), isFalse);
+    });
+    test('cancelled or earlier ("legacy") payments → no warning', () {
+      expect(hasPaymentsAfterExpense(expense, [
+        pay(ali, bilal, 'cancelled', '2026-10-02T09:00:00Z'),
+        pay(ali, bilal, 'legacy', '2026-10-02T09:00:00Z'),
+      ]), isFalse);
+    });
+    test('payment between people NOT in this expense → no warning', () {
+      expect(hasPaymentsAfterExpense(expense,
+          [pay(chand, bilal, 'confirmed', '2026-10-02T09:00:00Z')]), isFalse);
+    });
+    test('no payments → no warning', () {
+      expect(hasPaymentsAfterExpense(expense, []), isFalse);
+    });
   });
 }

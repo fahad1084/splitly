@@ -189,17 +189,20 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
   }
 
   // ── Remove a member from group (admin only) ────────────────────────────
+  // Through remove_member(): the database refuses while that person still
+  // owes or is owed money in the group. Returns null on success, or an
+  // error code ('HAS_UNSETTLED_DEBTS', 'NOT_ALLOWED', ... see settleErrorCode).
   Future<String?> removeMember(String groupId, String userId) async {
     try {
-      await _db
-          .from('group_members')
-          .delete()
-          .eq('group_id', groupId)
-          .eq('user_id', userId);
+      await _db.rpc('remove_member',
+          params: {'p_group_id': groupId, 'p_user_id': userId});
       return null;
+    } on PostgrestException catch (e) {
+      logDebug('=== REMOVE MEMBER ERROR: ${e.message} ===');
+      return settleErrorCode(e.message);
     } catch (e) {
       logDebug('=== REMOVE MEMBER ERROR: $e ===');
-      return 'Failed to remove member: $e';
+      return 'UNKNOWN';
     }
   }
 

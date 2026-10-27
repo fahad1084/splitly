@@ -16,7 +16,7 @@ Everything the Flutter app needs on the server side is in this folder.
 
 - **Tables:** `profiles`, `groups`, `group_members`, `expenses`, `expense_splits`, `settlements`, `messages`, `typing_status`, `chat_read_status`, `notifications`, `debt_reminders_sent`
 - **RPC functions called by the app:**
-  - groups: `create_group`, `join_group_by_code`, `leave_group`, `delete_group_permanently`
+  - groups: `create_group`, `join_group_by_code`, `leave_group`, `remove_member`, `delete_group_permanently`
   - expenses: `add_expense`, `delete_expense`
   - money: `get_my_debts`, `record_settlement`, `confirm_settlement`, `cancel_settlement`
   - other: `get_unread_counts`, `delete_own_account`, `get_group_preview_by_invite_code` (old, not used any more)
@@ -29,7 +29,8 @@ Everything the Flutter app needs on the server side is in this folder.
 ### Tests (local database only)
 
 - `tests/security_attacks.sql`: attack and "normal use" checks for RLS and the RPCs.
-- `tests/money_tests.sql`: balances, partial payments, pending/confirm/cancel, leaving with debts, exact splits.
+- `tests/money_tests.sql`: balances, partial payments, pending/confirm/cancel, leaving or removing members with debts, currency, exact splits.
+- `tests/concurrency_test.sh`: 2 payments at the same moment, which proves the lock in `record_settlement`. Run it with `bash`, not `psql`.
 
 Each file needs a **fresh** local database. Run these one at a time:
 
@@ -50,6 +51,17 @@ Run `supabase db reset` again before the other test file. When you're done:
 ```bash
 supabase stop
 ```
+
+### Known gaps / TODO
+
+- [ ] **Push notifications for confirm and cancel of a payment.** Today:
+  - `record_settlement` → **push** (through the `notify-new-settlement` webhook, which fires on INSERT only)
+  - `confirm_settlement` / `cancel_settlement` → **in-app notification only** (they write to `notifications` themselves)
+
+  **To add the push:**
+  1. Add an **UPDATE** webhook on `settlements` to `setup/webhooks_and_cron.sql`. Fire it only when `status` changes from `pending` to `confirmed` or `cancelled`.
+  2. In `functions/send-push-notification`, handle `payload.type === "UPDATE"` (`payload.old_record` and `payload.record`). Send to the other person: the payer when it's confirmed, the other side when it's cancelled.
+  3. Remove the `_notify_settlement(...)` calls from the 2 RPCs, so nobody gets 2 notifications.
 
 ---
 

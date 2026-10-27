@@ -387,5 +387,8 @@
   "cantLeaveYet": "آپ ابھی گروپ نہیں چھوڑ سکتے",
   "settleTheseFirst": "پہلے یہ حساب برابر کریں:",
   "youOweUser": "آپ نے {name} کو {amount} دینے ہیں",
-  "userOwesYou": "{name} نے آپ کو {amount} دینے ہیں"
+  "userOwesYou": "{name} نے آپ کو {amount} دینے ہیں",
+  "cantRemoveMemberYet": "{name} کو ابھی گروپ سے نہیں نکالا جا سکتا",
+  "userOwesUser": "{debtor} نے {creditor} کو {amount} دینے ہیں",
+  "expenseHasPaymentsWarning": "اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے ڈیلیٹ کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔"
 }

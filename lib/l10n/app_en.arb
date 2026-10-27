@@ -403,5 +403,10 @@
   "youOweUser": "You owe {name} {amount}",
   "@youOweUser": { "placeholders": { "name": { "type": "String" }, "amount": { "type": "String" } } },
   "userOwesYou": "{name} owes you {amount}",
-  "@userOwesYou": { "placeholders": { "name": { "type": "String" }, "amount": { "type": "String" } } }
+  "@userOwesYou": { "placeholders": { "name": { "type": "String" }, "amount": { "type": "String" } } },
+  "cantRemoveMemberYet": "{name} can't be removed yet",
+  "@cantRemoveMemberYet": { "placeholders": { "name": { "type": "String" } } },
+  "userOwesUser": "{debtor} owes {creditor} {amount}",
+  "@userOwesUser": { "placeholders": { "debtor": { "type": "String" }, "creditor": { "type": "String" }, "amount": { "type": "String" } } },
+  "expenseHasPaymentsWarning": "Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person."
 }

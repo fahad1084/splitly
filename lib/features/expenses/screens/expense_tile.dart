@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/expense_model.dart';
+import '../../balances/controllers/balances_controller.dart';
 import '../../../core/utils/string_utils.dart';
 
 // Matches _categoryIcons in add_expense_sheet.dart
@@ -18,7 +20,66 @@ const _categoryIconMap = {
   'other':         Icons.category_rounded,
 };
 
-class ExpenseTile extends StatelessWidget {
+// ── "Delete expense?" dialog (used by the tile and the detail sheet) ──────────
+// Adds a warning when payments were already recorded after this expense
+// between its people: deleting it changes balances they paid against.
+Future<bool> confirmDeleteExpense(
+    BuildContext context, WidgetRef ref, ExpenseModel expense) async {
+  final l10n = AppLocalizations.of(context)!;
+  var warn = false;
+  try {
+    final payments =
+    await ref.read(settlementsProvider(expense.groupId).future);
+    warn = hasPaymentsAfterExpense(expense, payments);
+  } catch (_) {
+    warn = false; // can't check (offline?) — the normal question still shows
+  }
+  if (!context.mounted) return false;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.deleteExpense),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.deleteExpenseConfirm(expense.title)),
+          if (warn) ...[
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    color: AppColors.accentDark, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l10n.expenseHasPaymentsWarning,
+                      style: const TextStyle(
+                          color: AppColors.accentDark,
+                          fontWeight: FontWeight.w500)),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l10n.cancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          child: Text(l10n.delete),
+        ),
+      ],
+    ),
+  );
+  return confirmed == true;
+}
+
+class ExpenseTile extends ConsumerWidget {
   final ExpenseModel expense;
   final String currentUserId;
   final VoidCallback? onDelete;
@@ -34,7 +95,7 @@ class ExpenseTile extends StatelessWidget {
       _categoryIconMap[expense.category] ?? Icons.category_rounded;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final iPaid = expense.paidBy == currentUserId;
@@ -62,27 +123,7 @@ class ExpenseTile extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      confirmDismiss: (_) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.deleteExpense),
-            content: Text(l10n.deleteExpenseConfirm(expense.title)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: TextButton.styleFrom(
-                    foregroundColor: AppColors.danger),
-                child: Text(l10n.delete),
-              ),
-            ],
-          ),
-        );
-      },
+      confirmDismiss: (_) => confirmDeleteExpense(context, ref, expense),
       onDismissed: (_) => onDelete?.call(),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),

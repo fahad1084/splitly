@@ -1115,4 +1115,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String userOwesYou(String name, String amount) {
     return '$name owes you $amount';
   }
+
+  @override
+  String cantRemoveMemberYet(String name) {
+    return '$name can\'t be removed yet';
+  }
+
+  @override
+  String userOwesUser(String debtor, String creditor, String amount) {
+    return '$debtor owes $creditor $amount';
+  }
+
+  @override
+  String get expenseHasPaymentsWarning =>
+      'Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person.';
 }

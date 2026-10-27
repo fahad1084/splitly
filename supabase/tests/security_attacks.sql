@@ -208,7 +208,10 @@ begin; set local role authenticated; select set_config('request.jwt.claims', '{"
 select public.leave_group('99999999-0000-0000-0000-000000000009');
 rollback;
 
-\echo '== OK-10 admin A removes B (expect DELETE 1)'
+\echo '== OK-10 admin A removes B, who owes A 50 (expect ERROR HAS_UNSETTLED_DEBTS); a direct delete does nothing (expect DELETE 0)'
+begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+select public.remove_member('99999999-0000-0000-0000-000000000009', 'bbbbbbbb-0000-0000-0000-00000000000b');
+rollback;
 begin; set local role authenticated; select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}', true);
 delete from public.group_members where group_id = '99999999-0000-0000-0000-000000000009' and user_id = 'bbbbbbbb-0000-0000-0000-00000000000b';
 rollback;

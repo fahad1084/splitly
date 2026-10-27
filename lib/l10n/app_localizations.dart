@@ -2143,6 +2143,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} owes you {amount}'**
   String userOwesYou(String name, String amount);
+
+  /// No description provided for @cantRemoveMemberYet.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can\'t be removed yet'**
+  String cantRemoveMemberYet(String name);
+
+  /// No description provided for @userOwesUser.
+  ///
+  /// In en, this message translates to:
+  /// **'{debtor} owes {creditor} {amount}'**
+  String userOwesUser(String debtor, String creditor, String amount);
+
+  /// No description provided for @expenseHasPaymentsWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments were already made after this expense. Deleting it changes the balances, and the debt can switch to the other person.'**
+  String get expenseHasPaymentsWarning;
 }
 
 class _AppLocalizationsDelegate

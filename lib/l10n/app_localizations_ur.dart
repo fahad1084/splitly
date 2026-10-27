@@ -1114,4 +1114,18 @@ class AppLocalizationsUr extends AppLocalizations {
   String userOwesYou(String name, String amount) {
     return '$name نے آپ کو $amount دینے ہیں';
   }
+
+  @override
+  String cantRemoveMemberYet(String name) {
+    return '$name کو ابھی گروپ سے نہیں نکالا جا سکتا';
+  }
+
+  @override
+  String userOwesUser(String debtor, String creditor, String amount) {
+    return '$debtor نے $creditor کو $amount دینے ہیں';
+  }
+
+  @override
+  String get expenseHasPaymentsWarning =>
+      'اس خرچے کے بعد ادائیگیاں ہو چکی ہیں۔ اسے ڈیلیٹ کرنے سے حساب بدل جائے گا، اور ادھار دوسرے شخص کی طرف بھی جا سکتا ہے۔';
 }

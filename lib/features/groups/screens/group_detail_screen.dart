@@ -883,52 +883,67 @@ class GroupDetailScreen extends ConsumerWidget {
   // Leaving is blocked while money is owed either way — show exactly what
   // is still open (the same numbers the database used to block it).
   void _showCantLeave(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final dark = isDark(context);
-    final me = ref.read(currentUserProvider)?.id ?? '';
-    final summary = ref.read(groupBalanceSummaryProvider(group.balanceKey));
-    String money(double v) => '${group.currency} ${v.toStringAsFixed(2)}';
-    final lines = [
-      for (final d in summary.debts)
+    showOpenDebtsDialog(context, ref,
+        group: group, userId: ref.read(currentUserProvider)?.id ?? '');
+  }
+
+}
+
+// ── "Settle these first" dialog ────────────────────────────────────────────────
+// Shown when the database refuses to let [userId] leave or be removed
+// because money is still owed either way in [group].
+void showOpenDebtsDialog(BuildContext context, WidgetRef ref,
+    {required GroupModel group, required String userId, String? userName}) {
+  final l10n = AppLocalizations.of(context)!;
+  final dark = isDark(context);
+  final me = ref.read(currentUserProvider)?.id ?? '';
+  final summary = ref.read(groupBalanceSummaryProvider(group.balanceKey));
+  String money(double v) => '${group.currency} ${v.toStringAsFixed(2)}';
+  final lines = [
+    for (final d in summary.debts)
+      if (d.fromUserId == userId || d.toUserId == userId)
         if (d.fromUserId == me)
           l10n.youOweUser(d.toUserName, money(d.amount))
         else if (d.toUserId == me)
-          l10n.userOwesYou(d.fromUserName, money(d.amount)),
-    ];
-    final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+          l10n.userOwesYou(d.fromUserName, money(d.amount))
+        else
+          l10n.userOwesUser(d.fromUserName, d.toUserName, money(d.amount)),
+  ];
+  final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+  final title = userId == me
+      ? l10n.cantLeaveYet
+      : l10n.cantRemoveMemberYet(userName ?? '');
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: dark ? AppColors.primaryDark : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(l10n.cantLeaveYet, style: TextStyle(color: textColor)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.settleTheseFirst, style: TextStyle(color: textColor)),
-            const SizedBox(height: 8),
-            for (final line in lines)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• $line',
-                    style: TextStyle(
-                        color: textColor, fontWeight: FontWeight.w500)),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(MaterialLocalizations.of(context).okButtonLabel,
-                style: TextStyle(color: AppColors.primary)),
-          ),
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(title, style: TextStyle(color: textColor)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.settleTheseFirst, style: TextStyle(color: textColor)),
+          const SizedBox(height: 8),
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('• $line',
+                  style: TextStyle(
+                      color: textColor, fontWeight: FontWeight.w500)),
+            ),
         ],
       ),
-    );
-  }
-
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel,
+              style: TextStyle(color: AppColors.primary)),
+        ),
+      ],
+    ),
+  );
 }
 
 class _MenuTile extends StatelessWidget {
@@ -1285,9 +1300,13 @@ class _MemberTile extends ConsumerWidget {
                       .read(groupsProvider.notifier)
                       .removeMember(group.id, memberUserId);
                   if (context.mounted) {
-                    if (error != null) {
-                      showErrorSnack(context, error);
+                    if (error == 'HAS_UNSETTLED_DEBTS') {
+                      showOpenDebtsDialog(context, ref,
+                          group: group, userId: memberUserId, userName: name);
+                    } else if (error != null) {
+                      showErrorSnack(context, l10n.somethingWentWrong);
                     } else {
+                      ref.invalidate(groupMembersProvider(group.id));
                       showSuccessSnack(context, l10n.memberRemoved);
                     }
                   }

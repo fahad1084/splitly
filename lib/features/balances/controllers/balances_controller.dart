@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../expenses/controllers/expenses_controller.dart';
+import '../../expenses/models/expense_model.dart';
 import '../../balances/models/balance_model.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 
@@ -209,3 +210,18 @@ const _settleErrorCodes = {
 
 String settleErrorCode(String message) =>
     _settleErrorCodes.contains(message) ? message : 'UNKNOWN';
+
+// ── Were payments recorded after this expense, between its people? ────────────
+// Deleting such an expense changes balances that people already paid
+// against — a debt can even switch direction — so the app warns first.
+// Counts confirmed and pending payments (not cancelled or 'Earlier' ones)
+// made at or after the expense, between two people who are in it.
+bool hasPaymentsAfterExpense(
+    ExpenseModel expense, List<SettlementModel> payments) {
+  final people = {expense.paidBy, ...expense.splits.map((s) => s.userId)};
+  return payments.any((p) =>
+  (p.status == 'confirmed' || p.status == 'pending') &&
+      !p.createdAt.isBefore(expense.createdAt) &&
+      people.contains(p.paidBy) &&
+      people.contains(p.paidTo));
+}

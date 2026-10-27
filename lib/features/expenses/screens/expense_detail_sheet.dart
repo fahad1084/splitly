@@ -7,6 +7,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../groups/models/group_model.dart';
 import '../controllers/expenses_controller.dart';
 import '../models/expense_model.dart';
+import 'expense_tile.dart';
 import '../../../core/utils/string_utils.dart';
 
 const _categoryIconMap = {
@@ -286,27 +287,10 @@ class _ExpenseDetailSheet extends ConsumerWidget {
               isOutline: true,
               icon: Icons.delete_outline_rounded,
               onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text(l10n.deleteExpense),
-                    content: Text(l10n.deleteExpenseConfirm(expense.title)),
-                    actions: [
-                      TextButton(
-                          onPressed: () =>
-                              Navigator.pop(ctx, false),
-                          child: Text(l10n.cancel)),
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(
-                            foregroundColor: AppColors.danger),
-                        child: Text(l10n.delete),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true && context.mounted) {
+                // Same dialog as swipe-to-delete, incl. the payments warning
+                final confirm =
+                await confirmDeleteExpense(context, ref, expense);
+                if (confirm && context.mounted) {
                   final error = await ref
                       .read(expensesProvider(group.id).notifier)
                       .deleteExpense(expense.id);

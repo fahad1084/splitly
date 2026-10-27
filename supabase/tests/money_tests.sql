@@ -269,3 +269,62 @@ rollback;
 update public.expense_splits set is_settled = true
  where expense_id in (select id from public.expenses where group_id = :G);
 :DEBTS;
+
+
+-- ── 7. Removing members (20261028000000_member_and_currency_guards.sql) ────
+\set DANA '''d2000000-0000-0000-0000-0000000000d2'''
+insert into auth.users (id, email, aud, role) values (:DANA, 'dana@test.local', 'authenticated', 'authenticated') on conflict do nothing;
+insert into public.profiles (id, full_name) values (:DANA, 'Dana') on conflict do nothing;
+insert into public.group_members (group_id, user_id, role) values (:G, :DANA, 'member') on conflict do nothing;
+
+\echo '== R-1 admin Ali removes Chand, who still owes Ali 50 (expect ERROR HAS_UNSETTLED_DEBTS)'
+begin; set local role authenticated; :AS_ALI;
+select public.remove_member(:G, :CHAND);
+rollback;
+
+\echo '== R-2 member Bilal (not admin) removes Dana (expect ERROR NOT_ALLOWED)'
+begin; set local role authenticated; :AS_BILAL;
+select public.remove_member(:G, :DANA);
+rollback;
+
+\echo '== R-3 admin Ali removes Dana (no debts) (expect OK, then 0 = Dana gone)'
+begin; set local role authenticated; :AS_ALI;
+select public.remove_member(:G, :DANA);
+commit;
+select count(*) as dana_still_member from public.group_members where group_id = :G and user_id = :DANA;
+
+\echo '== R-4 removing by deleting the row directly, skipping the check (expect DELETE 0)'
+begin; set local role authenticated; :AS_ALI;
+delete from public.group_members where group_id = :G and user_id = :CHAND;
+rollback;
+
+
+-- ── 8. Currency ─────────────────────────────────────────────────────────────
+\set U '''92000000-0000-0000-0000-000000000092'''
+insert into public.groups (id, name, currency, created_by) values (:U, 'Dubai trip', 'USD', :ALI) on conflict do nothing;
+insert into public.group_members (group_id, user_id, role) values (:U, :ALI, 'admin'), (:U, :BILAL, 'member') on conflict do nothing;
+
+\echo '== CUR-1 expense + payment in the USD group are saved in USD (expect USD, USD)'
+begin; set local role authenticated; :AS_ALI;
+select public.add_expense(:U, :ALI, 'Hotel', 100, jsonb_build_array(
+  jsonb_build_object('user_id', :ALI, 'amount_owed', 50), jsonb_build_object('user_id', :BILAL, 'amount_owed', 50))) as uexp \gset
+select public.record_settlement(:U, :BILAL, :ALI, 20) as usettle \gset
+commit;
+select (select currency from public.expenses where id = :'uexp') as expense_currency,
+       (select currency from public.settlements where id = :'usettle') as payment_currency;
+
+\echo '== CUR-2 the app cannot choose a currency for a payment (expect ERROR: no record_settlement with a currency argument)'
+begin; set local role authenticated; :AS_BILAL;
+select public.record_settlement(:U, :BILAL, :ALI, 5::numeric, 'PKR');
+rollback;
+
+\echo '== CUR-3 creator changes the USD group to PKR after money was recorded (expect ERROR CURRENCY_LOCKED)'
+begin; set local role authenticated; :AS_ALI;
+update public.groups set currency = 'PKR' where id = :U;
+rollback;
+
+\echo '== CUR-4 a brand-new group with no money can still change currency (expect UPDATE 1)'
+begin; set local role authenticated; :AS_ALI;
+select public.create_group('Empty group', null, 'PKR') as eg \gset
+update public.groups set currency = 'USD' where id = :'eg';
+rollback;
