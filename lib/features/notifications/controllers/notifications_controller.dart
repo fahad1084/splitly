@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../auth/controllers/auth_controller.dart';
 import 'package:splitly/core/utils/app_logger.dart';
+import 'package:splitly/core/utils/app_errors.dart';
 
 // ── Notification model ──────────────────────────────────────────────────────
 class AppNotification {
@@ -58,9 +59,10 @@ FutureProvider<List<AppNotification>>((ref) async {
     return rows
         .map((r) => AppNotification.fromMap(Map<String, dynamic>.from(r)))
         .toList();
-  } catch (e) {
-    logDebug('=== FETCH NOTIFICATIONS ERROR: $e ===');
-    return [];
+  } catch (e, st) {
+    // Shown as an error with "Try again", not as "no notifications"
+    errorCode(e, st, where: 'notifications');
+    rethrow;
   }
 });
 

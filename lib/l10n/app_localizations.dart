@@ -428,6 +428,84 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get tryAgain;
 
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errorGeneric;
+
+  /// No description provided for @errorNoInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your connection and try again.'**
+  String get errorNoInternet;
+
+  /// No description provided for @errorWrongLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email or password.'**
+  String get errorWrongLogin;
+
+  /// No description provided for @errorEmailNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your email first. Check your inbox for the link.'**
+  String get errorEmailNotConfirmed;
+
+  /// No description provided for @errorEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists. Try logging in.'**
+  String get errorEmailInUse;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'This password is too weak. Please choose a stronger one.'**
+  String get errorWeakPassword;
+
+  /// No description provided for @errorTooManyTries.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many tries. Please wait a few minutes and try again.'**
+  String get errorTooManyTries;
+
+  /// No description provided for @errorNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not allowed to do this.'**
+  String get errorNotAllowed;
+
+  /// No description provided for @errorNotSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has ended. Please sign in again.'**
+  String get errorNotSignedIn;
+
+  /// No description provided for @errorGoogleSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in didn\'t work. Please try again.'**
+  String get errorGoogleSignIn;
+
+  /// No description provided for @couldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this. Please try again.'**
+  String get couldNotLoad;
+
+  /// No description provided for @couldNotLoadUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load unread messages.'**
+  String get couldNotLoadUnread;
+
+  /// No description provided for @couldNotLoadBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your balances.'**
+  String get couldNotLoadBalances;
+
   /// No description provided for @membersCount.
   ///
   /// In en, this message translates to:

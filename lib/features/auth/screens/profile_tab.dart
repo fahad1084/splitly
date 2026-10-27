@@ -12,6 +12,7 @@ import '../../security/screens/set_pin_screen.dart';
 import '../../groups/screens/edit_profile_screen.dart';
 import '../../groups/screens/archived_groups_screen.dart';
 import '../../notifications/screens/notification_settings_screen.dart';
+import '../../../core/utils/app_errors.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -438,7 +439,7 @@ class ProfileTab extends ConsumerWidget {
     Navigator.pop(context); // close loading dialog
 
     if (error != null) {
-      showErrorSnack(context, error);
+      showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
       return;
     }
 

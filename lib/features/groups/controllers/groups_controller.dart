@@ -6,6 +6,7 @@ import '../../balances/controllers/balances_controller.dart';
 import '../models/group_model.dart';
 import 'dart:io';
 import 'package:splitly/core/utils/app_logger.dart';
+import 'package:splitly/core/utils/app_errors.dart';
 
 final groupsProvider =
 AsyncNotifierProvider<GroupsController, List<GroupModel>>(
@@ -13,6 +14,8 @@ AsyncNotifierProvider<GroupsController, List<GroupModel>>(
 );
 
 // ── Unread message counts per group (for badges on the groups list) ────────
+// Errors are NOT turned into "no unread messages": the Groups tab shows an
+// error bar with "Try again" instead.
 final unreadCountsProvider =
 FutureProvider<Map<String, int>>((ref) async {
   try {
@@ -23,9 +26,9 @@ FutureProvider<Map<String, int>>((ref) async {
         r['group_id'] as String: (r['unread_count'] as num).toInt(),
     };
     return result;
-  } catch (e) {
-    logDebug('=== FETCH UNREAD COUNTS ERROR: $e ===');
-    return {};
+  } catch (e, st) {
+    errorCode(e, st, where: 'unreadCounts');
+    rethrow;
   }
 });
 
@@ -57,9 +60,10 @@ FutureProvider<List<GroupModel>>((ref) async {
       'member_count': 0, // not needed on this screen
     }))
         .toList();
-  } catch (e) {
-    logDebug('=== FETCH ARCHIVED GROUPS ERROR: $e ===');
-    return [];
+  } catch (e, st) {
+    // Shown as an error with "Try again", not as "no archived groups"
+    errorCode(e, st, where: 'archivedGroups');
+    rethrow;
   }
 });
 
@@ -119,7 +123,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     required String currency,
   }) async {
     final userId = _db.auth.currentUser?.id;
-    if (userId == null) return 'Not signed in';
+    if (userId == null) return kErrNotSignedIn;
 
     try {
       // ONE call: the group and the creator's admin membership are saved
@@ -134,9 +138,7 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       state = AsyncValue.data(await _fetchGroups());
       return null;
     } catch (e, st) {
-      logDebug('=== CREATE GROUP ERROR: $e ===');
-      logDebug('=== STACK: $st ===');
-      return 'Error: $e';
+      return errorCode(e, st, where: 'createGroup');
     }
   }
 
@@ -164,9 +166,8 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
       await _db.rpc('delete_group_permanently',
           params: {'p_group_id': groupId});
       return null;
-    } catch (e) {
-      logDebug('=== DELETE GROUP ERROR: $e ===');
-      return 'Error: $e';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'deleteGroup');
     }
   }
 
@@ -228,9 +229,8 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           .eq('group_id', groupId)
           .eq('user_id', userId);
       return null;
-    } catch (e) {
-      logDebug('=== SET MEMBER ROLE ERROR: $e ===');
-      return 'Failed to update role: $e';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'setMemberRole');
     }
   }
 
@@ -277,14 +277,14 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
           g.id == groupId ? g.copyWith(photoUrl: url) : g,
       ]);
       return null;
-    } catch (e) {
-      logDebug('=== UPDATE GROUP PHOTO ERROR: $e ===');
+    } catch (e, st) {
+      final code = errorCode(e, st, where: 'updateGroupPhoto');
       if (uploadedPath != null) {
         try {
           await _db.storage.from(bucket).remove([uploadedPath]);
         } catch (_) {}
       }
-      return 'Failed to update photo: $e';
+      return code;
     }
   }
 }

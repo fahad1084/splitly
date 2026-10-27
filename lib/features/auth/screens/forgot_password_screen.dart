@@ -4,6 +4,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
+import '../../../core/utils/app_errors.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -68,7 +69,7 @@ class _ForgotPasswordScreenState
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (error != null) {
-      showErrorSnack(context, error);
+      showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     } else {
       setState(() => _emailSent = true);
       _successCtrl.forward();

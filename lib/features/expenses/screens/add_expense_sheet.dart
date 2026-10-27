@@ -160,7 +160,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
       if (totalPaisa != toPaisa(amount)) {
         showErrorSnack(context,
             l10n.customAmountsMustAddUp(
-                widget.group.currency, amount.toString()));
+                widget.group.currency, formatAmount(amount)));
         return;
       }
     }
@@ -207,7 +207,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
         'INVALID_TITLE' => l10n.pleaseEnterTitle,
         'SPLITS_DONT_ADD_UP' || 'INVALID_SPLIT_AMOUNT' =>
             l10n.customAmountsMustAddUp(
-                widget.group.currency, amount.toString()),
+                widget.group.currency, formatAmount(amount)),
         _ => l10n.somethingWentWrong,
       };
       showErrorSnack(context, message);

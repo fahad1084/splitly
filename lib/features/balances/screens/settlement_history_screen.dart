@@ -50,13 +50,10 @@ class SettlementHistoryScreen extends ConsumerWidget {
             padding: EdgeInsets.only(top: 16),
             child: ShimmerList(),
           ),
+          // A ListView, so pull-to-refresh still works on the error too
           error: (_, __) => ListView(children: [
-            Padding(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: Text(l10n.somethingWentWrong,
-                    style: const TextStyle(color: AppColors.danger)),
-              ),
+            ErrorRetry(
+              onRetry: () => ref.invalidate(settlementsProvider(group.id)),
             ),
           ]),
           data: (settlements) {

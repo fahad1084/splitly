@@ -7,6 +7,7 @@ import '../../../config/supabase/supabase_config.dart';
 import '../../../core/utils/string_utils.dart';
 import '../models/message_model.dart';
 import 'package:splitly/core/utils/app_logger.dart';
+import 'package:splitly/core/utils/app_errors.dart';
 
 // ── Messages provider per group ───────────────────────────────────────────────
 // autoDispose: leaving the chat frees the messages and closes the realtime
@@ -193,7 +194,7 @@ class ChatController
 // ── Send text message (with optional reply) ─────────────────────────────
   Future<String?> sendMessage(String content, {String? replyToId}) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
-    if (userId == null) return 'Not signed in';
+    if (userId == null) return kErrNotSignedIn;
     if (content.trim().isEmpty) return null;
 
     try {
@@ -205,9 +206,8 @@ class ChatController
         'reply_to_id': replyToId,
       });
       return null;
-    } catch (e) {
-      logDebug('=== SEND MESSAGE ERROR: $e ===');
-      return 'Failed to send message';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'sendMessage');
     }
   }
   // ── Delete a message (sender only, enforced by RLS) ─────────────────────
@@ -217,8 +217,8 @@ class ChatController
       final current = state.value ?? [];
       state = AsyncValue.data(current.where((m) => m.id != messageId).toList());
       return null;
-    } catch (e) {
-      return 'Failed to delete message';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'deleteMessage');
     }
   }
 
@@ -277,7 +277,7 @@ class ChatController
 // ── Send image attachment ─────────────────────────────────────────────────
   Future<String?> sendImage(File imageFile, {String caption = ''}) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
-    if (userId == null) return 'Not signed in';
+    if (userId == null) return kErrNotSignedIn;
 
     try {
       final ext = imageFile.path.split('.').last;
@@ -304,9 +304,8 @@ class ChatController
         rethrow;
       }
       return null;
-    } catch (e) {
-      logDebug('=== SEND IMAGE ERROR: $e ===');
-      return 'Failed to send image';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'sendImage');
     }
   }
 
@@ -314,7 +313,7 @@ class ChatController
   // ── Send voice message ────────────────────────────────────────────────────
   Future<String?> sendAudio(File audioFile, int durationSeconds) async {
     final userId = SupabaseConfig.client.auth.currentUser?.id;
-    if (userId == null) return 'Not signed in';
+    if (userId == null) return kErrNotSignedIn;
 
     try {
       final fileName = '${const Uuid().v4()}.m4a';
@@ -339,9 +338,8 @@ class ChatController
         rethrow;
       }
       return null;
-    } catch (e) {
-      logDebug('=== SEND AUDIO ERROR: $e ===');
-      return 'Failed to send voice message';
+    } catch (e, st) {
+      return errorCode(e, st, where: 'sendAudio');
     }
   }
 

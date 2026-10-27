@@ -5,6 +5,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/groups_controller.dart';
+import '../../../core/utils/app_errors.dart';
 
 class ArchivedGroupsScreen extends ConsumerWidget {
   const ArchivedGroupsScreen({super.key});
@@ -43,9 +44,8 @@ class ArchivedGroupsScreen extends ConsumerWidget {
       body: archivedAsync.when(
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => Center(
-          child: Text(l10n.somethingWentWrong,
-              style: const TextStyle(color: AppColors.danger)),
+        error: (_, __) => ErrorRetry(
+          onRetry: () => ref.invalidate(archivedGroupsProvider),
         ),
         data: (groups) {
           if (groups.isEmpty) {
@@ -167,7 +167,7 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                                   .deleteGroupPermanently(group.id);
                               if (!context.mounted) return;
                               if (error != null) {
-                                showErrorSnack(context, error);
+                                showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
                               } else {
                                 ref.invalidate(archivedGroupsProvider);
                                 showSuccessSnack(

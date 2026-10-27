@@ -176,6 +176,52 @@ class AppLocalizationsUr extends AppLocalizations {
   String get tryAgain => 'دوبارہ کوشش کریں';
 
   @override
+  String get errorGeneric => 'کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔';
+
+  @override
+  String get errorNoInternet =>
+      'انٹرنیٹ کنکشن نہیں ہے۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔';
+
+  @override
+  String get errorWrongLogin => 'ای میل یا پاس ورڈ غلط ہے۔';
+
+  @override
+  String get errorEmailNotConfirmed =>
+      'پہلے اپنی ای میل کی تصدیق کریں۔ لنک کے لیے اپنا ان باکس دیکھیں۔';
+
+  @override
+  String get errorEmailInUse =>
+      'اس ای میل سے پہلے ہی اکاؤنٹ موجود ہے۔ لاگ ان کرنے کی کوشش کریں۔';
+
+  @override
+  String get errorWeakPassword =>
+      'یہ پاس ورڈ بہت کمزور ہے۔ براہ کرم مضبوط پاس ورڈ چنیں۔';
+
+  @override
+  String get errorTooManyTries =>
+      'بہت زیادہ کوششیں۔ چند منٹ انتظار کریں اور دوبارہ کوشش کریں۔';
+
+  @override
+  String get errorNotAllowed => 'آپ کو یہ کرنے کی اجازت نہیں ہے۔';
+
+  @override
+  String get errorNotSignedIn =>
+      'آپ کا سیشن ختم ہو گیا ہے۔ براہ کرم دوبارہ سائن ان کریں۔';
+
+  @override
+  String get errorGoogleSignIn =>
+      'گوگل سائن ان نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔';
+
+  @override
+  String get couldNotLoad => 'یہ لوڈ نہیں ہو سکا۔ براہ کرم دوبارہ کوشش کریں۔';
+
+  @override
+  String get couldNotLoadUnread => 'نہ پڑھے گئے پیغامات لوڈ نہیں ہو سکے۔';
+
+  @override
+  String get couldNotLoadBalances => 'آپ کا حساب لوڈ نہیں ہو سکا۔';
+
+  @override
   String membersCount(int count) {
     return '$count اراکین';
   }

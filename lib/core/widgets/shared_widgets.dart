@@ -290,6 +290,79 @@ void showErrorSnack(BuildContext context, String message) {
   ));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ERROR STATES — instead of an empty list or a raw error text
+// ─────────────────────────────────────────────────────────────────────────────
+/// Full-area error with a "Try again" button (lists, screens).
+class ErrorRetry extends StatelessWidget {
+  final VoidCallback onRetry;
+  final String? message; // default: "Couldn't load this. Please try again."
+
+  const ErrorRetry({super.key, required this.onRetry, this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textColor = isDark(context) ? AppColors.primaryTint : AppColors.primaryDark;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: AppColors.danger, size: 40),
+            const SizedBox(height: 12),
+            Text(message ?? l10n.couldNotLoad,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: textColor)),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(l10n.tryAgain),
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Thin one-line error bar with "Try again" — for something small that
+/// failed (unread badges, balances) while the rest of the screen works.
+class ErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const ErrorBanner({super.key, required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.only(left: 12),
+      decoration: BoxDecoration(
+        color: AppColors.danger.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.danger.withOpacity(0.3), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: AppColors.danger, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message,
+                style: const TextStyle(fontSize: 12, color: AppColors.danger)),
+          ),
+          TextButton(onPressed: onRetry, child: Text(l10n.tryAgain)),
+        ],
+      ),
+    );
+  }
+}
+
 void showSuccessSnack(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Row(children: [

@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/supabase/supabase_config.dart';
 import '../../notifications/controllers/fcm_service.dart';
+import 'package:splitly/core/utils/app_errors.dart';
 import 'package:splitly/core/utils/app_logger.dart';
 import '../../security/controllers/app_lock_controller.dart';
 
@@ -76,12 +77,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       return null; // ← success regardless of profile insert
 
-    } on AuthException catch (e) {
+    } catch (e, st) {
+      // A code, never raw text — the screen shows a translated message
       state = const AsyncValue.data(null);
-      return e.message;
-    } catch (e) {
-      state = const AsyncValue.data(null);
-      return 'Something went wrong. Please try again.';
+      return errorCode(e, st, where: 'signUp');
     }
   }
 
@@ -114,12 +113,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
       return null;
-    } on AuthException catch (e) {
+    } catch (e, st) {
+      // A code, never raw text — the screen shows a translated message
       state = const AsyncValue.data(null);
-      return e.message;
-    } catch (e) {
-      state = const AsyncValue.data(null);
-      return 'Something went wrong. Please try again.';
+      return errorCode(e, st, where: 'signIn');
     }
   }
 
@@ -154,13 +151,9 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       final accessToken = googleAuth.accessToken;
       final idToken = googleAuth.idToken;
 
-      if (accessToken == null) {
+      if (accessToken == null || idToken == null) {
         state = const AsyncValue.data(null);
-        return 'Google sign in failed. Please try again.';
-      }
-      if (idToken == null) {
-        state = const AsyncValue.data(null);
-        return 'Google sign in failed. Please try again.';
+        return kErrGoogleSignIn;
       }
 
       // Sign in to Supabase with Google tokens
@@ -181,14 +174,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
       return null;
-    } on AuthException catch (e) {
+    } catch (e, st) {
       state = const AsyncValue.data(null);
-      logDebug('=== GOOGLE SIGN-IN AuthException: ${e.message} ===');
-      return e.message;
-    } catch (e) {
-      state = const AsyncValue.data(null);
-      logDebug('=== GOOGLE SIGN-IN ERROR: $e ===');
-      return 'Google sign in failed. Please try again.';
+      final code = errorCode(e, st, where: 'googleSignIn');
+      // e.g. a PlatformException from the Google picker
+      return code == kErrUnknown ? kErrGoogleSignIn : code;
     }
   }
 
@@ -204,12 +194,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       );
       state = const AsyncValue.data(null);
       return null;
-    } on AuthException catch (e) {
+    } catch (e, st) {
+      // A code, never raw text — the screen shows a translated message
       state = const AsyncValue.data(null);
-      return e.message;
-    } catch (e) {
-      state = const AsyncValue.data(null);
-      return 'Something went wrong. Please try again.';
+      return errorCode(e, st, where: 'resetPassword');
     }
   }
 
@@ -236,14 +224,9 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       await signOut();
       state = const AsyncValue.data(null);
       return null;
-    } on PostgrestException catch (e) {
+    } catch (e, st) {
       state = const AsyncValue.data(null);
-      logDebug('=== DELETE ACCOUNT ERROR: ${e.message} ===');
-      return 'Something went wrong. Please try again.';
-    } catch (e) {
-      state = const AsyncValue.data(null);
-      logDebug('=== DELETE ACCOUNT ERROR: $e ===');
-      return 'Something went wrong. Please try again.';
+      return errorCode(e, st, where: 'deleteAccount');
     }
   }
 

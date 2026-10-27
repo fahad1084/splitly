@@ -100,9 +100,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (e, _) => Center(
-          child: Text('${l10n.somethingWentWrong}',
-              style: const TextStyle(color: AppColors.danger)),
+        error: (_, __) => ErrorRetry(
+          onRetry: () => ref.invalidate(notificationsProvider),
         ),
         data: (notifications) {
           if (notifications.isEmpty) {

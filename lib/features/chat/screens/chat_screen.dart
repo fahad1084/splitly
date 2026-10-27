@@ -16,6 +16,7 @@ import '../../groups/models/group_model.dart';
 import '../controllers/chat_controller.dart';
 import '../models/message_model.dart';
 import '../../security/controllers/app_lock_controller.dart';
+import '../../../core/utils/app_errors.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final GroupModel group;
@@ -152,7 +153,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _isSending = false);
 
     if (error != null) {
-      showErrorSnack(context, error);
+      showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     } else {
       _scrollToBottom();
     }
@@ -452,9 +453,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: CircularProgressIndicator(
                     color: AppColors.primary, strokeWidth: 2),
               ),
-              error: (e, _) => Center(
-                child: Text('${l10n.somethingWentWrong}: $e',
-                    style: TextStyle(color: AppColors.danger)),
+              error: (_, __) => ErrorRetry(
+                onRetry: () =>
+                    ref.invalidate(messagesProvider(widget.group.id)),
               ),
               data: (messages) {
                 if (messages.isEmpty) {
@@ -906,7 +907,7 @@ class _MessageBubble extends ConsumerWidget {
                       if (error == null) {
                         showSuccessSnack(context, l10n.messageDeleted);
                       } else {
-                        showErrorSnack(context, error);
+                        showErrorSnack(context, friendlyError(l10n, error));
                       }
                     }
                   }

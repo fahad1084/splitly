@@ -178,6 +178,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tryAgain => 'Try again';
 
   @override
+  String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get errorNoInternet =>
+      'No internet connection. Please check your connection and try again.';
+
+  @override
+  String get errorWrongLogin => 'Wrong email or password.';
+
+  @override
+  String get errorEmailNotConfirmed =>
+      'Please confirm your email first. Check your inbox for the link.';
+
+  @override
+  String get errorEmailInUse =>
+      'An account with this email already exists. Try logging in.';
+
+  @override
+  String get errorWeakPassword =>
+      'This password is too weak. Please choose a stronger one.';
+
+  @override
+  String get errorTooManyTries =>
+      'Too many tries. Please wait a few minutes and try again.';
+
+  @override
+  String get errorNotAllowed => 'You\'re not allowed to do this.';
+
+  @override
+  String get errorNotSignedIn =>
+      'Your session has ended. Please sign in again.';
+
+  @override
+  String get errorGoogleSignIn =>
+      'Google sign-in didn\'t work. Please try again.';
+
+  @override
+  String get couldNotLoad => 'Couldn\'t load this. Please try again.';
+
+  @override
+  String get couldNotLoadUnread => 'Couldn\'t load unread messages.';
+
+  @override
+  String get couldNotLoadBalances => 'Couldn\'t load your balances.';
+
+  @override
   String membersCount(int count) {
     return '$count members';
   }

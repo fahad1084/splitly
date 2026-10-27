@@ -83,9 +83,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
         loading: () => const Center(
             child: CircularProgressIndicator(
                 color: AppColors.primary, strokeWidth: 2)),
-        error: (e, _) => Center(
-            child: Text('Error: $e',
-                style: TextStyle(color: AppColors.danger))),
+        error: (_, __) => ErrorRetry(
+            onRetry: () => ref.read(groupsProvider.notifier).refresh()),
         data: (groups) {
           if (groups.isEmpty) return _EmptyState();
 

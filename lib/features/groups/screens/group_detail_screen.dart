@@ -26,6 +26,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../security/controllers/app_lock_controller.dart';
 import '../../../core/utils/money_format.dart';
+import '../../../core/utils/app_errors.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   final GroupModel group;
@@ -345,11 +346,10 @@ class GroupDetailScreen extends ConsumerWidget {
                   child: ShimmerList(count: 2),
                 ),
               ),
-              error: (e, _) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(l10n.couldNotLoadMembers,
-                      style: TextStyle(color: AppColors.danger)),
+              error: (_, __) => SliverToBoxAdapter(
+                child: ErrorRetry(
+                  message: l10n.couldNotLoadMembers,
+                  onRetry: () => ref.invalidate(groupMembersProvider(group.id)),
                 ),
               ),
             ),
@@ -419,11 +419,10 @@ class GroupDetailScreen extends ConsumerWidget {
                   child: ShimmerList(count: 3),
                 ),
               ),
-              error: (e, _) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text('${l10n.couldNotLoadExpenses}: $e',
-                      style: TextStyle(color: AppColors.danger)),
+              error: (_, __) => SliverToBoxAdapter(
+                child: ErrorRetry(
+                  message: l10n.couldNotLoadExpenses,
+                  onRetry: () => ref.invalidate(expensesProvider(group.id)),
                 ),
               ),
               data: (expenses) {
@@ -1267,8 +1266,14 @@ class _MemberTile extends ConsumerWidget {
               borderColor: borderColor,
               onTap: () async {
                 Navigator.pop(sheetContext);
-                await ref.read(groupsProvider.notifier).setMemberRole(
+                final error = await ref.read(groupsProvider.notifier).setMemberRole(
                     group.id, memberUserId, role == 'admin' ? 'member' : 'admin');
+                if (!context.mounted) return;
+                if (error != null) {
+                  showErrorSnack(context, friendlyError(l10n, error));
+                } else {
+                  ref.invalidate(groupMembersProvider(group.id)); // show the new role
+                }
               },
             ),
             const SizedBox(height: 8),

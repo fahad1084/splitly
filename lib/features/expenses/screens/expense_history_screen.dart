@@ -151,9 +151,8 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(
                     color: AppColors.primary, strokeWidth: 2),
               ),
-              error: (e, _) => Center(
-                child: Text('${l10n.somethingWentWrong}: $e',
-                    style: TextStyle(color: AppColors.danger)),
+              error: (_, __) => ErrorRetry(
+                onRetry: () => ref.invalidate(expensesProvider(group.id)),
               ),
               data: (expenses) {
                 // Apply filters

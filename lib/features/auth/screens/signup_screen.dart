@@ -5,6 +5,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import 'home_screen.dart';
+import '../../../core/utils/app_errors.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -63,7 +64,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (error != null) {
-      showErrorSnack(context, error);
+      showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     } else {
       showSuccessSnack(context, l10n.accountCreatedCheckEmail);
       // ✅ No navigation here — go back to login so user can sign in
@@ -77,7 +78,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     await ref.read(authControllerProvider.notifier).signInWithGoogle();
     if (!mounted) return;
     setState(() => _isGoogleLoading = false);
-    if (error != null) showErrorSnack(context, error);
+    if (error != null) showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
     // ✅ No navigation here — AuthGate handles it automatically on signedIn event
   }
   @override

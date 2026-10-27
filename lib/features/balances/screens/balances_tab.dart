@@ -40,12 +40,19 @@ class BalancesTab extends ConsumerWidget {
           padding: EdgeInsets.only(top: 16),
           child: ShimmerList(),
         ),
-        error: (e, _) => Center(
-          child: Text('${l10n.somethingWentWrong}: $e',
-              style: TextStyle(color: AppColors.danger)),
+        error: (_, __) => ErrorRetry(
+          onRetry: () => ref.read(groupsProvider.notifier).refresh(),
         ),
         data: (groups) {
           if (groups.isEmpty) return const _EmptyState();
+
+          // Balances failed → say so; showing 0 / "all settled" would be wrong
+          if (ref.watch(myDebtsProvider).hasError) {
+            return ErrorRetry(
+              message: l10n.couldNotLoadBalances,
+              onRetry: () => ref.invalidate(myDebtsProvider),
+            );
+          }
 
           // Build summaries (the debts come from the database in one call)
           final summaries = groups.map((group) {

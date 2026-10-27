@@ -24,7 +24,9 @@ class GroupsTab extends ConsumerWidget {
     final dark = isDark(context);
     final user = ref.watch(currentUserProvider);
     final groupsAsync = ref.watch(groupsProvider);
-    final unreadCounts = ref.watch(unreadCountsProvider).value ?? {};
+    final unreadAsync = ref.watch(unreadCountsProvider);
+    final unreadCounts = unreadAsync.value ?? {};
+    final debtsFailed = ref.watch(myDebtsProvider).hasError;
     final userName =
         user?.userMetadata?['full_name'] as String? ?? 'there';
     final firstName = userName.split(' ').first;
@@ -142,6 +144,22 @@ class GroupsTab extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics()),
               slivers: [
+                // Something small failed → a thin bar, the list still works
+                if (debtsFailed)
+                  SliverToBoxAdapter(
+                    child: ErrorBanner(
+                      message: l10n.couldNotLoadBalances,
+                      onRetry: () => ref.invalidate(myDebtsProvider),
+                    ),
+                  ),
+                if (unreadAsync.hasError)
+                  SliverToBoxAdapter(
+                    child: ErrorBanner(
+                      message: l10n.couldNotLoadUnread,
+                      onRetry: () => ref.invalidate(unreadCountsProvider),
+                    ),
+                  ),
+
                 // Summary banner with real data
                 SliverToBoxAdapter(
                   child: _SummaryBanner(

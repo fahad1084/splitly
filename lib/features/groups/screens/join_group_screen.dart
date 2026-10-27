@@ -6,7 +6,7 @@ import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/groups_controller.dart';
-import 'package:splitly/core/utils/app_logger.dart';
+import 'package:splitly/core/utils/app_errors.dart';
 
 // ── Provider to join a group ──────────────────────────────────────────────────
 final joinGroupProvider =
@@ -25,7 +25,7 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
           SupabaseConfig.client.auth.currentUser?.id;
       if (userId == null) {
         state = const AsyncValue.data(null);
-        return 'Not signed in';
+        return kErrNotSignedIn;
       }
 
       // One RPC checks the invite code and adds us as a 'member' — direct
@@ -51,10 +51,9 @@ class JoinGroupController extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
       return null; // success
-    } catch (e) {
-      logDebug('=== JOIN GROUP ERROR: $e ===');
+    } catch (e, st) {
       state = const AsyncValue.data(null);
-      return 'Error: $e';
+      return errorCode(e, st, where: 'joinGroup');
     }
   }
 }
@@ -120,7 +119,7 @@ class _JoinGroupSheetState extends ConsumerState<_JoinGroupSheet> {
         final groupName = error.split('::').last;
         showErrorSnack(context, l10n.alreadyMemberOf(groupName));
       } else {
-        showErrorSnack(context, error);
+        showErrorSnack(context, friendlyError(l10n, error));
       }
     } else {
       showSuccessSnack(context, l10n.youJoinedGroup);
