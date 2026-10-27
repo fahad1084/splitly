@@ -691,13 +691,17 @@ class GroupDetailScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetContext).size.height * 0.85),
         decoration: BoxDecoration(
           color: sheetBg,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -796,19 +800,6 @@ class GroupDetailScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             _MenuTile(
-              icon: Icons.exit_to_app_rounded,
-              iconColor: AppColors.danger,
-              label: l10n.leaveGroup,
-              textColor: AppColors.danger,
-              borderColor: borderColor,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _confirmLeaveGroup(context, ref);
-              },
-            ),
-            const SizedBox(height: 8),
-
-            _MenuTile(
               icon: Icons.bar_chart_rounded,
               iconColor: AppColors.primary,
               label: l10n.spendingReports,
@@ -824,6 +815,9 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
 
+            // ── Red actions last, apart from the rest ──────────────
+            Divider(height: 24, color: borderColor),
+
             _MenuTile(
               icon: Icons.archive_outlined,
               iconColor: AppColors.danger,
@@ -835,7 +829,21 @@ class GroupDetailScreen extends ConsumerWidget {
                 _confirmArchive(context, ref);
               },
             ),
+            const SizedBox(height: 8),
+
+            _MenuTile(
+              icon: Icons.exit_to_app_rounded,
+              iconColor: AppColors.danger,
+              label: l10n.leaveGroup,
+              textColor: AppColors.danger,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmLeaveGroup(context, ref);
+              },
+            ),
           ],
+          ),
         ),
       ),
     );
@@ -1318,6 +1326,10 @@ class _MemberTile extends ConsumerWidget {
               borderColor: borderColor,
               onTap: () async {
                 Navigator.pop(sheetContext);
+                // Taken now: this tile may be gone by the time the removal
+                // is done, but the lists must still reload
+                final container =
+                    ProviderScope.containerOf(context, listen: false);
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (dialogContext) => AlertDialog(
@@ -1335,10 +1347,17 @@ class _MemberTile extends ConsumerWidget {
                     ],
                   ),
                 );
-                if (confirmed == true && context.mounted) {
-                  final error = await ref
+                if (confirmed == true) {
+                  final error = await container
                       .read(groupsProvider.notifier)
                       .removeMember(group.id, memberUserId);
+                  if (error == null) {
+                    // Members list, and the member count on the group card
+                    // and in the group details
+                    container.invalidate(groupMembersProvider(group.id));
+                    container.invalidate(groupDetailProvider(group.id));
+                    container.invalidate(groupsProvider);
+                  }
                   if (context.mounted) {
                     if (error == 'HAS_UNSETTLED_DEBTS') {
                       showOpenDebtsDialog(context, ref,
@@ -1346,7 +1365,6 @@ class _MemberTile extends ConsumerWidget {
                     } else if (error != null) {
                       showErrorSnack(context, l10n.somethingWentWrong);
                     } else {
-                      ref.invalidate(groupMembersProvider(group.id));
                       showSuccessSnack(context, l10n.memberRemoved);
                     }
                   }

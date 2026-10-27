@@ -337,7 +337,8 @@ class _AuthGateState extends State<AuthGate> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INITIAL SCREEN — shows splash for 2 seconds then routes by session/onboarding
+// INITIAL SCREEN — shows the splash until routing is known, then routes by
+// session/onboarding
 // ─────────────────────────────────────────────────────────────────────────────
 class _InitialScreen extends StatefulWidget {
   const _InitialScreen();
@@ -351,7 +352,9 @@ class _InitialScreenState extends State<_InitialScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2), () async {
+    // No fixed wait: route as soon as the first frame is up and we know
+    // whether onboarding was seen (Supabase restored the session in main()).
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final session = Supabase.instance.client.auth.currentSession;
       final seenOnboarding = await hasSeenOnboarding();
