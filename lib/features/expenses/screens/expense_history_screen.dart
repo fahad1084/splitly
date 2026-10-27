@@ -68,8 +68,8 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                     color: AppColors.primaryTint)),
             Text(group.name,
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.primaryLight)),
+                style: TextStyle(
+                    fontSize: 12, color: AppColors.mutedText(context))),
           ],
         ),
       ),
@@ -202,7 +202,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: AppColors.primaryLight,
+                                    color: AppColors.mutedText(context),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -221,7 +221,7 @@ class ExpenseHistoryScreen extends ConsumerWidget {
                                   formatMoney(entry.value.fold(0.0, (sum, e) => sum + e.amount), group.currency),
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.primaryLight,
+                                    color: AppColors.mutedText(context),
                                   ),
                                 ),
                               ],
@@ -404,7 +404,7 @@ class _DateChip extends ConsumerWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: selected ? Colors.white : AppColors.primaryLight,
+            color: selected ? Colors.white : AppColors.mutedText(context),
           ),
         ),
       ),
@@ -522,7 +522,7 @@ class _CustomRangeChip extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: selected ? Colors.white : AppColors.primaryLight,
+                color: selected ? Colors.white : AppColors.mutedText(context),
               ),
             ),
           ],
@@ -583,7 +583,7 @@ class _CategoryChip extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
                 color: selected
                     ? Colors.white
-                    : AppColors.primaryLight,
+                    : AppColors.mutedText(context),
               ),
             ),
           ],

@@ -437,9 +437,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         fontWeight: FontWeight.w500,
                         color: AppColors.primaryTint)),
                 Text(l10n.groupChat,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.primaryLight)),
+                        color: AppColors.mutedText(context))),
               ],
             ),
           ],
@@ -533,7 +533,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       style: TextStyle(
                           fontSize: 12,
                           fontStyle: FontStyle.italic,
-                          color: AppColors.primaryLight)),
+                          color: AppColors.mutedText(context))),
                 ),
               );
             },
@@ -821,7 +821,7 @@ class _MessageBubble extends ConsumerWidget {
                       _formatTime(message.createdAt),
                       style: TextStyle(
                           fontSize: 10,
-                          color: AppColors.primaryLight.withOpacity(0.7)),
+                          color: AppColors.mutedText(context)),
                     ),
                   ),
                 ],
@@ -882,7 +882,7 @@ class _MessageBubble extends ConsumerWidget {
             if (isOwn)
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded, color: AppColors.danger),
-                title: Text(l10n.deleteMessage, style: const TextStyle(color: AppColors.danger)),
+                title: Text(l10n.deleteMessage, style: TextStyle(color: AppColors.dangerText(context))),
                 onTap: () async {
                   Navigator.pop(sheetContext);
                   final confirmed = await showDialog<bool>(
@@ -1234,7 +1234,7 @@ class _DateSeparator extends StatelessWidget {
             child: Text(label,
                 style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.primaryLight,
+                    color: AppColors.mutedText(context),
                     fontWeight: FontWeight.w500)),
           ),
           Expanded(
@@ -1316,7 +1316,7 @@ class _MessageInput extends StatelessWidget {
                           replyingTo!.content.isNotEmpty ? replyingTo!.content : '📎',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, color: AppColors.primaryLight),
+                          style: TextStyle(fontSize: 12, color: AppColors.mutedText(context)),
                         ),
                       ],
                     ),
@@ -1340,7 +1340,7 @@ class _MessageInput extends StatelessWidget {
                       color: dark ? AppColors.primaryTint : AppColors.primaryDark)),
               const SizedBox(width: 8),
               Text('0:${recordSeconds.toString().padLeft(2, '0')}',
-                  style: TextStyle(color: AppColors.primaryLight)),
+                  style: TextStyle(color: AppColors.mutedText(context))),
               const Spacer(),
               GestureDetector(
                 onTap: onMicToggle,

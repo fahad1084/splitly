@@ -157,7 +157,7 @@ class ProfileTab extends ConsumerWidget {
                   trailing: Text(l10n.system,
                       style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.primaryLight)),
+                          color: AppColors.mutedText(context))),
                   onTap: () {},
                 ),
               ],
@@ -175,7 +175,7 @@ class ProfileTab extends ConsumerWidget {
                   label: l10n.language,
                   trailing: Text(
                     ref.watch(localeControllerProvider).languageCode == 'ur' ? 'اردو' : 'English',
-                    style: TextStyle(fontSize: 12, color: AppColors.primaryLight),
+                    style: TextStyle(fontSize: 12, color: AppColors.mutedText(context)),
                   ),
                   onTap: () => _showLanguageSheet(context, ref),
                 ),
@@ -558,7 +558,7 @@ void _showAppLockSheet(BuildContext context, WidgetRef ref) async {
                         ),
                         subtitle: Text(
                           l10n.unlockWithFingerprint,
-                          style: TextStyle(fontSize: 12, color: AppColors.primaryLight),
+                          style: TextStyle(fontSize: 12, color: AppColors.mutedText(context)),
                         ),
                         value: localBiometricOn,
                         activeColor: AppColors.primary,
@@ -623,7 +623,7 @@ void _confirmDisableAppLock(BuildContext context, WidgetRef ref) {
             if (dialogContext.mounted) Navigator.pop(dialogContext);
             if (context.mounted) showSuccessSnack(context, l10n.disableAppLock);
           },
-          child: Text(l10n.disable, style: TextStyle(color: AppColors.danger)),
+          child: Text(l10n.disable, style: TextStyle(color: AppColors.dangerText(context))),
         ),
       ],
     ),
@@ -757,7 +757,7 @@ class _LangTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: textColor)),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.primaryLight)),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.mutedText(context))),
                 ],
               ),
             ),

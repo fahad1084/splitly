@@ -118,7 +118,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                           : l10n.userPaid(expense.paidByName),
                       style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.primaryLight),
+                          color: AppColors.mutedText(context)),
                     ),
                   ],
                 ),
@@ -139,7 +139,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                     expense.category,
                     style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.primaryLight),
+                        color: AppColors.mutedText(context)),
                   ),
                 ],
               ),
@@ -171,7 +171,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
               Text(
                 _formatDate(expense.expenseDate),
                 style: TextStyle(
-                    fontSize: 12, color: AppColors.primaryLight),
+                    fontSize: 12, color: AppColors.mutedText(context)),
               ),
               if (expense.editedAt != null) ...[
                 const SizedBox(width: 8),
@@ -179,7 +179,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                     style: TextStyle(
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
-                        color: AppColors.primaryLight)),
+                        color: AppColors.mutedText(context))),
               ],
             ],
           ),
@@ -274,7 +274,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                       child: Text(l10n.settled,
                           style: TextStyle(
                               fontSize: 10,
-                              color: AppColors.success,
+                              color: AppColors.successText(context),
                               fontWeight: FontWeight.w500)),
                     )
                   else
@@ -284,8 +284,8 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: isMe && !iPaid
-                            ? AppColors.danger
-                            : AppColors.primaryLight,
+                            ? AppColors.dangerText(context)
+                            : AppColors.mutedText(context),
                       ),
                     ),
                 ],

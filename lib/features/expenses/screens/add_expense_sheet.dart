@@ -295,8 +295,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
             const SizedBox(width: 8),
             Expanded(
               child: Text(l10n.expenseEditHasPaymentsWarning,
-                  style: const TextStyle(
-                      color: AppColors.accentDark,
+                  style: TextStyle(
+                      color: AppColors.warningText(context),
                       fontWeight: FontWeight.w500)),
             ),
           ],
@@ -871,7 +871,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               fontWeight: FontWeight.w500,
                               color: included
                                   ? AppColors.primary
-                                  : AppColors.primaryLight
+                                  : AppColors.mutedText(context)
                                   .withOpacity(0.4),
                             ),
                           ),
@@ -904,13 +904,13 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               decoration: InputDecoration(
                                 hintText: '0',
                                 hintStyle: TextStyle(
-                                    color: AppColors.primaryLight
+                                    color: AppColors.mutedText(context)
                                         .withOpacity(0.4),
                                     fontSize: 13),
                                 prefixText: '${widget.group.currency} ',
                                 prefixStyle: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.primaryLight),
+                                    color: AppColors.mutedText(context)),
                                 border: InputBorder.none,
                                 enabledBorder: InputBorder.none,
                                 focusedBorder: InputBorder.none,
@@ -952,7 +952,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                               decoration: InputDecoration(
                                 hintText: '0',
                                 hintStyle: TextStyle(
-                                    color: AppColors.primaryLight
+                                    color: AppColors.mutedText(context)
                                         .withOpacity(0.4),
                                     fontSize: 13),
                                 suffixText: l10n.percentSymbol,
@@ -1088,7 +1088,7 @@ class _RecurChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: selected ? Colors.white : AppColors.primaryLight,
+            color: selected ? Colors.white : AppColors.mutedText(context),
           ),
         ),
       ),

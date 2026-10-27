@@ -227,7 +227,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     child: Text(l10n.orContinueWith,
                         style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.primaryLight)),
+                            color: AppColors.mutedText(context))),
                   ),
                   Expanded(
                       child: Divider(color: dividerColor, thickness: 1)),

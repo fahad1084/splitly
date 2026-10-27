@@ -241,7 +241,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                       : l10n.detectedTotalConfirm,
                   style: TextStyle(
                     fontSize: 13,
-                    color: _amountCtrl.text.isEmpty ? AppColors.danger : AppColors.success,
+                    color: _amountCtrl.text.isEmpty ? AppColors.dangerText(context) : AppColors.successText(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

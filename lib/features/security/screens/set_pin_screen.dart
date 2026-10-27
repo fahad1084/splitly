@@ -118,7 +118,7 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
 
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: TextStyle(color: AppColors.danger, fontSize: 13)),
+              Text(_error!, style: TextStyle(color: AppColors.dangerText(context), fontSize: 13)),
             ],
 
             const Spacer(),

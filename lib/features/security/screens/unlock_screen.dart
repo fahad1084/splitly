@@ -187,7 +187,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(message,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.danger, fontSize: 13)),
+                    style: TextStyle(color: AppColors.dangerText(context), fontSize: 13)),
               ),
             ],
 

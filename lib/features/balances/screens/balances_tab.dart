@@ -216,14 +216,14 @@ class _OverallBanner extends StatelessWidget {
         children: [
           Text(l10n.overallBalance,
               style: const TextStyle(
-                  fontSize: 13, color: AppColors.primaryLight)),
+                  fontSize: 13, color: AppColors.primaryTint)),
           const SizedBox(height: 8),
           // One line per currency
           for (final line in netLines)
             Builder(builder: (context) {
               final isPositive = line.value >= 0;
               final color =
-                  isPositive ? AppColors.success : AppColors.danger;
+                  isPositive ? AppColors.successOnDark : AppColors.dangerOnDark;
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -261,7 +261,7 @@ class _OverallBanner extends StatelessWidget {
                   label: l10n.youAreOwed,
                   value: formatTotals(owed,
                       fallbackCurrency: currency, separator: '\n'),
-                  color: AppColors.success,
+                  color: AppColors.successOnDark,
                 ),
               ),
               const SizedBox(width: 12),
@@ -270,7 +270,7 @@ class _OverallBanner extends StatelessWidget {
                   label: l10n.youOwe,
                   value: formatTotals(owe,
                       fallbackCurrency: currency, separator: '\n'),
-                  color: AppColors.danger,
+                  color: AppColors.dangerOnDark,
                 ),
               ),
             ],
@@ -304,8 +304,8 @@ class _BannerStat extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: AppColors.primaryLight)),
+              style: const TextStyle(
+                  fontSize: 11, color: AppColors.primaryTint)),
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
@@ -353,8 +353,8 @@ class _DebtTile extends StatelessWidget {
             backgroundColor: AppColors.danger.withOpacity(0.15),
             child: Text(
               debt.fromUserName[0].toUpperCase(),
-              style: const TextStyle(
-                  color: AppColors.danger,
+              style: TextStyle(
+                  color: AppColors.dangerText(context),
                   fontWeight: FontWeight.w500),
             ),
           ),
@@ -394,7 +394,7 @@ class _DebtTile extends StatelessWidget {
                 Text(debt.groupName,
                     style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.primaryLight)),
+                        color: AppColors.mutedText(context))),
               ],
             ),
           ),
@@ -407,8 +407,8 @@ class _DebtTile extends StatelessWidget {
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: iAmPaying
-                      ? AppColors.danger
-                      : AppColors.success,
+                      ? AppColors.dangerText(context)
+                      : AppColors.successText(context),
                 ),
               ),
               // Recorded but not confirmed yet (not subtracted above)
@@ -416,8 +416,8 @@ class _DebtTile extends StatelessWidget {
                 Text(
                   l10n.amountPending(
                       formatMoney(debt.pendingAmount, debt.currency)),
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.accentDark),
+                  style: TextStyle(
+                      fontSize: 11, color: AppColors.warningText(context)),
                 ),
               const SizedBox(height: 6),
               // Both people can record a payment; when the debtor does,
@@ -511,7 +511,7 @@ class _GroupBalanceCard extends StatelessWidget {
                       label: l10n.owedToYou,
                       value:
                       formatMoney(summary.youAreOwed, summary.currency),
-                      color: AppColors.success,
+                      color: AppColors.successText(context),
                     ),
                   ),
                 if (summary.youAreOwed > 0 && summary.youOwe > 0)
@@ -522,7 +522,7 @@ class _GroupBalanceCard extends StatelessWidget {
                       label: l10n.youOwe,
                       value:
                       formatMoney(summary.youOwe, summary.currency),
-                      color: AppColors.danger,
+                      color: AppColors.dangerText(context),
                     ),
                   ),
               ],
@@ -555,7 +555,7 @@ class _GroupStat extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 10, color: AppColors.primaryLight)),
+                  fontSize: 10, color: AppColors.mutedText(context))),
           const SizedBox(height: 2),
           Text(value,
               style: TextStyle(

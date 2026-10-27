@@ -120,7 +120,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     const SizedBox(height: 12),
                     Text(l10n.noNotificationsYet,
                         style: TextStyle(
-                            color: AppColors.primaryLight
+                            color: AppColors.mutedText(context)
                                 .withOpacity(0.8))),
                   ],
                 ),
@@ -200,7 +200,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: AppColors.primaryLight
+                                      color: AppColors.mutedText(context)
                                           .withOpacity(0.9))),
                             ],
                           ),
@@ -212,7 +212,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             Text(_timeAgo(n.createdAt),
                                 style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.primaryLight
+                                    color: AppColors.mutedText(context)
                                         .withOpacity(0.6))),
                             if (n.isUnread) ...[
                               const SizedBox(height: 6),

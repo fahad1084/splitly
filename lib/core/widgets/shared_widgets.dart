@@ -354,7 +354,7 @@ class ErrorBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(message,
-                style: const TextStyle(fontSize: 12, color: AppColors.danger)),
+                style: TextStyle(fontSize: 12, color: AppColors.dangerText(context))),
           ),
           TextButton(onPressed: onRetry, child: Text(l10n.tryAgain)),
         ],

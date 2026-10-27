@@ -53,7 +53,7 @@ class _NotificationSettingsScreenState
         ),
         error: (e, _) => Center(
           child: Text(l10n.somethingWentWrong,
-              style: const TextStyle(color: AppColors.danger)),
+              style: TextStyle(color: AppColors.dangerText(context))),
         ),
         data: (loaded) {
           _prefs ??= Map<String, bool>.from(loaded);
@@ -65,7 +65,7 @@ class _NotificationSettingsScreenState
               Text(l10n.notificationSettingsDesc,
                   style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.primaryLight.withOpacity(0.8))),
+                      color: AppColors.mutedText(context))),
               const SizedBox(height: 20),
               _PrefTile(
                 icon: Icons.chat_bubble_outline_rounded,

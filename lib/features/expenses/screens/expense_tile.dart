@@ -55,8 +55,8 @@ Future<bool> confirmDeleteExpense(
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(l10n.expenseHasPaymentsWarning,
-                      style: const TextStyle(
-                          color: AppColors.accentDark,
+                      style: TextStyle(
+                          color: AppColors.warningText(context),
                           fontWeight: FontWeight.w500)),
                 ),
               ],
@@ -198,7 +198,7 @@ class ExpenseTile extends ConsumerWidget {
                             : ''),
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.primaryLight,
+                      color: AppColors.mutedText(context),
                     ),
                   ),
                 ],
@@ -228,8 +228,8 @@ class ExpenseTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     color: iPaid
-                        ? AppColors.success
-                        : AppColors.danger,
+                        ? AppColors.successText(context)
+                        : AppColors.dangerText(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

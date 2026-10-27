@@ -182,7 +182,7 @@ class _ExportOptionTile extends StatelessWidget {
                   Text(title,
                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: textColor)),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.primaryLight)),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.mutedText(context))),
                 ],
               ),
             ),

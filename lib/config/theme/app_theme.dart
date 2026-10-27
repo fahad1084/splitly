@@ -19,6 +19,26 @@ class AppColors {
   // ── Semantic ──────────────────────────────
   static const Color success       = Color(0xFF16A34A); // owed TO you
   static const Color danger        = Color(0xFFDC2626); // you OWE
+
+  // ── Text colors that pass WCAG 4.5:1 ──────
+  // The brand colors above stay as they are (fills, borders, icons). Some are
+  // too light for small TEXT on white (primaryLight, success, accentDark) or
+  // too dark on dark backgrounds (danger), so text uses these instead.
+  static bool _dark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color mutedText(BuildContext context) =>
+      _dark(context) ? primaryLight : primary;
+  static Color successText(BuildContext context) =>
+      _dark(context) ? success : const Color(0xFF15803D);
+  static Color dangerText(BuildContext context) =>
+      _dark(context) ? const Color(0xFFF87171) : danger;
+  static Color warningText(BuildContext context) =>
+      _dark(context) ? accentDark : const Color(0xFFA16207);
+
+  // On the dark teal summary cards (dark in BOTH themes)
+  static const Color successOnDark = Color(0xFF4ADE80);
+  static const Color dangerOnDark  = Color(0xFFFCA5A5);
 }
 
 class AppTheme {

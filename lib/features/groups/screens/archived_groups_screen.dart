@@ -62,7 +62,7 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(l10n.noArchivedGroups,
                         style: TextStyle(
-                            color: AppColors.primaryLight
+                            color: AppColors.mutedText(context)
                                 .withOpacity(0.8))),
                   ],
                 ),
@@ -180,8 +180,8 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                               minimumSize: const Size(0, 32),
                             ),
                             child: Text(l10n.deletePermanently,
-                                style: const TextStyle(
-                                    color: AppColors.danger, fontSize: 12)),
+                                style: TextStyle(
+                                    color: AppColors.dangerText(context), fontSize: 12)),
                           ),
                       ],
                     ),

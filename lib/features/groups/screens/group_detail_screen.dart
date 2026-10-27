@@ -260,7 +260,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.danger,
+                                      color: AppColors.dangerText(context),
                                     ),
                                   ),
                                   // Recorded but not confirmed yet — not
@@ -269,9 +269,9 @@ class GroupDetailScreen extends ConsumerWidget {
                                     Text(
                                       l10n.amountPending(
                                           formatMoney(debt.pendingAmount, debt.currency)),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
-                                        color: AppColors.accentDark,
+                                        color: AppColors.warningText(context),
                                       ),
                                     ),
                                 ],
@@ -400,7 +400,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           label: Text(l10n.history,
                               style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.primaryLight)),
+                                  color: AppColors.mutedText(context))),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
@@ -825,7 +825,7 @@ class GroupDetailScreen extends ConsumerWidget {
               icon: Icons.archive_outlined,
               iconColor: AppColors.danger,
               label: l10n.archiveGroup,
-              textColor: AppColors.danger,
+              textColor: AppColors.dangerText(context),
               borderColor: borderColor,
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -838,7 +838,7 @@ class GroupDetailScreen extends ConsumerWidget {
               icon: Icons.exit_to_app_rounded,
               iconColor: AppColors.danger,
               label: l10n.leaveGroup,
-              textColor: AppColors.danger,
+              textColor: AppColors.dangerText(context),
               borderColor: borderColor,
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -879,7 +879,7 @@ class GroupDetailScreen extends ConsumerWidget {
               await ref.read(groupsProvider.notifier).archiveGroup(group.id);
               if (context.mounted) Navigator.pop(context); // back to groups list
             },
-            child: Text(l10n.archive, style: TextStyle(color: AppColors.danger)),
+            child: Text(l10n.archive, style: TextStyle(color: AppColors.dangerText(context))),
           ),
         ],
       ),
@@ -918,7 +918,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 }
               }
             },
-            child: Text(l10n.leave, style: TextStyle(color: AppColors.danger)),
+            child: Text(l10n.leave, style: TextStyle(color: AppColors.dangerText(context))),
           ),
         ],
       ),
@@ -1078,7 +1078,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                   label: l10n.totalSpent,
                   value:
                   formatMoney(summary.totalSpent, group.currency),
-                  color: AppColors.primaryLight,
+                  color: AppColors.primaryTint,
                 ),
               ),
               Expanded(
@@ -1086,7 +1086,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                   label: l10n.youAreOwed,
                   value:
                   formatMoney(summary.youAreOwed, group.currency),
-                  color: AppColors.success,
+                  color: AppColors.successOnDark,
                 ),
               ),
               Expanded(
@@ -1094,7 +1094,7 @@ class _BalanceSummaryCard extends ConsumerWidget {
                   label: l10n.youOwe,
                   value:
                   formatMoney(summary.youOwe, group.currency),
-                  color: AppColors.danger,
+                  color: AppColors.dangerOnDark,
                 ),
               ),
             ],
@@ -1118,9 +1118,9 @@ class _BalanceItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: TextStyle(
-                fontSize: 10,
-                color: AppColors.primaryLight,
+            style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.primaryTint,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         Text(value,
@@ -1325,7 +1325,7 @@ class _MemberTile extends ConsumerWidget {
               icon: Icons.person_remove_outlined,
               iconColor: AppColors.danger,
               label: l10n.removeMember,
-              textColor: AppColors.danger,
+              textColor: AppColors.dangerText(context),
               borderColor: borderColor,
               onTap: () async {
                 Navigator.pop(sheetContext);

@@ -116,7 +116,7 @@ class GroupsTab extends ConsumerWidget {
                   color: AppColors.danger, size: 40),
               const SizedBox(height: 12),
               Text(l10n.somethingWentWrong,
-                  style: TextStyle(color: AppColors.danger)),
+                  style: TextStyle(color: AppColors.dangerText(context))),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () =>
@@ -419,7 +419,7 @@ class _GroupCard extends StatelessWidget {
                       Text(l10n.membersCount(group.memberCount ?? 0),
                           style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.primaryLight)),
+                              color: AppColors.mutedText(context))),
                       const SizedBox(width: 10),
                       Icon(groupTypeIcon(group.category),
                           size: 13,
@@ -487,8 +487,8 @@ class _SummaryBanner extends StatelessWidget {
                   color: AppColors.primaryTint)),
           const SizedBox(height: 4),
           Text(l10n.balanceSummary,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.primaryLight)),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.primaryTint)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -498,7 +498,7 @@ class _SummaryBanner extends StatelessWidget {
                   // One line per currency
                   amount: formatTotals(owed,
                       fallbackCurrency: currency, separator: '\n'),
-                  color: AppColors.success,
+                  color: AppColors.successOnDark,
                   icon: Icons.arrow_downward_rounded,
                 ),
               ),
@@ -508,7 +508,7 @@ class _SummaryBanner extends StatelessWidget {
                   label: l10n.youOwe,
                   amount: formatTotals(owe,
                       fallbackCurrency: currency, separator: '\n'),
-                  color: AppColors.danger,
+                  color: AppColors.dangerOnDark,
                   icon: Icons.arrow_upward_rounded,
                 ),
               ),
@@ -557,8 +557,8 @@ class _BalanceCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(label,
-                  style: TextStyle(
-                      fontSize: 11, color: AppColors.primaryLight)),
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.primaryTint)),
             ],
           ),
           const SizedBox(height: 10),

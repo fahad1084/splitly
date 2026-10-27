@@ -64,7 +64,7 @@ class SettlementHistoryScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(48),
                   child: Center(
                     child: Text(l10n.noPaymentsYet,
-                        style: const TextStyle(color: AppColors.primaryLight)),
+                        style: TextStyle(color: AppColors.mutedText(context))),
                   ),
                 ),
               ]);
@@ -123,10 +123,10 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
     final headingColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
 
     final (statusText, statusColor) = switch (s.status) {
-      'pending' => (l10n.statusPending, AppColors.accentDark),
-      'cancelled' => (l10n.statusCancelled, AppColors.danger),
-      'legacy' => (l10n.statusEarlier, AppColors.primaryLight),
-      _ => (l10n.statusConfirmed, AppColors.success),
+      'pending' => (l10n.statusPending, AppColors.warningText(context)),
+      'cancelled' => (l10n.statusCancelled, AppColors.dangerText(context)),
+      'legacy' => (l10n.statusEarlier, AppColors.mutedText(context)),
+      _ => (l10n.statusConfirmed, AppColors.successText(context)),
     };
     final date = DateFormat.yMMMd(l10n.localeName).add_jm().format(s.createdAt.toLocal());
     final canConfirm = s.isPending && s.paidTo == me;
@@ -163,8 +163,8 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: s.status == 'cancelled'
-                      ? AppColors.primaryLight
-                      : AppColors.success,
+                      ? AppColors.mutedText(context)
+                      : AppColors.successText(context),
                   decoration: s.status == 'cancelled'
                       ? TextDecoration.lineThrough
                       : null,
@@ -177,8 +177,8 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
             children: [
               Expanded(
                 child: Text(date,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.primaryLight)),
+                    style: TextStyle(
+                        fontSize: 12, color: AppColors.mutedText(context))),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -203,7 +203,7 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
                   TextButton(
                     onPressed: _busy ? null : () => _act(confirm: false),
                     child: Text(l10n.cancelPayment,
-                        style: const TextStyle(color: AppColors.danger)),
+                        style: TextStyle(color: AppColors.dangerText(context))),
                   ),
                 if (canConfirm) ...[
                   const SizedBox(width: 8),

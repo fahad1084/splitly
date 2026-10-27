@@ -185,7 +185,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                                 : l10n.userPays(widget.debt.fromUserName),
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.primaryLight,
+                              color: AppColors.mutedText(context),
                             ),
                           ),
                           Text(
@@ -237,7 +237,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                         l10n.amountToSettle,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.primaryLight,
+                          color: AppColors.mutedText(context),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -253,17 +253,17 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'^\d+\.?\d{0,2}')),
                           ],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.success,
+                            color: AppColors.successText(context),
                             letterSpacing: -1,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             prefixText: '${widget.debt.currency} ',
-                            prefixStyle: const TextStyle(
-                                fontSize: 18, color: AppColors.success),
+                            prefixStyle: TextStyle(
+                                fontSize: 18, color: AppColors.successText(context)),
                           ),
                         ),
                       ),
@@ -272,7 +272,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
                             formatMoney(fromPaisa(_maxPaisa), widget.debt.currency)),
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.primaryLight,
+                          color: AppColors.mutedText(context),
                         ),
                       ),
                     ],

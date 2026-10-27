@@ -70,7 +70,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
         bottom: TabBar(
           controller: _tabCtrl,
           labelColor: AppColors.accent,
-          unselectedLabelColor: AppColors.primaryLight,
+          unselectedLabelColor: AppColors.primaryTint, // on the dark app bar
           indicatorColor: AppColors.accent,
           indicatorSize: TabBarIndicatorSize.label,
           tabs: [
@@ -138,7 +138,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
                                   fontWeight: FontWeight.w500,
                                   color: selected
                                       ? Colors.white
-                                      : AppColors.primaryLight)),
+                                      : AppColors.mutedText(context))),
                         ),
                       );
                     },
@@ -391,7 +391,7 @@ class _PeriodChip extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: selected
                     ? Colors.white
-                    : AppColors.primaryLight)),
+                    : AppColors.mutedText(context))),
       ),
     );
   }
@@ -425,9 +425,9 @@ class _TotalCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.totalSpentLabel,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 12,
-                        color: AppColors.primaryLight)),
+                        color: AppColors.primaryTint)),
                 const SizedBox(height: 4),
                 Text(
                   l10n.expensesCountLabel(expenses.length),                  style: const TextStyle(
@@ -443,10 +443,10 @@ class _TotalCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${expenses.length} expenses',
-                  style: TextStyle(
+              Text(l10n.expensesCountLabel(expenses.length),
+                  style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.primaryLight)),
+                      color: AppColors.primaryTint)),
               const SizedBox(height: 4),
               Text(
                 expenses.isEmpty
@@ -655,7 +655,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                         '${pct.toStringAsFixed(1)}%',
                         style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.primaryLight),
+                            color: AppColors.mutedText(context)),
                       ),
                     ],
                   ),
@@ -772,7 +772,7 @@ class _MemberTabState extends State<_MemberTab> {
                             name.split(' ').first,
                             style: TextStyle(
                                 fontSize: 10,
-                                color: AppColors.primaryLight),
+                                color: AppColors.mutedText(context)),
                           ),
                         );
                       },
@@ -901,7 +901,7 @@ class _MemberTabState extends State<_MemberTab> {
                       Text('${pct.toStringAsFixed(1)}%',
                           style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.primaryLight)),
+                              color: AppColors.mutedText(context))),
                     ],
                   ),
                 ],

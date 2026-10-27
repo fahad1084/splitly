@@ -211,7 +211,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                     child: Text(l10n.orContinueWith,
                         style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.primaryLight)),
+                            color: AppColors.mutedText(context))),
                   ),
                   Expanded(
                       child: Divider(color: dividerColor, thickness: 1)),

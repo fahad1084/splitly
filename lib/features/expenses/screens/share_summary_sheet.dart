@@ -116,7 +116,7 @@ class _ShareSummarySheet extends ConsumerWidget {
                     Text(l10n.preview,
                         style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.primaryLight,
+                            color: AppColors.mutedText(context),
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.5)),
                   ],

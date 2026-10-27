@@ -65,7 +65,7 @@ class RecurringExpensesScreen extends ConsumerWidget {
                   child: Center(
                     child: Text(l10n.noRecurringExpenses,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.primaryLight)),
+                        style: TextStyle(color: AppColors.mutedText(context))),
                   ),
                 ),
               ]);
@@ -189,7 +189,7 @@ class _RecurringTileState extends ConsumerState<_RecurringTile> {
             subtitle: Text('$every · $when',
                 style: TextStyle(
                     color: e.recurPaused
-                        ? AppColors.accentDark
+                        ? AppColors.warningText(context)
                         : (dark ? AppColors.primaryTint : AppColors.primaryDark))),
             trailing: Text(formatMoney(e.amount, e.currency),
                 style: const TextStyle(
