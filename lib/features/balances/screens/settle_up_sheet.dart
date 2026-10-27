@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:splitly/config/supabase/supabase_config.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -30,8 +30,7 @@ class _SettleUpSheet extends ConsumerStatefulWidget {
 
 class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
   bool _isLoading = false;
-  final currentUserId =
-      SupabaseConfig.client.auth.currentUser?.id ?? '';
+  late final String currentUserId;
   late final TextEditingController _amountCtrl;
 
   // The most that can be paid now: the debt minus payments already
@@ -44,6 +43,7 @@ class _SettleUpSheetState extends ConsumerState<_SettleUpSheet> {
   @override
   void initState() {
     super.initState();
+    currentUserId = ref.read(currentUserProvider)?.id ?? '';
     _amountCtrl = TextEditingController(
         text: fromPaisa(_maxPaisa > 0 ? _maxPaisa : 0).toStringAsFixed(2));
   }

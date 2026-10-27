@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../config/supabase/supabase_config.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -147,7 +147,7 @@ class _RecurringTileState extends ConsumerState<_RecurringTile> {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final e = widget.expense;
-    final me = SupabaseConfig.client.auth.currentUser?.id ?? '';
+    final me = ref.watch(currentUserProvider)?.id ?? '';
     final headingColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final amAdmin = ref
             .watch(groupMembersProvider(widget.group.id))

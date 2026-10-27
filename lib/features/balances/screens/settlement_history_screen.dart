@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../config/supabase/supabase_config.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -119,7 +119,7 @@ class _SettlementTileState extends ConsumerState<_SettlementTile> {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final s = widget.settlement;
-    final me = SupabaseConfig.client.auth.currentUser?.id ?? '';
+    final me = ref.watch(currentUserProvider)?.id ?? '';
     final headingColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
 
     final (statusText, statusColor) = switch (s.status) {
