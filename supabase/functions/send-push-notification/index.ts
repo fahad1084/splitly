@@ -278,6 +278,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ skipped: true }), { status: 200 });
     }
 
+    // Which expense / payment / message this is about, so tapping the push
+    // opens it (same id as entity_id in the in-app notification)
+    dataPayload.entity_id =
+      (table === "notifications" ? record.entity_id : record.id) ?? "";
+
     const prefColumn: Record<string, string> = {
       message: "notify_messages",
       expense: "notify_expenses",
