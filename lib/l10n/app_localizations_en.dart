@@ -1280,4 +1280,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noInternetBanner => 'No internet. Showing the last saved data.';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get sendMessage => 'Send message';
+
+  @override
+  String get recordVoiceNote => 'Record voice note';
+
+  @override
+  String get stopRecording => 'Stop recording';
+
+  @override
+  String get attachFile => 'Attach file';
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
+  String get playVoiceNote => 'Play voice note';
+
+  @override
+  String get pauseVoiceNote => 'Pause voice note';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get chooseThisColor => 'Choose this color';
+
+  @override
+  String includeInSplit(String name) {
+    return 'Include $name in the split';
+  }
+
+  @override
+  String memberOptions(String name) {
+    return 'Options for $name';
+  }
 }

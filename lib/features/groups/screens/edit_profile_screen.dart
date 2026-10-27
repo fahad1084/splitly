@@ -355,7 +355,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     runSpacing: 12,
                     children: _avatarColors.map((hex) {
                       final selected = _selectedColor == hex;
-                      return GestureDetector(
+                      return LabeledTap(
+                        label: AppLocalizations.of(context)!.chooseThisColor,
                         onTap: () => setState(() => _selectedColor = hex),
                         child: Container(
                           width: 44,

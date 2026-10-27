@@ -179,6 +179,7 @@ class _SplitlyTextFieldState extends State<SplitlyTextField> {
         prefixIcon: Icon(widget.prefixIcon, color: AppColors.primary, size: 20),
         suffixIcon: widget.obscureText
             ? IconButton(
+              tooltip: _obscure ? AppLocalizations.of(context)!.showPassword : AppLocalizations.of(context)!.hidePassword,
           icon: Icon(
             _obscure
                 ? Icons.visibility_outlined
@@ -295,6 +296,54 @@ void showErrorSnack(BuildContext context, String message) {
 // ERROR STATES — instead of an empty list or a raw error text
 // ─────────────────────────────────────────────────────────────────────────────
 /// Full-area error with a "Try again" button (lists, screens).
+// ── Icon-only button ──────────────────────────────────────────────────────────
+// For a tappable icon that isn't an IconButton: TalkBack reads [label] as a
+// button, a long press shows it as a tooltip, and the tap area is at least
+// 48×48 even when the drawn icon is smaller (it looks the same).
+class LabeledTap extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+  final Widget child;
+  final bool? selected;
+  const LabeledTap({
+    super.key,
+    required this.label,
+    required this.onTap,
+    required this.child,
+    this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        enabled: onTap != null,
+        selected: selected,
+        label: label,
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          // A parent that already fixes the size (e.g. the app bar's back
+          // button slot) keeps it; otherwise the tap area grows to 48×48
+          // around the unchanged icon.
+          child: LayoutBuilder(
+            builder: (context, constraints) => constraints.isTight
+                ? child
+                : ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                    child: Center(widthFactor: 1, heightFactor: 1, child: child),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ErrorRetry extends StatelessWidget {
   final VoidCallback onRetry;
   final String? message; // default: "Couldn't load this. Please try again."
@@ -622,7 +671,8 @@ class AuthPageWrapper extends StatelessWidget {
         backgroundColor: bgColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: LabeledTap(
+          label: AppLocalizations.of(context)!.back,
           onTap: () => Navigator.pop(context),
           child: Container(
             margin: const EdgeInsets.all(8),

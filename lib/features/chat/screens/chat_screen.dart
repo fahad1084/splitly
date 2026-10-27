@@ -403,7 +403,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: LabeledTap(
+          label: AppLocalizations.of(context)!.back,
           onTap: () => Navigator.pop(context),
           child: Container(
             margin: const EdgeInsets.all(8),
@@ -1158,7 +1159,8 @@ class _AudioBubbleState extends State<_AudioBubble> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          LabeledTap(
+            label: _isPlaying ? AppLocalizations.of(context)!.pauseVoiceNote : AppLocalizations.of(context)!.playVoiceNote,
             onTap: _togglePlay,
             child: Icon(
               _isPlaying
@@ -1321,7 +1323,8 @@ class _MessageInput extends StatelessWidget {
                       ],
                     ),
                   ),
-                  GestureDetector(
+                  LabeledTap(
+                    label: AppLocalizations.of(context)!.cancelReply,
                     onTap: onCancelReply,
                     child: Icon(Icons.close_rounded, size: 18, color: AppColors.primaryLight),
                   ),
@@ -1342,7 +1345,8 @@ class _MessageInput extends StatelessWidget {
               Text('0:${recordSeconds.toString().padLeft(2, '0')}',
                   style: TextStyle(color: AppColors.mutedText(context))),
               const Spacer(),
-              GestureDetector(
+              LabeledTap(
+                label: AppLocalizations.of(context)!.stopRecording,
                 onTap: onMicToggle,
                 child: Container(
                   width: 44,
@@ -1358,7 +1362,8 @@ class _MessageInput extends StatelessWidget {
               : Row(
             children: [
               // Attachment button
-              GestureDetector(
+              LabeledTap(
+                label: AppLocalizations.of(context)!.attachFile,
                 onTap: isSending ? null : onAttachment,
                 child: Icon(Icons.attach_file_rounded,
                     color: AppColors.primary.withOpacity(isSending ? 0.4 : 1)),
@@ -1419,7 +1424,8 @@ class _MessageInput extends StatelessWidget {
                 valueListenable: controller,
                 builder: (context, value, _) {
                   final hasText = value.text.trim().isNotEmpty;
-                  return GestureDetector(
+                  return LabeledTap(
+                    label: hasText ? AppLocalizations.of(context)!.sendMessage : AppLocalizations.of(context)!.recordVoiceNote,
                     onTap: isSending
                         ? null
                         : (hasText ? onSend : onMicToggle),

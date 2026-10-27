@@ -436,5 +436,19 @@
   "groupTypeOther": "دیگر",
   "groupNoLongerAvailable": "یہ گروپ اب دستیاب نہیں۔ شاید آپ اسے چھوڑ چکے ہیں یا یہ حذف ہو گیا ہے۔",
   "expenseNoLongerExists": "یہ خرچہ حذف ہو چکا ہے۔",
-  "noInternetBanner": "انٹرنیٹ نہیں ہے۔ آخری محفوظ معلومات دکھائی جا رہی ہیں۔"
+  "noInternetBanner": "انٹرنیٹ نہیں ہے۔ آخری محفوظ معلومات دکھائی جا رہی ہیں۔",
+  "back": "واپس",
+  "sendMessage": "پیغام بھیجیں",
+  "recordVoiceNote": "صوتی پیغام ریکارڈ کریں",
+  "stopRecording": "ریکارڈنگ بند کریں",
+  "attachFile": "فائل منسلک کریں",
+  "cancelReply": "جواب منسوخ کریں",
+  "playVoiceNote": "صوتی پیغام چلائیں",
+  "pauseVoiceNote": "صوتی پیغام روکیں",
+  "moreOptions": "مزید اختیارات",
+  "showPassword": "پاس ورڈ دکھائیں",
+  "hidePassword": "پاس ورڈ چھپائیں",
+  "chooseThisColor": "یہ رنگ منتخب کریں",
+  "includeInSplit": "{name} کو تقسیم میں شامل کریں",
+  "memberOptions": "{name} کے اختیارات"
 }

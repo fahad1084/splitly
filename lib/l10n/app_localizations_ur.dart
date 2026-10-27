@@ -1281,4 +1281,50 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get noInternetBanner =>
       'انٹرنیٹ نہیں ہے۔ آخری محفوظ معلومات دکھائی جا رہی ہیں۔';
+
+  @override
+  String get back => 'واپس';
+
+  @override
+  String get sendMessage => 'پیغام بھیجیں';
+
+  @override
+  String get recordVoiceNote => 'صوتی پیغام ریکارڈ کریں';
+
+  @override
+  String get stopRecording => 'ریکارڈنگ بند کریں';
+
+  @override
+  String get attachFile => 'فائل منسلک کریں';
+
+  @override
+  String get cancelReply => 'جواب منسوخ کریں';
+
+  @override
+  String get playVoiceNote => 'صوتی پیغام چلائیں';
+
+  @override
+  String get pauseVoiceNote => 'صوتی پیغام روکیں';
+
+  @override
+  String get moreOptions => 'مزید اختیارات';
+
+  @override
+  String get showPassword => 'پاس ورڈ دکھائیں';
+
+  @override
+  String get hidePassword => 'پاس ورڈ چھپائیں';
+
+  @override
+  String get chooseThisColor => 'یہ رنگ منتخب کریں';
+
+  @override
+  String includeInSplit(String name) {
+    return '$name کو تقسیم میں شامل کریں';
+  }
+
+  @override
+  String memberOptions(String name) {
+    return '$name کے اختیارات';
+  }
 }

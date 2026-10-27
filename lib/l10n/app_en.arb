@@ -456,5 +456,21 @@
   "groupTypeOther": "Other",
   "groupNoLongerAvailable": "This group isn't available any more. You may have left it, or it was deleted.",
   "expenseNoLongerExists": "This expense was deleted.",
-  "noInternetBanner": "No internet. Showing the last saved data."
+  "noInternetBanner": "No internet. Showing the last saved data.",
+  "back": "Back",
+  "sendMessage": "Send message",
+  "recordVoiceNote": "Record voice note",
+  "stopRecording": "Stop recording",
+  "attachFile": "Attach file",
+  "cancelReply": "Cancel reply",
+  "playVoiceNote": "Play voice note",
+  "pauseVoiceNote": "Pause voice note",
+  "moreOptions": "More options",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "chooseThisColor": "Choose this color",
+  "includeInSplit": "Include {name} in the split",
+  "@includeInSplit": {"placeholders": {"name": {"type": "String"}}},
+  "memberOptions": "Options for {name}",
+  "@memberOptions": {"placeholders": {"name": {"type": "String"}}}
 }

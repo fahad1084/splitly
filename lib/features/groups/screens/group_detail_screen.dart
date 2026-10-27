@@ -51,7 +51,8 @@ class GroupDetailScreen extends ConsumerWidget {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: LabeledTap(
+          label: AppLocalizations.of(context)!.back,
           onTap: () => Navigator.pop(context),
           child: Container(
             margin: const EdgeInsets.all(8),
@@ -122,11 +123,13 @@ class GroupDetailScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            tooltip: AppLocalizations.of(context)!.shareInviteCode,
             icon: const Icon(Icons.person_add_outlined,
                 color: AppColors.primaryTint),
             onPressed: () => _showInviteDialog(context),
           ),
           IconButton(
+            tooltip: AppLocalizations.of(context)!.groupChat,
             icon: const Icon(Icons.chat_bubble_outline_rounded,
                 color: AppColors.primaryTint),
             onPressed: () => Navigator.push(
@@ -137,6 +140,7 @@ class GroupDetailScreen extends ConsumerWidget {
             ),
           ),
           IconButton(
+            tooltip: AppLocalizations.of(context)!.moreOptions,
             icon: const Icon(Icons.more_vert_rounded,
                 color: AppColors.primaryTint),
             onPressed: () => _showGroupMenu(context, ref),
@@ -1238,7 +1242,8 @@ class _MemberTile extends ConsumerWidget {
                           color: AppColors.primaryDark)),
                 ),
               if (isCurrentUserAdmin && !isSelf)
-                GestureDetector(
+                LabeledTap(
+                  label: AppLocalizations.of(context)!.memberOptions(name),
                   onTap: () => _showMemberActions(
                       context, ref, name, memberUserId, role),
                   child: Padding(

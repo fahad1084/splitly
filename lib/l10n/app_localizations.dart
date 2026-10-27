@@ -2419,6 +2419,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No internet. Showing the last saved data.'**
   String get noInternetBanner;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get sendMessage;
+
+  /// No description provided for @recordVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Record voice note'**
+  String get recordVoiceNote;
+
+  /// No description provided for @stopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording'**
+  String get stopRecording;
+
+  /// No description provided for @attachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach file'**
+  String get attachFile;
+
+  /// No description provided for @cancelReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reply'**
+  String get cancelReply;
+
+  /// No description provided for @playVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Play voice note'**
+  String get playVoiceNote;
+
+  /// No description provided for @pauseVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause voice note'**
+  String get pauseVoiceNote;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @chooseThisColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose this color'**
+  String get chooseThisColor;
+
+  /// No description provided for @includeInSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Include {name} in the split'**
+  String includeInSplit(String name);
+
+  /// No description provided for @memberOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options for {name}'**
+  String memberOptions(String name);
 }
 
 class _AppLocalizationsDelegate

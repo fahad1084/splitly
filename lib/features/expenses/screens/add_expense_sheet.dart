@@ -801,7 +801,8 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet>
                     child: Row(
                       children: [
                         // Checkbox
-                        GestureDetector(
+                        LabeledTap(
+                          label: AppLocalizations.of(context)!.includeInSplit(m['name'] as String),
                           onTap: () => setState(
                                   () => _members[i]['included'] = !included),
                           child: AnimatedContainer(

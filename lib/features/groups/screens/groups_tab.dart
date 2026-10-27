@@ -74,6 +74,7 @@ class GroupsTab extends ConsumerWidget {
                 clipBehavior: Clip.none,
                 children: [
                   IconButton(
+                    tooltip: AppLocalizations.of(context)!.notifications,
                     icon: const Icon(Icons.notifications_outlined,
                         color: AppColors.primaryTint),
                     onPressed: () => Navigator.push(

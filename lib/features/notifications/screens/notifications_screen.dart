@@ -68,7 +68,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         backgroundColor: AppColors.primaryDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: LabeledTap(
+          label: AppLocalizations.of(context)!.back,
           onTap: () => Navigator.pop(context),
           child: Container(
             margin: const EdgeInsets.all(8),
