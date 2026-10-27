@@ -14,7 +14,7 @@ do $$
 declare
   ali   uuid := 'a3000000-0000-0000-0000-0000000000a1';
   bilal uuid := 'b3000000-0000-0000-0000-0000000000b1';
-  g     uuid := '93000000-0000-0000-0000-000000000093';
+  g     uuid := '94000000-0000-0000-0000-000000000094';
   today date := (now() at time zone 'Asia/Karachi')::date;
   splits jsonb := jsonb_build_array(
     jsonb_build_object('user_id', 'a3000000-0000-0000-0000-0000000000a1', 'amount_owed', 50),
