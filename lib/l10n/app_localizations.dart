@@ -2509,6 +2509,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'At least 8 characters'**
   String get atLeast8Chars;
+
+  /// No description provided for @voiceNoteMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice notes can be up to 2 minutes, so this one was sent.'**
+  String get voiceNoteMaxReached;
+
+  /// No description provided for @secondsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s left'**
+  String secondsLeft(int seconds);
 }
 
 class _AppLocalizationsDelegate

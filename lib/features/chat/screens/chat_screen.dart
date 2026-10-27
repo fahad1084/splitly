@@ -38,6 +38,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _audioRecorder = AudioRecorder();
   bool _isRecording = false;
   int _recordSeconds = 0;
+  // Voice notes stop (and are sent) by themselves at this length
+  static const _maxRecordSeconds = 120;
   DateTime? _recordStart;
 
   // ── Reply ────────────────────────────────────────────────────────────────
@@ -383,6 +385,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     Future.delayed(const Duration(seconds: 1), () {
       if (!_isRecording || !mounted) return;
       setState(() => _recordSeconds++);
+      if (_recordSeconds >= _maxRecordSeconds) {
+        // Same as tapping stop: the note is kept and sent
+        showSuccessSnack(
+            context, AppLocalizations.of(context)!.voiceNoteMaxReached);
+        _toggleRecording();
+        return;
+      }
       _tickRecordTimer();
     });
   }
@@ -595,6 +604,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onSend: _sendMessage,
             onAttachment: _showAttachmentSheet,
             onMicToggle: _toggleRecording,
+            maxRecordSeconds: _maxRecordSeconds,
             replyingTo: _replyingTo,
             onCancelReply: () => setState(() => _replyingTo = null),
           ),
@@ -1256,6 +1266,7 @@ class _MessageInput extends StatelessWidget {
   final VoidCallback onSend;
   final VoidCallback onAttachment;
   final VoidCallback onMicToggle;
+  final int maxRecordSeconds;
   final MessageModel? replyingTo;
   final VoidCallback? onCancelReply;
 
@@ -1267,6 +1278,7 @@ class _MessageInput extends StatelessWidget {
     required this.onSend,
     required this.onAttachment,
     required this.onMicToggle,
+    required this.maxRecordSeconds,
     this.replyingTo,
     this.onCancelReply,
   });
@@ -1342,8 +1354,19 @@ class _MessageInput extends StatelessWidget {
                   style: TextStyle(
                       color: dark ? AppColors.primaryTint : AppColors.primaryDark))),
               const SizedBox(width: 8),
-              Text('0:${recordSeconds.toString().padLeft(2, '0')}',
-                  style: TextStyle(color: AppColors.mutedText(context))),
+              // m:ss; the last 10 seconds count down in red
+              if (maxRecordSeconds - recordSeconds <= 10)
+                Text(
+                    AppLocalizations.of(context)!
+                        .secondsLeft(maxRecordSeconds - recordSeconds),
+                    style: TextStyle(
+                        color: AppColors.dangerText(context),
+                        fontWeight: FontWeight.w600))
+              else
+                Text(
+                    '${recordSeconds ~/ 60}:'
+                    '${(recordSeconds % 60).toString().padLeft(2, '0')}',
+                    style: TextStyle(color: AppColors.mutedText(context))),
               const Spacer(),
               LabeledTap(
                 label: AppLocalizations.of(context)!.stopRecording,

@@ -473,5 +473,8 @@
   "@includeInSplit": {"placeholders": {"name": {"type": "String"}}},
   "memberOptions": "Options for {name}",
   "@memberOptions": {"placeholders": {"name": {"type": "String"}}},
-  "atLeast8Chars": "At least 8 characters"
+  "atLeast8Chars": "At least 8 characters",
+  "voiceNoteMaxReached": "Voice notes can be up to 2 minutes, so this one was sent.",
+  "secondsLeft": "{seconds}s left",
+  "@secondsLeft": {"placeholders": {"seconds": {"type": "int"}}}
 }

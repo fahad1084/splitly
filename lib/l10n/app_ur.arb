@@ -451,5 +451,7 @@
   "chooseThisColor": "یہ رنگ منتخب کریں",
   "includeInSplit": "{name} کو تقسیم میں شامل کریں",
   "memberOptions": "{name} کے اختیارات",
-  "atLeast8Chars": "کم از کم 8 حروف"
+  "atLeast8Chars": "کم از کم 8 حروف",
+  "voiceNoteMaxReached": "صوتی پیغام زیادہ سے زیادہ 2 منٹ کا ہو سکتا ہے، اس لیے یہ بھیج دیا گیا۔",
+  "secondsLeft": "{seconds} سیکنڈ باقی"
 }

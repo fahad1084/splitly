@@ -1329,4 +1329,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get atLeast8Chars => 'At least 8 characters';
+
+  @override
+  String get voiceNoteMaxReached =>
+      'Voice notes can be up to 2 minutes, so this one was sent.';
+
+  @override
+  String secondsLeft(int seconds) {
+    return '${seconds}s left';
+  }
 }

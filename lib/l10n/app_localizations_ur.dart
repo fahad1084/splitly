@@ -1330,4 +1330,13 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get atLeast8Chars => 'کم از کم 8 حروف';
+
+  @override
+  String get voiceNoteMaxReached =>
+      'صوتی پیغام زیادہ سے زیادہ 2 منٹ کا ہو سکتا ہے، اس لیے یہ بھیج دیا گیا۔';
+
+  @override
+  String secondsLeft(int seconds) {
+    return '$seconds سیکنڈ باقی';
+  }
 }
