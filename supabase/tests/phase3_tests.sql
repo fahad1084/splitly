@@ -20,6 +20,8 @@ declare
     jsonb_build_object('user_id', 'a3000000-0000-0000-0000-0000000000a1', 'amount_owed', 50),
     jsonb_build_object('user_id', 'b3000000-0000-0000-0000-0000000000b1', 'amount_owed', 50));
   v_id  uuid;
+  v_id2 uuid;
+  v_id3 uuid;
   v_date date;
   v_n   int;
   v_amt numeric;
@@ -262,6 +264,23 @@ begin
   exception when others then
     if sqlerrm = 'Not allowed' then ok := ok + 1; else fails := fails || ' C11(' || sqlerrm || ')'; end if;
   end;
+
+  -- ── 10d: group type ───────────────────────────────────────────────────────
+  -- D1 the chosen type is saved; old app (no type) and unknown → 'other'
+  v_id := public.create_group(p_name => 'P3 trip', p_currency => 'PKR', p_category => 'Trip');
+  v_id2 := public.create_group(p_name => 'P3 old app');
+  v_id3 := public.create_group(p_name => 'P3 odd', p_category => 'x');
+  if (select category from public.groups where id = v_id) = 'trip'
+     and (select category from public.groups where id = v_id2) = 'other'
+     and (select category from public.groups where id = v_id3) = 'other'
+  then ok := ok + 1; else fails := fails || ' D1'; end if;
+
+  -- D2 every group has a known type; only ONE create_group exists
+  select count(*) into v_n from pg_proc
+   where proname = 'create_group' and pronamespace = 'public'::regnamespace;
+  if v_n = 1 and not exists (select 1 from public.groups
+       where category not in ('home', 'trip', 'friends', 'office', 'family', 'other'))
+  then ok := ok + 1; else fails := fails || ' D2'; end if;
 
   raise exception 'RESULT: % passed, failed:%', ok, coalesce(nullif(fails, ''), ' none');
 end $$;
