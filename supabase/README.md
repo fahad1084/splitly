@@ -17,13 +17,13 @@ Everything the Flutter app needs on the server side is in this folder.
 - **Tables:** `profiles`, `groups`, `group_members`, `expenses`, `expense_splits`, `settlements`, `messages`, `typing_status`, `chat_read_status`, `notifications`, `debt_reminders_sent`
 - **RPC functions called by the app:**
   - groups: `create_group`, `join_group_by_code`, `leave_group`, `remove_member`, `delete_group_permanently`
-  - expenses: `add_expense`, `delete_expense`
+  - expenses: `add_expense`, `edit_expense`, `delete_expense`, `set_recurring_status`
   - money: `get_my_debts`, `record_settlement`, `confirm_settlement`, `cancel_settlement`
   - other: `get_unread_counts`, `delete_own_account`, `get_group_preview_by_invite_code` (old, not used any more)
 - **The balance math (the only copy):** `group_debts(group_id)`. Balance between two people = their expense splits − their **confirmed** settlements. `expense_splits.is_settled` is not used for money any more.
 - **For the reminder Edge Function only:** `debts_for_reminders` (service role).
 - **Helper functions used by RLS:** `get_my_group_ids`, `is_group_member`, `is_group_admin`, `is_group_creator`, `is_authenticated`
-- **Cron function:** `generate_recurring_expenses`, which creates the next copy of each recurring expense once a day.
+- **Cron function:** `generate_recurring_expenses`, which creates the next copy of each recurring expense once a day. Monthly ones keep their day (31 Jan → 28 Feb → 31 Mar). A copy is skipped, and the creator told (`recurring_skipped` notification + push), when someone in it left the group.
 - **No `REVOKE EXECUTE`.** On this Postgres version, a "permission denied for function" error crashes the database server, so every function checks its caller itself.
 
 ### Tests (local database only)
@@ -32,6 +32,7 @@ Everything the Flutter app needs on the server side is in this folder.
 - `tests/money_tests.sql`: balances, partial payments, pending/confirm/cancel, leaving or removing members with debts, currency, exact splits.
 - `tests/push_trigger_test.sql`: the payment confirm/cancel push trigger (queues exactly 1 request, only for pending → confirmed/cancelled; does nothing without the Vault secrets).
 - `tests/concurrency_test.sh`: 2 payments at the same moment, which proves the lock in `record_settlement`. Run it with `bash`, not `psql`.
+- `tests/phase3_tests.sql`: expense date, edit expense, recurring expenses, group type. **Safe on splitly-test too**: it always ends with an error that undoes everything, and that error message is the result (`RESULT: 25 passed, failed: none`). Run it with `supabase db query --linked -f supabase/tests/phase3_tests.sql` (or `--local`).
 
 Each file needs a **fresh** local database. Run these one at a time:
 
