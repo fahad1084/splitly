@@ -55,10 +55,10 @@ SQL
     select public.add_expense('$G', '$L', 'Water', 100, jsonb_build_array(
       jsonb_build_object('user_id', '$K', 'amount_owed', 50),
       jsonb_build_object('user_id', '$L', 'amount_owed', 50)));
-    commit;" | sed -n 3p)
+    commit;" | grep -E '^[0-9a-f-]{36}$' | tail -1)
   local pay
   pay=$(psql "$DB" -tA -v ON_ERROR_STOP=1 -c "begin; $AS_K
-    select public.record_settlement('$G', '$K', '$L', 150); commit;" | sed -n 2p)
+    select public.record_settlement('$G', '$K', '$L', 150); commit;" | grep -E '^[0-9a-f-]{36}$')
   echo "$water $pay"
 }
 
