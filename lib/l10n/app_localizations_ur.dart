@@ -998,7 +998,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get deleteAccountWarning =>
-      'اس سے آپ مستقل طور پر سائن آؤٹ ہو جائیں گے اور یہ اکاؤنٹ غیر فعال ہو جائے گا۔ جن گروپس کے اخراجات میں آپ شامل ہیں، وہاں آپ کا نام \"Deleted User\" دکھایا جائے گا تاکہ دوسروں کا حساب درست رہے۔ یہ عمل واپس نہیں ہو سکتا۔';
+      'اس سے آپ مستقل طور پر سائن آؤٹ ہو جائیں گے اور یہ اکاؤنٹ غیر فعال ہو جائے گا۔ آپ اپنے تمام گروپس سے نکل جائیں گے اور آپ کی پروفائل تصویر حذف ہو جائے گی۔ پرانے اخراجات اور پیغامات میں آپ کا نام \"Deleted User\" دکھایا جائے گا تاکہ دوسروں کا حساب درست رہے۔ یہ صرف تب ممکن ہے جب نہ آپ کسی کے مقروض ہوں اور نہ کوئی آپ کا۔ یہ عمل واپس نہیں ہو سکتا۔';
 
   @override
   String get deleteAccountConfirmPrompt =>
@@ -1371,4 +1371,12 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get changeNotes => 'نوٹس تبدیل ہوئے';
+
+  @override
+  String get cantDeleteAccountYet => 'آپ ابھی اپنا اکاؤنٹ حذف نہیں کر سکتے';
+
+  @override
+  String debtInGroup(String group, String debt) {
+    return '$group: $debt';
+  }
 }

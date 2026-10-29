@@ -13,6 +13,11 @@ import '../../groups/screens/edit_profile_screen.dart';
 import '../../groups/screens/archived_groups_screen.dart';
 import '../../notifications/screens/notification_settings_screen.dart';
 import '../../../core/utils/app_errors.dart';
+import '../../../core/utils/money_format.dart';
+import '../../balances/controllers/balances_controller.dart';
+import '../../balances/models/balance_model.dart';
+import '../../groups/controllers/groups_controller.dart';
+import '../../groups/models/group_model.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -438,6 +443,10 @@ class ProfileTab extends ConsumerWidget {
     if (!context.mounted) return;
     Navigator.pop(context); // close loading dialog
 
+    if (error == 'HAS_UNSETTLED_DEBTS') {
+      await _showCantDeleteAccount(context, ref);
+      return;
+    }
     if (error != null) {
       showErrorSnack(context, friendlyError(AppLocalizations.of(context)!, error));
       return;
@@ -775,4 +784,72 @@ Color _parseHexColor(String hex) {
   } catch (_) {
     return AppColors.primary;
   }
+}
+
+// ── "Settle these first" when deleting the account ────────────────────────────
+// The database refused (HAS_UNSETTLED_DEBTS): list what is still open, in
+// every group (archived ones too), from fresh balances.
+Future<void> _showCantDeleteAccount(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context)!;
+  final me = ref.read(currentUserProvider)?.id ?? '';
+  ref.invalidate(myDebtsProvider);
+  var debts = <DebtRow>[];
+  var archived = <GroupModel>[];
+  try {
+    debts = await ref.read(myDebtsProvider.future);
+    archived = await ref.read(archivedGroupsProvider.future);
+  } catch (_) {
+    // Offline: the dialog still says why, just without the list
+  }
+  final groups = {
+    for (final g in [...?ref.read(groupsProvider).valueOrNull, ...archived]) g.id: g,
+  };
+  final lines = [
+    for (final d in debts)
+      if (d.debtorId == me || d.creditorId == me)
+        () {
+          final g = groups[d.groupId];
+          final money = formatMoney(d.amount, g?.currency ?? 'PKR');
+          final what = d.debtorId == me
+              ? l10n.youOweUser(d.creditorName, money)
+              : l10n.userOwesYou(d.debtorName, money);
+          return g == null ? what : l10n.debtInGroup(g.name, what);
+        }(),
+  ];
+  if (!context.mounted) return;
+  final dark = isDark(context);
+  final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+
+  await showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: dark ? AppColors.primaryDark : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(l10n.cantDeleteAccountYet, style: TextStyle(color: textColor)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.settleTheseFirst, style: TextStyle(color: textColor)),
+            const SizedBox(height: 8),
+            for (final line in lines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• $line',
+                    style: TextStyle(
+                        color: textColor, fontWeight: FontWeight.w500)),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel,
+              style: const TextStyle(color: AppColors.primary)),
+        ),
+      ],
+    ),
+  );
 }

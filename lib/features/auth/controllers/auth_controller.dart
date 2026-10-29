@@ -214,19 +214,50 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   }
 
   // ── Delete Account ────────────────────────────────────────────────────────
-  // Anonymizes the profile (name → "Deleted User", strips personal data,
-  // bans login) via a SECURITY DEFINER RPC — shared group/expense history
-  // stays intact for other members. Signs the local session out afterward.
+  // delete_own_account() (20261031000100_account_deletion.sql) anonymizes
+  // the profile, leaves all groups and bans the login — shared group history
+  // stays intact for other members. It refuses with HAS_UNSETTLED_DEBTS while
+  // money is still owed either way; then NOTHING is deleted (not the photo
+  // either). After it worked, the profile photo files are removed and the
+  // local session is signed out.
   Future<String?> deleteAccount() async {
     state = const AsyncValue.loading();
+    final userId = _supabase.auth.currentUser?.id;
     try {
       await _supabase.rpc('delete_own_account');
-      await signOut();
+    } on PostgrestException catch (e, st) {
       state = const AsyncValue.data(null);
-      return null;
+      if (e.message == 'HAS_UNSETTLED_DEBTS') return 'HAS_UNSETTLED_DEBTS';
+      return errorCode(e, st, where: 'deleteAccount');
     } catch (e, st) {
       state = const AsyncValue.data(null);
       return errorCode(e, st, where: 'deleteAccount');
+    }
+
+    if (userId != null) await _deleteMyAvatarFiles(userId);
+    try {
+      await signOut();
+    } catch (e) {
+      // The account is already deleted; the session ends on the next
+      // token refresh anyway (the login is banned).
+      logDebug('=== signOut after deleting the account: $e ===');
+    }
+    state = const AsyncValue.data(null);
+    return null;
+  }
+
+  // Postgres may not delete Storage files, so the app does it through the
+  // Storage API (only your own avatars/<id>/ folder is allowed). Best
+  // effort: if it fails, nothing points to the file any more.
+  Future<void> _deleteMyAvatarFiles(String userId) async {
+    try {
+      final storage = _supabase.storage.from('avatars');
+      final files = await storage.list(path: userId);
+      if (files.isNotEmpty) {
+        await storage.remove([for (final f in files) '$userId/${f.name}']);
+      }
+    } catch (e) {
+      logDebug('=== delete avatar files: $e ===');
     }
   }
 

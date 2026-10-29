@@ -999,7 +999,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountWarning =>
-      'This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you\'re part of, so balances stay accurate for others. This cannot be undone.';
+      'This permanently signs you out and disables this account. You leave all your groups and your profile photo is deleted. Your name shows as \"Deleted User\" in past expenses and messages, so balances stay correct for others. You can only do this when nobody owes you and you owe nobody. This cannot be undone.';
 
   @override
   String get deleteAccountConfirmPrompt =>
@@ -1370,4 +1370,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeNotes => 'Notes changed';
+
+  @override
+  String get cantDeleteAccountYet => 'You can\'t delete your account yet';
+
+  @override
+  String debtInGroup(String group, String debt) {
+    return '$group: $debt';
+  }
 }

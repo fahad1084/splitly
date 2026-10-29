@@ -1937,7 +1937,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountWarning.
   ///
   /// In en, this message translates to:
-  /// **'This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you\'re part of, so balances stay accurate for others. This cannot be undone.'**
+  /// **'This permanently signs you out and disables this account. You leave all your groups and your profile photo is deleted. Your name shows as \"Deleted User\" in past expenses and messages, so balances stay correct for others. You can only do this when nobody owes you and you owe nobody. This cannot be undone.'**
   String get deleteAccountWarning;
 
   /// No description provided for @deleteAccountConfirmPrompt.
@@ -2569,6 +2569,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes changed'**
   String get changeNotes;
+
+  /// No description provided for @cantDeleteAccountYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t delete your account yet'**
+  String get cantDeleteAccountYet;
+
+  /// No description provided for @debtInGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'{group}: {debt}'**
+  String debtInGroup(String group, String debt);
 }
 
 class _AppLocalizationsDelegate

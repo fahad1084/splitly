@@ -357,7 +357,7 @@
   "reply": "Reply",
   "deleteAccount": "Delete Account",
   "deleteAccountTitle": "Delete Account",
-  "deleteAccountWarning": "This will permanently sign you out and disable this account. Your name will show as \"Deleted User\" in any group expenses you're part of, so balances stay accurate for others. This cannot be undone.",
+  "deleteAccountWarning": "This permanently signs you out and disables this account. You leave all your groups and your profile photo is deleted. Your name shows as \"Deleted User\" in past expenses and messages, so balances stay correct for others. You can only do this when nobody owes you and you owe nobody. This cannot be undone.",
   "deleteAccountConfirmPrompt": "Type DELETE to confirm you want to permanently delete your account.",
   "continueLabel": "Continue",
   "customRange": "Custom range",
@@ -488,5 +488,8 @@
   "@changeDate": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
   "changeCategory": "Category changed",
   "changeSplit": "Split changed",
-  "changeNotes": "Notes changed"
+  "changeNotes": "Notes changed",
+  "cantDeleteAccountYet": "You can't delete your account yet",
+  "debtInGroup": "{group}: {debt}",
+  "@debtInGroup": {"placeholders": {"group": {"type": "String"}, "debt": {"type": "String"}}}
 }
