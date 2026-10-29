@@ -231,7 +231,7 @@ class AppLocalizationsUr extends AppLocalizations {
       'نیا گروپ بنائیں یا دعوتی کوڈ سے شامل ہوں۔';
 
   @override
-  String get splitlyFooter => 'Splitly v1.2.0 · آپ کا حلقہ۔ آپ کا حساب۔';
+  String get splitlyFooter => 'Splitly v1.3.0 · آپ کا حلقہ۔ آپ کا حساب۔';
 
   @override
   String get protectSplitly => 'پن یا بایومیٹرک سے Splitly کو محفوظ بنائیں';
