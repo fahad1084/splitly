@@ -251,7 +251,9 @@ class ChatController
         'group_id': _groupId,
         'user_id': userId,
         'user_name': _profiles[userId]?['full_name'],
-        'updated_at': DateTime.now().toIso8601String(),
+        // UTC ("…Z"): the column is timestamptz; local time without a zone
+        // was read as UTC, 5 hours off, so "is typing" could stay for hours
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       });
     } catch (_) {}
   }
