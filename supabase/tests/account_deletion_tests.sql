@@ -3,7 +3,7 @@
 --
 -- Runs in ONE block that always ends with an error, which undoes every
 -- change, so it's safe on splitly-test too. The error text IS the result:
---     RESULT: 15 passed, failed: none
+--     RESULT: 19 passed, failed: none
 --
 --   supabase db query --local -f supabase/tests/account_deletion_tests.sql
 --
@@ -22,6 +22,8 @@ declare
   dana  uuid := 'd5000000-0000-0000-0000-0000000000d1';
   erin  uuid := 'e5000000-0000-0000-0000-0000000000e1';
   outsider uuid := 'f5000000-0000-0000-0000-0000000000f1';
+  old_user uuid := 'f5000000-0000-0000-0000-0000000000f2';
+  v_row jsonb;
   g1 uuid := '97000000-0000-0000-0000-000000000001';
   g2 uuid := '97000000-0000-0000-0000-000000000002';
   g3 uuid := '97000000-0000-0000-0000-000000000003';
@@ -48,6 +50,13 @@ begin
     (dana, 'Dana', null, null), (erin, 'Erin', null, null), (outsider, 'Out', null, null)
     on conflict (id) do update set full_name = excluded.full_name,
       phone = excluded.phone, avatar_url = excluded.avatar_url;
+  update public.profiles
+     set avatar_color = '#AB1234', notify_messages = false, notify_debt_reminders = false,
+         fcm_token = 'token-ali', created_at = '2026-03-14 09:26:53+00'
+   where id = ali;
+  insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
+  values (ali::text, ali, jsonb_build_object('sub', ali::text, 'email', 'ad-ali@test.local',
+          'full_name', 'Ali Real Name'), 'email', now(), now());
   insert into public.groups (id, name, currency, created_by) values
     (g1, 'Flat', 'PKR', ali), (g2, 'Trip', 'PKR', bilal), (g3, 'Solo', 'PKR', ali),
     (g4, 'Old', 'PKR', bilal), (g5, 'Office', 'PKR', ali);
@@ -147,11 +156,18 @@ begin
   perform public.delete_own_account();
   perform set_config('request.jwt.claims', '{}', true);
 
-  -- D1 anonymized, photo link cleared, marked deleted
-  if exists (select 1 from public.profiles where id = ali and full_name = 'Deleted User'
-               and phone is null and avatar_url is null and fcm_token is null
-               and deleted_at is not null)
-  then ok := ok + 1; else fails := fails || ' D1'; end if;
+  -- D1 EVERY column of the deleted profile (the table has exactly 13; a new
+  --    column makes this fail until it is handled in _scrub_deleted_profiles)
+  select to_jsonb(p) into v_row from public.profiles p where id = ali;
+  if (select count(*) from jsonb_object_keys(v_row)) = 13
+     and v_row - 'id' - 'deleted_at' = jsonb_build_object(
+           'full_name', 'Deleted User', 'avatar_color', '#0F766E',
+           'phone', null, 'fcm_token', null, 'avatar_url', null, 'created_at', null,
+           'notify_messages', true, 'notify_expenses', true, 'notify_settlements', true,
+           'notify_members', true, 'notify_debt_reminders', true)
+     and (v_row ->> 'id')::uuid = ali
+     and (v_row ->> 'deleted_at')::timestamptz = date_trunc('day', (v_row ->> 'deleted_at')::timestamptz)
+  then ok := ok + 1; else fails := fails || ' D1(' || v_row::text || ')'; end if;
 
   -- D2 login blocked
   if exists (select 1 from auth.users where id = ali and email like 'deleted-%@splitly.deleted'
@@ -206,7 +222,7 @@ begin
   --     but still not a normal profile from outside their groups
   perform set_config('request.jwt.claims', json_build_object('sub', outsider, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
-  select count(*) into v_n from public.profiles where id = ali and full_name = 'Deleted User';
+  select count(*) into v_n from public.profiles p where id = ali and to_jsonb(p) = v_row;
   if v_n = 1 and (select count(*) from public.profiles where id = bilal) = 0
   then ok := ok + 1; else fails := fails || ' D11(' || v_n || ')'; end if;
 
@@ -218,7 +234,48 @@ begin
   exception when others then
     if sqlerrm = 'NOT_ALLOWED' then ok := ok + 1; else fails := fails || ' D12(' || sqlerrm || ')'; end if;
   end;
+
+  -- D13 an app user can't run the scrub function themselves
+  begin
+    perform public._scrub_deleted_profiles(null);
+    fails := fails || ' D13(ran)';
+  exception when others then
+    if sqlerrm = 'NOT_ALLOWED' then ok := ok + 1; else fails := fails || ' D13(' || sqlerrm || ')'; end if;
+  end;
   execute 'reset role';
+  perform set_config('request.jwt.claims', '{}', true);
+
+  -- D14 Ali's login identities (real email, name) are gone
+  if not exists (select 1 from auth.identities where user_id = ali)
+  then ok := ok + 1; else fails := fails || ' D14'; end if;
+
+  -- D15 an account deleted the OLD way (only name/phone/token cleared, photo
+  --     link and everything else still there) is scrubbed by the clean-up
+  insert into auth.users (id, email, aud, role) values
+    (old_user, 'deleted-' || old_user || '@splitly.deleted', 'authenticated', 'authenticated');
+  insert into public.profiles (id, full_name, avatar_url, avatar_color, notify_members, created_at)
+  values (old_user, 'Deleted User', 'https://example.test/avatars/old/face.jpg', '#123456',
+          false, '2026-01-02 03:04:05+00')
+  on conflict (id) do update set avatar_url = excluded.avatar_url;
+  update public.profiles set deleted_at = '2026-08-01 17:45:12+00' where id = old_user;
+  insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
+  values ('google-123', old_user, '{"email": "real@gmail.com", "name": "Real Name",
+          "picture": "https://lh3.googleusercontent.com/x"}', 'google', now(), now());
+  perform public._scrub_deleted_profiles(null);
+  select to_jsonb(p) into v_row from public.profiles p where id = old_user;
+  if v_row - 'id' = jsonb_build_object(
+           'full_name', 'Deleted User', 'avatar_color', '#0F766E',
+           'phone', null, 'fcm_token', null, 'avatar_url', null, 'created_at', null,
+           'notify_messages', true, 'notify_expenses', true, 'notify_settlements', true,
+           'notify_members', true, 'notify_debt_reminders', true,
+           'deleted_at', '2026-08-01T00:00:00+00:00')
+     and not exists (select 1 from auth.identities where user_id = old_user)
+  then ok := ok + 1; else fails := fails || ' D15(' || coalesce(v_row::text, 'none') || ')'; end if;
+
+  -- D16 profiles that are NOT deleted are never touched by the clean-up
+  if exists (select 1 from public.profiles where id = bilal and full_name = 'Bilal')
+     and exists (select 1 from public.profiles where id = chand and full_name = 'Chand')
+  then ok := ok + 1; else fails := fails || ' D16'; end if;
 
   raise exception 'RESULT: % passed, failed:%', ok, coalesce(nullif(fails, ''), ' none');
 end $$;
