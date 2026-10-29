@@ -21,6 +21,8 @@ DB="${DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
 K='e1000000-0000-0000-0000-0000000000e1'   # Kashif (owes)
 L='f1000000-0000-0000-0000-0000000000f1'   # Laila (is owed)
 G='93000000-0000-0000-0000-000000000093'
+TMP="$(dirname "$0")/../../.tmp"   # the project's .tmp/ (git-ignored)
+mkdir -p "$TMP"
 AS_KASHIF="set local role authenticated; select set_config('request.jwt.claims', '{\"sub\":\"$K\",\"role\":\"authenticated\"}', true);"
 
 psql "$DB" -q -v ON_ERROR_STOP=1 > /dev/null <<SQL
@@ -44,18 +46,18 @@ psql "$DB" -tA -c "select amount from public.group_debts('$G')"
 
 echo "== Session 1: record 70, hold the transaction for 3 seconds ..."
 psql "$DB" -tA -c "begin; $AS_KASHIF select 'session 1 OK: ' || public.record_settlement('$G', '$K', '$L', 70); select pg_sleep(3); commit;" \
-  > /tmp/splitly_s1.txt 2>&1 &
+  > "$TMP/splitly_s1.txt" 2>&1 &
 S1=$!
 sleep 1
 echo "== Session 2 (1 second later): record 70 at the same time ..."
 START=$(date +%s)
 psql "$DB" -tA -c "begin; $AS_KASHIF select 'session 2 OK: ' || public.record_settlement('$G', '$K', '$L', 70); commit;" \
-  > /tmp/splitly_s2.txt 2>&1
+  > "$TMP/splitly_s2.txt" 2>&1
 END=$(date +%s)
 wait $S1
 
-echo "-- session 1:"; grep -E "OK|ERROR" /tmp/splitly_s1.txt
-echo "-- session 2 (waited ~$((END - START))s for session 1):"; grep -E "OK|ERROR" /tmp/splitly_s2.txt
+echo "-- session 1:"; grep -E "OK|ERROR" "$TMP/splitly_s1.txt"
+echo "-- session 2 (waited ~$((END - START))s for session 1):"; grep -E "OK|ERROR" "$TMP/splitly_s2.txt"
 echo "== Pending total (expect 70.00 — only ONE payment got in):"
 psql "$DB" -tA -c "select sum(amount) from public.settlements where group_id = '$G' and status = 'pending'"
-rm -f /tmp/splitly_s1.txt /tmp/splitly_s2.txt
+rm -f "$TMP/splitly_s1.txt" "$TMP/splitly_s2.txt"

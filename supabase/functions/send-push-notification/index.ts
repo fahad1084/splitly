@@ -242,17 +242,19 @@ serve(async (req) => {
         group_id: groupId ?? "",
         avatar_url: (actorId === record.paid_to ? toP?.avatar_url : fromP?.avatar_url) ?? "",
       };
-    } else if (table === "notifications" && record.type === "recurring_skipped") {
+    } else if (table === "notifications" &&
+        (record.type === "recurring_skipped" || record.type === "expense_edited")) {
       // From the notifications_push trigger: the daily job skipped a copy
-      // of a recurring expense. The row IS the in-app notification, so
-      // only the push goes to its owner (the expense's creator).
+      // of a recurring expense, or someone edited an expense. The row IS
+      // the in-app notification (written by the database, which already
+      // checked the mute setting), so only the push goes to its owner.
       groupId = record.group_id;
-      notificationType = "recurring_skipped";
+      notificationType = record.type;
       pushOnly = true;
       title = record.title;
       body = record.body;
       dataPayload = {
-        type: "recurring_skipped",
+        type: record.type,
         group_id: groupId ?? "",
       };
     } else if (table === "group_members") {
@@ -289,6 +291,7 @@ serve(async (req) => {
       settlement: "notify_settlements",
       member_joined: "notify_members",
       recurring_skipped: "notify_expenses",
+      expense_edited: "notify_expenses",
     };
 
     // Recipients depend on the event type:
@@ -308,7 +311,7 @@ serve(async (req) => {
     } else if (notificationType === "settlement") {
       recipientIds = [record.paid_by, record.paid_to]
         .filter((id: string) => id && id !== actorId);
-    } else if (notificationType === "recurring_skipped") {
+    } else if (notificationType === "recurring_skipped" || notificationType === "expense_edited") {
       recipientIds = [record.user_id];
     } else {
       const { data: allMembers } = await supabase
