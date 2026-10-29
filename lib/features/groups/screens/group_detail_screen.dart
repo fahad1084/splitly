@@ -690,6 +690,11 @@ class GroupDetailScreen extends ConsumerWidget {
   void _showGroupMenu(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
+    // Archiving is for the creator and group admins (the server checks too)
+    final me = ref.read(currentUserProvider)?.id ?? '';
+    final canArchive = group.createdBy == me ||
+        (ref.read(groupMembersProvider(group.id)).valueOrNull ?? const [])
+            .any((m) => m['user_id'] == me && m['role'] == 'admin');
     final sheetBg = dark ? AppColors.primaryDark : Colors.white;
     final textColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
     final borderColor = dark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primaryTint;
@@ -824,18 +829,20 @@ class GroupDetailScreen extends ConsumerWidget {
             // ── Red actions last, apart from the rest ──────────────
             Divider(height: 24, color: borderColor),
 
-            _MenuTile(
-              icon: Icons.archive_outlined,
-              iconColor: AppColors.danger,
-              label: l10n.archiveGroup,
-              textColor: AppColors.dangerText(context),
-              borderColor: borderColor,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _confirmArchive(context, ref);
-              },
-            ),
-            const SizedBox(height: 8),
+            if (canArchive) ...[
+              _MenuTile(
+                icon: Icons.archive_outlined,
+                iconColor: AppColors.danger,
+                label: l10n.archiveGroup,
+                textColor: AppColors.dangerText(context),
+                borderColor: borderColor,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmArchive(context, ref);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
 
             _MenuTile(
               icon: Icons.exit_to_app_rounded,
@@ -879,8 +886,14 @@ class GroupDetailScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
-              await ref.read(groupsProvider.notifier).archiveGroup(group.id);
-              if (context.mounted) Navigator.pop(context); // back to groups list
+              final error =
+                  await ref.read(groupsProvider.notifier).archiveGroup(group.id);
+              if (!context.mounted) return;
+              if (error != null) {
+                showErrorSnack(context, friendlyError(l10n, error));
+              } else {
+                Navigator.pop(context); // back to groups list
+              }
             },
             child: Text(l10n.archive, style: TextStyle(color: AppColors.dangerText(context))),
           ),

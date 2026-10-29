@@ -167,23 +167,32 @@ class GroupsController extends AsyncNotifier<List<GroupModel>> {
     }
   }
 
-  Future<void> archiveGroup(String groupId) async {
-    await _db
-        .from('groups')
-        .update({'is_archived': true})
-        .eq('id', groupId);
+  // ── Archive / unarchive (creator or group admin) ─────────────────────────
+  // Through set_group_archived(): anyone else gets NOT_ALLOWED. Returns null
+  // on success, or an error code (friendlyError turns it into text).
+  Future<String?> archiveGroup(String groupId) async {
+    try {
+      await _db.rpc('set_group_archived',
+          params: {'p_group_id': groupId, 'p_archived': true});
+    } catch (e, st) {
+      return errorCode(e, st, where: 'archiveGroup');
+    }
     // Just drop it from the list — no need to download the rest again
     state = AsyncValue.data(
         (state.value ?? []).where((g) => g.id != groupId).toList());
     ref.invalidate(archivedGroupsProvider);
+    return null;
   }
 
-  Future<void> unarchiveGroup(String groupId) async {
-    await _db
-        .from('groups')
-        .update({'is_archived': false})
-        .eq('id', groupId);
+  Future<String?> unarchiveGroup(String groupId) async {
+    try {
+      await _db.rpc('set_group_archived',
+          params: {'p_group_id': groupId, 'p_archived': false});
+    } catch (e, st) {
+      return errorCode(e, st, where: 'unarchiveGroup');
+    }
     state = AsyncValue.data(await _fetchGroups());
+    return null;
   }
 
   Future<String?> deleteGroupPermanently(String groupId) async {

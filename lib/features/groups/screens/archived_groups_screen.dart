@@ -119,11 +119,15 @@ class ArchivedGroupsScreen extends ConsumerWidget {
                       children: [
                         TextButton(
                           onPressed: () async {
-                            await ref
+                            final error = await ref
                                 .read(groupsProvider.notifier)
                                 .unarchiveGroup(group.id);
-                            ref.invalidate(archivedGroupsProvider);
-                            if (context.mounted) {
+                            if (!context.mounted) return;
+                            if (error != null) {
+                              showErrorSnack(
+                                  context, friendlyError(l10n, error));
+                            } else {
+                              ref.invalidate(archivedGroupsProvider);
                               showSuccessSnack(
                                   context, l10n.groupUnarchived);
                             }
