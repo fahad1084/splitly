@@ -48,6 +48,23 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // ── arm64-only APK ──────────────────────────────────────────────────
+        // SPLITLY_ARM64_ONLY=true flutter build apk --release --target-platform android-arm64
+        // `--target-platform` alone only limits Flutter's own libraries; some
+        // packages (ML Kit, the QR scanner) would still add 32-bit and x86 ones,
+        // so a 32-bit phone would install the APK and crash at start. This
+        // keeps ONLY arm64 libraries, so such a phone refuses to install it.
+        // Normal builds (universal APK, app bundle) are not affected.
+    }
+
+    if (System.getenv("SPLITLY_ARM64_ONLY") == "true") {
+        logger.lifecycle("Splitly: arm64-only build (32-bit and x86 libraries left out)")
+        packaging {
+            jniLibs {
+                excludes += listOf("lib/armeabi-v7a/**", "lib/armeabi/**", "lib/x86/**", "lib/x86_64/**")
+            }
+        }
     }
     dependencies {
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
