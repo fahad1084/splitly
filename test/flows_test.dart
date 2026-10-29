@@ -230,4 +230,38 @@ void main() {
 
     expect(find.text(l10n.invalidInviteCode), findsOneWidget);
   });
+
+  group('delete expense: payer or group admin', () {
+    // Bilal paid; Ali is looking at it
+    final bilalsExpense = ExpenseModel.fromMap({
+      'id': 'e2', 'group_id': 'g1', 'paid_by': bilal, 'paid_by_name': 'Bilal',
+      'title': 'Taxi', 'amount': 100, 'split_type': 'equal',
+      'created_at': '2026-10-01T12:00:00Z', 'expense_date': '2026-10-01',
+      'expense_splits': [
+        {'id': 's1', 'expense_id': 'e2', 'user_id': ali, 'user_name': 'Ali', 'amount_owed': 50},
+        {'id': 's2', 'expense_id': 'e2', 'user_id': bilal, 'user_name': 'Bilal', 'amount_owed': 50},
+      ],
+    });
+
+    for (final (role, canDelete) in [('admin', true), ('member', false)]) {
+      testWidgets('Ali as $role ${canDelete ? 'can' : 'cannot'} delete it',
+          (tester) async {
+        useTallScreen(tester);
+        await tester.pumpWidget(testApp(
+          aliRole: role,
+          overrides: [
+            expensesProvider.overrideWith(() => FakeExpensesController([bilalsExpense])),
+          ],
+          open: (context) => showExpenseDetailSheet(context, bilalsExpense, testGroup),
+        ));
+        await openIt(tester);
+
+        expect(find.widgetWithText(SplitlyButton, l10n.deleteExpense),
+            canDelete ? findsOneWidget : findsNothing);
+        // Editing follows the same rule
+        expect(find.widgetWithText(SplitlyButton, l10n.editExpense),
+            canDelete ? findsOneWidget : findsNothing);
+      });
+    }
+  });
 }

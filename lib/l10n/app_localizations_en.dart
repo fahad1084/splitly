@@ -1338,4 +1338,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String secondsLeft(int seconds) {
     return '${seconds}s left';
   }
+
+  @override
+  String get editHistory => 'Edit history';
+
+  @override
+  String editedByOn(String name, String date) {
+    return '$name · $date';
+  }
+
+  @override
+  String changeTitle(String from, String to) {
+    return 'Title: $from → $to';
+  }
+
+  @override
+  String changeAmount(String from, String to) {
+    return 'Amount: $from → $to';
+  }
+
+  @override
+  String changeDate(String from, String to) {
+    return 'Date: $from → $to';
+  }
+
+  @override
+  String get changeCategory => 'Category changed';
+
+  @override
+  String get changeSplit => 'Split changed';
+
+  @override
+  String get changeNotes => 'Notes changed';
 }

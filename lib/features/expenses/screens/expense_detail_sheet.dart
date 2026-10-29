@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
@@ -68,8 +69,11 @@ class _ExpenseDetailSheet extends ConsumerWidget {
         borderRadius:
         const BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -295,6 +299,12 @@ class _ExpenseDetailSheet extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
+          // ── Edit history (who changed what, when) ─────────────────
+          if (expense.editedAt != null) ...[
+            _EditHistory(expense: expense),
+            const SizedBox(height: 16),
+          ],
+
           // ── Edit button (payer or group admin) ────────────────────
           if (iPaid || amAdmin) ...[
             SplitlyButton(
@@ -309,8 +319,8 @@ class _ExpenseDetailSheet extends ConsumerWidget {
             const SizedBox(height: 10),
           ],
 
-          // ── Delete button (only if you paid) ──────────────────────
-          if (iPaid)
+          // ── Delete button (payer or group admin) ──────────────────
+          if (iPaid || amAdmin)
             SplitlyButton(
               label: l10n.deleteExpense,
               isOutline: true,
@@ -325,7 +335,9 @@ class _ExpenseDetailSheet extends ConsumerWidget {
                       .deleteExpense(expense.id);
                   if (!context.mounted) return;
                   if (error != null) {
-                    showErrorSnack(context, l10n.somethingWentWrong);
+                    showErrorSnack(context, error == 'NOT_ALLOWED'
+                        ? l10n.errorNotAllowed
+                        : l10n.somethingWentWrong);
                   } else {
                     Navigator.pop(context);
                   }
@@ -333,6 +345,7 @@ class _ExpenseDetailSheet extends ConsumerWidget {
               },
             ),
         ],
+        ),
       ),
     );
   }
@@ -343,5 +356,90 @@ class _ExpenseDetailSheet extends ConsumerWidget {
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return '${months[d.month]} ${d.day}, ${d.year}';
+  }
+}
+
+// ── One history row → readable lines ──────────────────────────────────────────
+// Only the fields that changed. Amounts in the expense's currency, dates in
+// the user's language.
+List<String> describeEdit(
+    ExpenseEdit edit, AppLocalizations l10n, String currency) {
+  String money(Object? v) =>
+      formatMoney((v as num?)?.toDouble() ?? 0, currency);
+  String day(Object? v) => v == null
+      ? '—'
+      : DateFormat.yMMMd(l10n.localeName).format(DateTime.parse(v as String));
+  final c = edit.changes;
+  Object? from(String k) => (c[k] as Map?)?['from'];
+  Object? to(String k) => (c[k] as Map?)?['to'];
+  return [
+    if (c.containsKey('title'))
+      l10n.changeTitle('${from('title') ?? ''}', '${to('title') ?? ''}'),
+    if (c.containsKey('amount'))
+      l10n.changeAmount(money(from('amount')), money(to('amount'))),
+    if (c.containsKey('date')) l10n.changeDate(day(from('date')), day(to('date'))),
+    if (c.containsKey('category')) l10n.changeCategory,
+    if (c.containsKey('splits') || c.containsKey('split_type')) l10n.changeSplit,
+    if (c.containsKey('notes')) l10n.changeNotes,
+  ];
+}
+
+class _EditHistory extends ConsumerWidget {
+  final ExpenseModel expense;
+  const _EditHistory({required this.expense});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final dark = isDark(context);
+    final headingColor = dark ? AppColors.primaryTint : AppColors.primaryDark;
+    final edits = ref.watch(expenseEditsProvider(expense.id));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.editHistory,
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w500, color: headingColor)),
+        const SizedBox(height: 8),
+        edits.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(8),
+            child: SizedBox(
+                width: 18, height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          error: (_, __) => Text(l10n.somethingWentWrong,
+              style: TextStyle(color: AppColors.mutedText(context))),
+          data: (list) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final e in list)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          l10n.editedByOn(
+                              e.editedByName,
+                              DateFormat.yMMMd(l10n.localeName)
+                                  .add_jm()
+                                  .format(e.editedAt)),
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.mutedText(context))),
+                      for (final line in describeEdit(e, l10n, expense.currency))
+                        Text('• $line',
+                            style: TextStyle(fontSize: 13, color: headingColor)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

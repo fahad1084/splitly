@@ -5,6 +5,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/expense_model.dart';
 import '../../balances/controllers/balances_controller.dart';
+import '../../groups/controllers/groups_controller.dart';
 import '../../../core/utils/money_format.dart';
 
 // Matches _categoryIcons in add_expense_sheet.dart
@@ -99,6 +100,10 @@ class ExpenseTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final dark = isDark(context);
     final iPaid = expense.paidBy == currentUserId;
+    // The payer or a group admin can delete (the server checks too)
+    final canDelete = iPaid ||
+        (ref.watch(groupMembersProvider(expense.groupId)).valueOrNull ?? const [])
+            .any((m) => m['user_id'] == currentUserId && m['role'] == 'admin');
 
     // Find current user's share
     final myShare = expense.splits
@@ -107,7 +112,7 @@ class ExpenseTile extends ConsumerWidget {
 
     return Dismissible(
       key: Key(expense.id),
-      direction: iPaid
+      direction: canDelete
           ? DismissDirection.endToStart
           : DismissDirection.none,
       background: Container(

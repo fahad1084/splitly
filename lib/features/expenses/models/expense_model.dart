@@ -111,6 +111,31 @@ class ExpenseSplit {
   }
 }
 
+// ── One edit of an expense (from expense_edits) ───────────────────────────────
+// changes: {"amount": {"from": 300, "to": 400}, "splits": {"from": {...},
+// "to": {...}}, "title" / "date" / "category" / "notes" / "split_type": ...}
+// Only the fields that really changed are in it.
+class ExpenseEdit {
+  final String? editedBy;
+  final String editedByName;
+  final DateTime editedAt;
+  final Map<String, dynamic> changes;
+
+  const ExpenseEdit({
+    this.editedBy,
+    required this.editedByName,
+    required this.editedAt,
+    required this.changes,
+  });
+
+  factory ExpenseEdit.fromMap(Map<String, dynamic> map) => ExpenseEdit(
+        editedBy: map['edited_by'] as String?,
+        editedByName: map['edited_by_name'] as String? ?? '?',
+        editedAt: DateTime.parse(map['edited_at'] as String).toLocal(),
+        changes: Map<String, dynamic>.from(map['changes'] as Map? ?? const {}),
+      );
+}
+
 const expenseCategories = [
   {'id': 'food', 'label': 'Food', 'icon': '🍕'},
   {'id': 'ration', 'label': 'Ration', 'icon': '🛒'},

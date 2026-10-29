@@ -61,6 +61,7 @@ Future<void> openNotificationTarget(
           builder: (_) => RecurringExpensesScreen(group: g)));
       break;
     case 'expense':
+    case 'expense_edited':
       if (entityId == null || entityId.isEmpty) break;
       try {
         // The group screen keeps this list loaded (and live)

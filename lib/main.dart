@@ -355,6 +355,7 @@ class _AuthGateState extends State<AuthGate> {
         _container.invalidate(unreadCountsProvider);
         break;
       case 'expense':
+      case 'expense_edited':
       case 'settlement':
         _container.invalidate(myDebtsProvider);
         if (groupId.isNotEmpty) {

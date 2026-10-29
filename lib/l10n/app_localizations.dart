@@ -2521,6 +2521,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{seconds}s left'**
   String secondsLeft(int seconds);
+
+  /// No description provided for @editHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit history'**
+  String get editHistory;
+
+  /// No description provided for @editedByOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {date}'**
+  String editedByOn(String name, String date);
+
+  /// No description provided for @changeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title: {from} → {to}'**
+  String changeTitle(String from, String to);
+
+  /// No description provided for @changeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount: {from} → {to}'**
+  String changeAmount(String from, String to);
+
+  /// No description provided for @changeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date: {from} → {to}'**
+  String changeDate(String from, String to);
+
+  /// No description provided for @changeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category changed'**
+  String get changeCategory;
+
+  /// No description provided for @changeSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split changed'**
+  String get changeSplit;
+
+  /// No description provided for @changeNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes changed'**
+  String get changeNotes;
 }
 
 class _AppLocalizationsDelegate

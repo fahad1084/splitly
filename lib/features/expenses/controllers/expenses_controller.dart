@@ -301,6 +301,38 @@ class ExpensesController
 
 }
 
+// ── Edit history of one expense (newest first) ────────────────────────────────
+// Written only by edit_expense() in the database; members of the group can
+// read it. Loaded when the expense's detail sheet is open.
+final expenseEditsProvider = FutureProvider.autoDispose
+    .family<List<ExpenseEdit>, String>((ref, expenseId) async {
+  final db = SupabaseConfig.client;
+  final List<dynamic> rows = await db
+      .from('expense_edits')
+      .select('edited_by, edited_at, changes')
+      .eq('expense_id', expenseId)
+      .order('edited_at', ascending: false);
+  if (rows.isEmpty) return [];
+
+  final editorIds = {
+    for (final r in rows)
+      if (r['edited_by'] != null) r['edited_by'] as String,
+  };
+  final List<dynamic> profiles = editorIds.isEmpty
+      ? const []
+      : await db.from('profiles').select('id, full_name').inFilter('id', editorIds.toList());
+  final names = {
+    for (final p in profiles) p['id'] as String: p['full_name'] as String? ?? '?',
+  };
+  return [
+    for (final r in rows)
+      ExpenseEdit.fromMap({
+        ...Map<String, dynamic>.from(r),
+        'edited_by_name': names[r['edited_by']],
+      }),
+  ];
+});
+
 // ── Money helpers ─────────────────────────────────────────────────────────────
 // Work in whole paisa (1/100 of the currency unit) so nothing is lost to
 // floating-point rounding.

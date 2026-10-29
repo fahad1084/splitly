@@ -1339,4 +1339,36 @@ class AppLocalizationsUr extends AppLocalizations {
   String secondsLeft(int seconds) {
     return '$seconds سیکنڈ باقی';
   }
+
+  @override
+  String get editHistory => 'ترمیم کی تاریخ';
+
+  @override
+  String editedByOn(String name, String date) {
+    return '$name · $date';
+  }
+
+  @override
+  String changeTitle(String from, String to) {
+    return 'عنوان: $from ← $to';
+  }
+
+  @override
+  String changeAmount(String from, String to) {
+    return 'رقم: $from ← $to';
+  }
+
+  @override
+  String changeDate(String from, String to) {
+    return 'تاریخ: $from ← $to';
+  }
+
+  @override
+  String get changeCategory => 'قسم تبدیل ہوئی';
+
+  @override
+  String get changeSplit => 'تقسیم تبدیل ہوئی';
+
+  @override
+  String get changeNotes => 'نوٹس تبدیل ہوئے';
 }

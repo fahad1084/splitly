@@ -41,6 +41,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         return Icons.alarm_rounded;
       case 'recurring_skipped':
         return Icons.event_busy_rounded;
+      case 'expense_edited':
+        return Icons.edit_note_rounded;
       default:
         return Icons.notifications_outlined;
     }

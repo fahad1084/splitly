@@ -476,5 +476,17 @@
   "atLeast8Chars": "At least 8 characters",
   "voiceNoteMaxReached": "Voice notes can be up to 2 minutes, so this one was sent.",
   "secondsLeft": "{seconds}s left",
-  "@secondsLeft": {"placeholders": {"seconds": {"type": "int"}}}
+  "@secondsLeft": {"placeholders": {"seconds": {"type": "int"}}},
+  "editHistory": "Edit history",
+  "editedByOn": "{name} · {date}",
+  "@editedByOn": {"placeholders": {"name": {"type": "String"}, "date": {"type": "String"}}},
+  "changeTitle": "Title: {from} → {to}",
+  "@changeTitle": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
+  "changeAmount": "Amount: {from} → {to}",
+  "@changeAmount": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
+  "changeDate": "Date: {from} → {to}",
+  "@changeDate": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
+  "changeCategory": "Category changed",
+  "changeSplit": "Split changed",
+  "changeNotes": "Notes changed"
 }

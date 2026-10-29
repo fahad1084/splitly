@@ -152,11 +152,13 @@ Widget testApp({
   required List<Override> overrides,
   required void Function(BuildContext context) open,
   String signedInAs = ali,
+  String aliRole = 'admin',
 }) {
   return ProviderScope(
     overrides: [
       currentUserProvider.overrideWithValue(fakeUser(signedInAs)),
-      groupMembersProvider.overrideWith((ref, groupId) async => testMembers()),
+      groupMembersProvider
+          .overrideWith((ref, groupId) async => testMembers(aliRole: aliRole)),
       ...overrides,
     ],
     child: MaterialApp(
