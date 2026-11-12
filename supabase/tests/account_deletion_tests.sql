@@ -3,7 +3,7 @@
 --
 -- Runs in ONE block that always ends with an error, which undoes every
 -- change, so it's safe on splitly-test too. The error text IS the result:
---     RESULT: 19 passed, failed: none
+--     RESULT: 21 passed, failed: none
 --
 --   supabase db query --local -f supabase/tests/account_deletion_tests.sql
 --
@@ -23,6 +23,8 @@ declare
   erin  uuid := 'e5000000-0000-0000-0000-0000000000e1';
   outsider uuid := 'f5000000-0000-0000-0000-0000000000f1';
   old_user uuid := 'f5000000-0000-0000-0000-0000000000f2';
+  comeback uuid := 'f5000000-0000-0000-0000-0000000000f3';
+  ali_session uuid := 'f5000000-0000-0000-0000-0000000000f4';
   v_row jsonb;
   g1 uuid := '97000000-0000-0000-0000-000000000001';
   g2 uuid := '97000000-0000-0000-0000-000000000002';
@@ -57,6 +59,22 @@ begin
   insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
   values (ali::text, ali, jsonb_build_object('sub', ali::text, 'email', 'ad-ali@test.local',
           'full_name', 'Ali Real Name'), 'email', now(), now());
+  update auth.users
+     set phone = '+923001234567', encrypted_password = 'bcrypt-hash-here',
+         raw_user_meta_data = '{"full_name": "Ali Real Name", "avatar_url": "https://x/ali.jpg"}',
+         raw_app_meta_data = '{"provider": "email", "providers": ["email", "google"]}',
+         email_confirmed_at = now(), last_sign_in_at = now(),
+         recovery_token = 'reset-me', created_at = '2026-03-14 09:26:53+00'
+   where id = ali;
+  insert into auth.sessions (id, user_id, created_at, updated_at, user_agent, ip)
+  values (ali_session, ali, now(), now(), 'Pixel 7 / Android 16', '1.2.3.4');
+  insert into auth.refresh_tokens (token, user_id, revoked, created_at, updated_at, session_id)
+  values ('rt-ali', ali::text, false, now(), now(), ali_session);
+  insert into auth.one_time_tokens (id, user_id, token_type, token_hash, relates_to)
+  values (gen_random_uuid(), ali, 'recovery_token', 'hash-ali', 'ad-ali@test.local');
+  insert into auth.audit_log_entries (id, payload, created_at, ip_address)
+  values (gen_random_uuid(), jsonb_build_object('actor_id', ali::text,
+          'actor_username', 'ad-ali@test.local', 'action', 'login'), now(), '1.2.3.4');
   insert into public.groups (id, name, currency, created_by) values
     (g1, 'Flat', 'PKR', ali), (g2, 'Trip', 'PKR', bilal), (g3, 'Solo', 'PKR', ali),
     (g4, 'Old', 'PKR', bilal), (g5, 'Office', 'PKR', ali);
@@ -169,10 +187,25 @@ begin
      and (v_row ->> 'deleted_at')::timestamptz = date_trunc('day', (v_row ->> 'deleted_at')::timestamptz)
   then ok := ok + 1; else fails := fails || ' D1(' || v_row::text || ')'; end if;
 
-  -- D2 login blocked
-  if exists (select 1 from auth.users where id = ali and email like 'deleted-%@splitly.deleted'
-               and banned_until > now() and encrypted_password = '')
+  -- D2 the login row holds nothing personal and is banned for good
+  if exists (select 1 from auth.users where id = ali
+               and email = 'deleted-' || ali || '@deleted.invalid'
+               and phone is null and encrypted_password = ''
+               and raw_user_meta_data = '{}' and raw_app_meta_data = '{}'
+               and recovery_token = '' and confirmation_token = ''
+               and email_confirmed_at is null and last_sign_in_at is null
+               and created_at = date_trunc('day', created_at)
+               and banned_until > now() + interval '900 years')
   then ok := ok + 1; else fails := fails || ' D2'; end if;
+
+  -- D17 nothing else of Ali's in Supabase Auth: sessions (IP, phone model),
+  --     refresh tokens, one-time codes, audit log, identities
+  if not exists (select 1 from auth.sessions where user_id = ali)
+     and not exists (select 1 from auth.refresh_tokens where user_id = ali::text)
+     and not exists (select 1 from auth.one_time_tokens where user_id = ali)
+     and not exists (select 1 from auth.audit_log_entries where payload ->> 'actor_id' = ali::text)
+     and not exists (select 1 from auth.identities where user_id = ali)
+  then ok := ok + 1; else fails := fails || ' D17'; end if;
 
   -- D3 left every group
   if (select count(*) from public.group_members where user_id = ali) = 0
@@ -270,7 +303,18 @@ begin
            'notify_members', true, 'notify_debt_reminders', true,
            'deleted_at', '2026-08-01T00:00:00+00:00')
      and not exists (select 1 from auth.identities where user_id = old_user)
+     and (select email from auth.users where id = old_user) = 'deleted-' || old_user || '@deleted.invalid'
   then ok := ok + 1; else fails := fails || ' D15(' || coalesce(v_row::text, 'none') || ')'; end if;
+
+  -- D18 the same person can come back as a NEW account: their old email and
+  --     their Google account are free again (unique constraints don't block)
+  insert into auth.users (id, email, aud, role)
+  values (comeback, 'ad-ali@test.local', 'authenticated', 'authenticated');
+  insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
+  values ('google-123', comeback, '{"email": "real@gmail.com"}', 'google', now(), now());
+  if (select count(*) from auth.users where email = 'ad-ali@test.local') = 1
+     and (select user_id from auth.identities where provider = 'google' and provider_id = 'google-123') = comeback
+  then ok := ok + 1; else fails := fails || ' D18'; end if;
 
   -- D16 profiles that are NOT deleted are never touched by the clean-up
   if exists (select 1 from public.profiles where id = bilal and full_name = 'Bilal')
