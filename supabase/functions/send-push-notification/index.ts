@@ -379,6 +379,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ sent, logged: historyRows.length }), { status: 200 });
   } catch (e) {
     console.error("Edge function error:", e);
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+    // Details only in the function log, not in the response
+    return new Response(JSON.stringify({ error: "internal error" }), { status: 500 });
   }
 });
